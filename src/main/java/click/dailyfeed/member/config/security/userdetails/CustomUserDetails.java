@@ -1,4 +1,4 @@
-package click.dailyfeed.member.config.security;
+package click.dailyfeed.member.config.security.userdetails;
 
 import click.dailyfeed.member.domain.member.entity.Member;
 import lombok.Getter;

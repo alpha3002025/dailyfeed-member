@@ -1,4 +1,4 @@
-package click.dailyfeed.member.config.security;
+package click.dailyfeed.member.config.security.userdetails;
 
 import org.springframework.security.core.userdetails.UserDetailsService;
 

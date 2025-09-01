@@ -20,6 +20,11 @@ import java.security.Key;
 public class JwtKeyHelper {
     private final JwtKeyRotationService jwtKeyRotationService;
 
+    public Key getCurrentJwtKey() {
+        jwtKeyRotationService.initializeKeyIfNeeded();
+        return jwtKeyRotationService.getPrimaryKey();
+    }
+
     /**
      * 새로운 JWT 토큰 생성 (항상 Primary Key 사용)
      */

@@ -67,6 +67,9 @@ allprojects {
         implementation("io.jsonwebtoken:jjwt-impl:0.11.2")
         implementation("io.jsonwebtoken:jjwt-jackson:0.11.2")
 
+        // springdoc
+        implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.2")
+
         // test
         testImplementation("org.springframework.boot:spring-boot-starter-test")
         testRuntimeOnly("org.junit.platform:junit-platform-launcher")

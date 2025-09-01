@@ -3,9 +3,8 @@ package click.dailyfeed.member.domain.follow.api;
 import click.dailyfeed.code.domain.member.follow.dto.FollowDto;
 import click.dailyfeed.code.global.web.response.DailyfeedPageResponse;
 import click.dailyfeed.code.global.web.response.DailyfeedServerResponse;
-import click.dailyfeed.member.config.security.CustomUserDetails;
+import click.dailyfeed.member.config.security.userdetails.CustomUserDetails;
 import click.dailyfeed.member.domain.follow.service.FollowService;
-import click.dailyfeed.member.domain.member.service.MemberService;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
@@ -13,11 +12,11 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+@RequestMapping("/api/members/follow")
 @RequiredArgsConstructor
-@RestController("/api/members/follows")
+@RestController
 public class FollowController {
     private final FollowService followService;
-    private final MemberService memberService;
 
     @PostMapping("/")
     public DailyfeedServerResponse<Boolean> follow(@AuthenticationPrincipal CustomUserDetails customUserDetails,
@@ -55,7 +54,8 @@ public class FollowController {
         FollowDto.Follow follow = followService.getMemberFollow(memberId);
         return DailyfeedServerResponse.<FollowDto.Follow>builder().ok("Y").reason("SUCCESS").statusCode("200").data(follow).build();
     }
-    
+
+    // timeline, contents 서비스로 이관
     @GetMapping("/latest/posts")
     public DailyfeedPageResponse<FollowDto.LatestPost> getLatestPosts(
             @RequestHeader("Authorization") String token,

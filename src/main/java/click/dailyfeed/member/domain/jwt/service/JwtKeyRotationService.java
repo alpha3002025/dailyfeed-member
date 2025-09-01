@@ -59,7 +59,7 @@ public class JwtKeyRotationService {
     /**
      * 초기 키가 없는 경우 생성
      */
-    private void initializeKeyIfNeeded() {
+    public void initializeKeyIfNeeded() {
         Optional<JwtKey> primaryKey = jwtKeyRepository.findPrimaryKey();
         if (primaryKey.isEmpty()) {
             generateNewPrimaryKey();

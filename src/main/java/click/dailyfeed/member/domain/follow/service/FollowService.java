@@ -125,11 +125,12 @@ public class FollowService {
         }
     }
 
-    public DailyfeedPageResponse<FollowDto.LatestPost> findRecentActivitiesFromFollowing(Long memberId, Pageable pageable) {
-        Page<FollowDto.LatestPost> page = followRepository.findActiveFollowingMemberIds(memberId, pageable);
-        DailyfeedPage<FollowDto.LatestPost> dailyfeedPage = followMapper.fromPage(page);
-        return DailyfeedPageResponse.<FollowDto.LatestPost>builder()
-                .content(dailyfeedPage).ok("Y").reason("SUCCESS").statusCode("200")
-                .build();
-    }
+    // TODO (삭제) timeline+contents 서비스로 이관
+//    public DailyfeedPageResponse<FollowDto.LatestPost> findRecentActivitiesFromFollowing(Long memberId, Pageable pageable) {
+//        Page<FollowDto.LatestPost> page = followRepository.findActiveFollowingMemberIds(memberId, pageable);
+//        DailyfeedPage<FollowDto.LatestPost> dailyfeedPage = followMapper.fromPage(page);
+//        return DailyfeedPageResponse.<FollowDto.LatestPost>builder()
+//                .content(dailyfeedPage).ok("Y").reason("SUCCESS").statusCode("200")
+//                .build();
+//    }
 }
