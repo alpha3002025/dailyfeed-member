@@ -1,6 +1,6 @@
 spring:
   application:
-    name: dailyfeed-member
+    name: dailyfeed-content
   ## database connection
   datasource:
     driver-class-name: com.mysql.jdbc.Driver
@@ -32,9 +32,11 @@ spring:
     redis:
       port: ${REDIS_PORT:26379}
       host: ${REDIS_HOST:redis-master.infra.svc.cluster.local}
-
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
 springdoc:
-  packages-to-scan: click.dailyfeed.member.domain
+  packages-to-scan: click.dailyfeed.timeline.domain
   default-consumes-media-type: application/json;charset=UTF-8
   default-produces-media-type: application/json;charset=UTF-8
   cache:
@@ -51,9 +53,10 @@ springdoc:
 
 logging:
   level:
-    click.dailyfeed.member.client: DEBUG
+    click.dailyfeed.timeline.client: DEBUG
     org.hibernate.SQL: DEBUG
     org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+    org.springframework.kafka: INFO
 
 dailyfeed:
   services:
