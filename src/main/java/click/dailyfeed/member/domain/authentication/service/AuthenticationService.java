@@ -42,12 +42,11 @@ public class AuthenticationService {
 
         checkIfPasswordMatchesOrThrow(loginRequest.getPassword(), encryptedPassword);
 
-        // 1. JwtProcessor 를 이용해 token 을 만든다
-        Key currentJwtKey = jwtKeyHelper.getCurrentJwtKey();
+        // 1. JwtProcessor 를 이용해 token 을 만든다 (키 ID 포함)
         // 토큰 만료 시간을 현재 시간 + 1시간으로 설정
         Date expirationDate = new Date(System.currentTimeMillis() + 3600000); // 1시간 = 3600000ms
         JwtDto.UserDetails userDetails = JwtMapper.ofUserDetails(member.getId(), member.getEmail(), member.getPassword(), expirationDate);
-        String token = JwtProcessor.generateToken(currentJwtKey, userDetails);
+        String token = jwtKeyHelper.generateToken(userDetails); // JwtKeyHelper의 메서드 사용 (키 ID 포함)
 
         // 2. response Header 에 token 을 심는다.
         JwtProcessor.addJwtAtResponseHeader(token, response);

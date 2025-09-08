@@ -25,7 +25,7 @@ import java.security.Key;
 import java.util.List;
 
 @RequiredArgsConstructor
-@EnableWebSecurity(debug = true)  // Security 디버그 활성화
+@EnableWebSecurity
 @Configuration
 public class SecurityConfig {
     private final CustomUserDetailsService customUserDetailsService;
@@ -89,10 +89,8 @@ public class SecurityConfig {
                                             "/api-docs", "/api-docs/**", "/v3/api-docs/**"  // istio 및 kubernetes 에서 Rule 적용
                                     ).permitAll()
                                     .requestMatchers(
-                                            "/api/members/**"  // 임시로 members만 테스트
-                                    ).permitAll()
-                                    .requestMatchers(
                                             "/api/authentication/logout",
+                                            "/api/members/**",
                                             "/api/members/follow/**",
                                             "/api/token/**"
                                     )

@@ -41,7 +41,7 @@ public class JwtProcessor {
     public static String extractKeyIdOrThrow(String token) {
         try {
             // JWT는 "header.payload.signature" 형태
-            String[] tokenParts = token.split("\\.");
+            String[] tokenParts = token.split("\\.", 3);
             if (tokenParts.length != 3) {
                 throw new InvalidTokenException("Invalid JWT Token");
             }
