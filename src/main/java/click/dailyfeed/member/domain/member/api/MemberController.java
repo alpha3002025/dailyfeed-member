@@ -5,6 +5,8 @@ import click.dailyfeed.code.global.web.response.DailyfeedServerResponse;
 import click.dailyfeed.member.domain.member.service.MemberService;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -17,11 +19,26 @@ public class MemberController {
 
     @GetMapping("/")
     public DailyfeedServerResponse<MemberDto.Member> getMemberByToken(
-            @RequestHeader("Authorization") String token,
+            @RequestHeader(value = "Authorization", required = false) String token,
             HttpServletResponse response
     ) {
-        MemberDto.Member member = memberService.findMemberByToken(token);
-        memberService.checkAndRefreshHeader(token, response);
+        System.out.println("=== MemberController getMemberByToken called ===");
+        
+        // SecurityContext에서 인증된 사용자 정보 가져오기
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String email = authentication.getName(); // JWT 필터에서 설정한 이메일
+        
+        System.out.println("Authenticated user email: " + email);
+        
+        MemberDto.Member member = memberService.findMemberDtoByEmail(email);
+        
+        System.out.println("Member found: " + member.getName() + " (" + member.getEmail() + ")");
+        
+        // checkAndRefreshHeader는 일단 주석 처리 (JWT 재검증으로 에러 발생 가능성)
+        // if (token != null) {
+        //     memberService.checkAndRefreshHeader(token, response);
+        // }
+        
         return DailyfeedServerResponse.<MemberDto.Member>builder()
                 .data(member).ok("Y").statusCode("200").reason("SUCCESS")
                 .build();

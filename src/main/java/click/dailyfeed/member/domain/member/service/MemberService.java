@@ -29,6 +29,15 @@ public class MemberService {
     public Member findMemberByEmail(String email) {
         return memberRepository.findByEmail(email);
     }
+    
+    @Transactional(readOnly = true)
+    public MemberDto.Member findMemberDtoByEmail(String email) {
+        Member member = memberRepository.findByEmail(email);
+        if (member == null) {
+            throw new MemberNotFoundException();
+        }
+        return memberMapper.ofMember(member);
+    }
 
     @Transactional(readOnly = true)
     public MemberDto.Member findMemberById(Long id) {

@@ -1,0 +1,40 @@
+### Get Member By Token - 토큰으로 사용자 정보 조회
+GET http://localhost:8084/api/members/
+Authorization: {{auth_token}}
+
+###
+
+### Get Member By Token - Bearer 형식
+GET http://localhost:8084/api/members/
+Authorization: Bearer {{auth_token}}
+
+###
+
+### Get Member By ID - 특정 ID로 사용자 조회
+GET http://localhost:8084/api/members/1
+
+###
+
+### Get Member List - 여러 사용자 조회 (Query Parameter)
+GET http://localhost:8084/api/members/list?ids=1,2,3
+
+###
+
+### Get Members Bulk - 여러 사용자 조회 (POST Body)
+POST http://localhost:8084/api/members/list
+Content-Type: application/json
+
+{
+  "ids": [1, 2, 3]
+}
+
+###
+
+### Test Without Token - 토큰 없이 요청 (실패 예상)
+GET http://localhost:8084/api/members/
+
+###
+
+### Test With Invalid Token - 잘못된 토큰으로 요청 (실패 예상)
+GET http://localhost:8084/api/members/
+Authorization: Bearer invalid_token_here

@@ -44,7 +44,9 @@ public class AuthenticationService {
 
         // 1. JwtProcessor 를 이용해 token 을 만든다
         Key currentJwtKey = jwtKeyHelper.getCurrentJwtKey();
-        JwtDto.UserDetails userDetails = JwtMapper.ofUserDetails(member.getId(), member.getEmail(), member.getPassword(), new Date());
+        // 토큰 만료 시간을 현재 시간 + 1시간으로 설정
+        Date expirationDate = new Date(System.currentTimeMillis() + 3600000); // 1시간 = 3600000ms
+        JwtDto.UserDetails userDetails = JwtMapper.ofUserDetails(member.getId(), member.getEmail(), member.getPassword(), expirationDate);
         String token = JwtProcessor.generateToken(currentJwtKey, userDetails);
 
         // 2. response Header 에 token 을 심는다.

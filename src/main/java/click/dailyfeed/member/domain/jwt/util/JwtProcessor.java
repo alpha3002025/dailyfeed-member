@@ -73,8 +73,11 @@ public class JwtProcessor {
                 .setSigningKey(key)
                 .build();
 
+        if(!JwtProcessor.checkContainsBearer(token))
+            throw new InvalidTokenException("Invalid JWT Token");
+
         // jws
-        Jws<Claims> jws = getJwsOrThrow(jwtParser, token);
+        Jws<Claims> jws = getJwsOrThrow(jwtParser, token.replace("Bearer ", ""));
 
         // id
         Long id = getIdOrThrow(jws);
@@ -134,10 +137,11 @@ public class JwtProcessor {
     }
 
     public static Date getExpirationDateOrThrow(Jws<Claims> jws){
-        if(jws.getBody().get("expiration") == null) {
+        Date expiration = jws.getBody().getExpiration();
+        if(expiration == null) {
             throw new TokenMissingExpirationException();
         }
-        return jws.getBody().getExpiration();
+        return expiration;
     }
 
     public static void addJwtAtResponseHeader(String jwt, HttpServletResponse response) {
@@ -149,6 +153,6 @@ public class JwtProcessor {
     }
 
     public static Boolean checkIfExpired(Date expiration){
-        return expiration.after(new Date());
+        return expiration.before(new Date());
     }
 }

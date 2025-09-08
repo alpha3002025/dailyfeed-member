@@ -1,0 +1,88 @@
+### Login with valid credentials
+POST http://localhost:8084/api/authentication/login
+Content-Type: application/json
+
+{
+  "email": "test1@example.com",
+  "password": "Test1234!"
+}
+
+> {%
+    // Authorization 헤더에서 JWT 토큰 추출 (Bearer 포함)
+    if (response.headers.valueOf("Authorization")) {
+        let token = response.headers.valueOf("Authorization").trim();
+        
+        // Bearer 포함된 전체 토큰 저장
+        client.global.set("jwt_token", token);
+        client.log("✅ JWT Token saved: " + token.substring(0, 50) + "...");
+    } else {
+        client.log("❌ No Authorization header in response");
+    }
+%}
+
+### Get Member Info After Login - 로그인 후 사용자 정보 조회
+GET http://localhost:8084/api/members/
+Authorization: {{jwt_token}}
+
+> {%
+    if (response.status === 200) {
+        client.log("✅ Member info retrieved successfully!");
+        if (response.body.data) {
+            client.log("ID: " + response.body.data.id);
+            client.log("Email: " + response.body.data.email);
+            client.log("Name: " + response.body.data.name);
+        }
+    } else {
+        client.log("❌ Failed. Status: " + response.status);
+    }
+%}
+
+###
+
+### Login with invalid email
+POST http://localhost:8084/api/authentication/login
+Content-Type: application/json
+
+{
+  "email": "invalid@example.com",
+  "password": "password123"
+}
+
+###
+
+### Login with invalid password
+POST http://localhost:8084/api/authentication/login
+Content-Type: application/json
+
+{
+  "email": "test1@example.com",
+  "password": "wrongpassword"
+}
+
+###
+
+### Login with missing email
+POST http://localhost:8084/api/authentication/login
+Content-Type: application/json
+
+{
+  "password": "password123"
+}
+
+###
+
+### Login with missing password
+POST http://localhost:8084/api/authentication/login
+Content-Type: application/json
+
+{
+  "email": "test1@example.com"
+}
+
+###
+
+### Login with empty body
+POST http://localhost:8084/api/authentication/login
+Content-Type: application/json
+
+{}

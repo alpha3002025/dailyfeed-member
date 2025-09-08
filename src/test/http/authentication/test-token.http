@@ -1,0 +1,26 @@
+### 테스트용 - 하드코딩된 토큰으로 테스트
+# 먼저 login.http를 실행한 후 콘솔에서 "Raw token (first 50 chars):" 로그를 확인하여
+# 실제 토큰 값을 아래에 직접 입력해서 테스트해보세요
+GET http://localhost:8084/api/members/
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0ZXN0MUBleGFtcGxlLmNvbSIsImV4cCI6MTc1ODE3OTEzNiwiaWQiOjUsImVtYWlsIjoidGVzdDFAZXhhbXBsZS5jb20iLCJwYXNzd29yZCI6IiQyYSQxMCROVlBVZGdHcU8uandITVo4Vy5JdGp1eVJXUGpaYUpQU2NQQzRpSjBsSHpUdkR1WE1sVC9TQyJ9.9fDHn5pXabXgLMviDQo_iYv6MQHVABsEyATI8RwPbMs
+
+###
+
+### 토큰 변수 디버그 - 현재 저장된 토큰 값 확인
+GET http://localhost:8084/api/test/debug
+
+> {%
+    client.log("=== Stored Token Values ===");
+    client.log("auth_token: " + client.global.get("auth_token"));
+    client.log("auth_token_raw: " + client.global.get("auth_token_raw"));
+    client.log("auth_token_with_bearer: " + client.global.get("auth_token_with_bearer"));
+    
+    // 각 토큰의 실제 문자 확인
+    const raw = client.global.get("auth_token_raw");
+    if (raw) {
+        client.log("=== Raw Token Character Analysis ===");
+        for (let i = 0; i < Math.min(10, raw.length); i++) {
+            client.log("Char " + i + ": '" + raw.charAt(i) + "' (code: " + raw.charCodeAt(i) + ")");
+        }
+    }
+%}
