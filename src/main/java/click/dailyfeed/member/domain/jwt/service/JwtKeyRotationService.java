@@ -81,10 +81,14 @@ public class JwtKeyRotationService {
      * Key ID로 특정 키 조회 (토큰 검증용)
      */
     public Key getKeyByKeyId(String keyId) {
+        log.debug("Looking up JWT key with keyId: {}", keyId);
         Optional<JwtKey> jwtKey = jwtKeyRepository.findActiveKeyByKeyId(keyId);
         if (jwtKey.isEmpty()) {
+            log.warn("JWT key not found or expired: keyId={}", keyId);
             throw new JwtKeyExpiredException("Key not found or expired: " + keyId);
         }
+        log.debug("Found JWT key: keyId={}, isActive={}, isPrimary={}", 
+            jwtKey.get().getKeyId(), jwtKey.get().getIsActive(), jwtKey.get().getIsPrimary());
         return jwtKeyPlainMapper.convertToKey(jwtKey.get());
     }
 

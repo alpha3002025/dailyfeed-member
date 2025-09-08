@@ -1,6 +1,10 @@
 package click.dailyfeed.member.domain.jwt.util;
 
-import click.dailyfeed.code.global.jwt.exception.*;
+import click.dailyfeed.code.global.jwt.exception.InvalidTokenException;
+import click.dailyfeed.code.global.jwt.exception.TokenMissingClaimsException;
+import click.dailyfeed.code.global.jwt.exception.TokenMissingExpirationException;
+import click.dailyfeed.code.global.jwt.exception.TokenPayloadEmptyException;
+import click.dailyfeed.code.global.jwt.predicate.JwtExpiredPredicate;
 import click.dailyfeed.member.domain.jwt.dto.JwtDto;
 import click.dailyfeed.member.domain.jwt.mapper.JwtMapper;
 import io.jsonwebtoken.*;
@@ -11,9 +15,6 @@ import java.util.Date;
 
 public class JwtProcessor {
 
-    // 정규식 패턴을 static final로 선언하여 재사용
-    private static final java.util.regex.Pattern KID_PATTERN =
-            java.util.regex.Pattern.compile("\"kid\"\\s*:\\s*\"([^\"]+)\"");
 
     public static String generateToken(Key key, String keyId, JwtDto.UserDetails userDetails){
         return Jwts.builder()
@@ -38,30 +39,47 @@ public class JwtProcessor {
                 .compact();
     }
 
+    /// JWT 의 header 내의 key id(=kid) 추출
     public static String extractKeyIdOrThrow(String token) {
         try {
-            // JWT는 "header.payload.signature" 형태
-            String[] tokenParts = token.split("\\.", 3);
-            if (tokenParts.length != 3) {
+            // 토큰 정리
+            if (token == null) {
+                throw new InvalidTokenException("Token is null");
+            }
+
+            token = token.trim();
+
+            // Bearer 접두사 제거
+            if (token.startsWith("Bearer ")) {
+                token = token.substring(7).trim();
+            }
+
+            // 모든 공백 문자 제거
+            token = token.replaceAll("\\s", "");
+
+            // 토큰 구조 확인
+            String[] chunks = token.split("\\.");
+            if (chunks.length != 3) {
                 throw new InvalidTokenException("Invalid JWT Token");
             }
 
-            // Header 부분만 디코딩 (첫 번째 부분)
-            String headerJson = new String(
-                    java.util.Base64.getUrlDecoder().decode(tokenParts[0])
-            );
+            // Base64 URL-safe 디코딩
+            byte[] headerBytes = java.util.Base64.getUrlDecoder().decode(chunks[0]);
+            String headerJson = new String(headerBytes, java.nio.charset.StandardCharsets.UTF_8);
 
-            // 미리 컴파일된 패턴 사용으로 성능 최적화
+            // JSON에서 kid 추출
             if (headerJson.contains("\"kid\"")) {
-                java.util.regex.Matcher matcher = KID_PATTERN.matcher(headerJson);
-
-                if (matcher.find()) {
-                    return matcher.group(1);
+                int kidStart = headerJson.indexOf("\"kid\":\"") + 7;
+                int kidEnd = headerJson.indexOf("\"", kidStart);
+                if (kidStart > 6 && kidEnd > kidStart) {
+                    return headerJson.substring(kidStart, kidEnd);
                 }
             }
 
             throw new TokenMissingClaimsException();
 
+        } catch (IllegalArgumentException e) {
+            throw new InvalidTokenException("Invalid JWT Token format");
         } catch (Exception e) {
             throw new InvalidTokenException();
         }
@@ -152,7 +170,8 @@ public class JwtProcessor {
         return valueString != null && valueString.startsWith("Bearer ");
     }
 
-    public static Boolean checkIfExpired(Date expiration){
-        return expiration.before(new Date());
+    public static JwtExpiredPredicate checkIfExpired(Date expiration){
+        if(expiration.before(new Date())) return JwtExpiredPredicate.EXPIRED;
+        return JwtExpiredPredicate.NOT_EXPIRED;
     }
 }

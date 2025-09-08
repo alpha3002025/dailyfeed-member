@@ -1,5 +1,6 @@
 package click.dailyfeed.member.config.security.filter;
 
+import click.dailyfeed.code.global.jwt.predicate.JwtExpiredPredicate;
 import click.dailyfeed.member.domain.jwt.dto.JwtDto;
 import click.dailyfeed.member.domain.jwt.util.JwtProcessor;
 import jakarta.servlet.FilterChain;
@@ -38,7 +39,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 if(JwtProcessor.checkContainsBearer(header)){
                     JwtDto.UserDetails userDetails = JwtProcessor.degenerateToken(key, header);
 
-                    if(JwtProcessor.checkIfExpired(userDetails.getExpiration())){
+                    if(JwtExpiredPredicate.EXPIRED.equals(JwtProcessor.checkIfExpired(userDetails.getExpiration()))){
                         throw new IllegalArgumentException("로그인 기한이 만료되었습니다. 다시 로그인 해주세요.");
                     }
                     

@@ -5,8 +5,6 @@ import click.dailyfeed.code.global.web.response.DailyfeedServerResponse;
 import click.dailyfeed.member.domain.member.service.MemberService;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -23,10 +21,7 @@ public class MemberController {
             HttpServletResponse response
     ) {
         // SecurityContext에서 인증된 사용자 정보 가져오기
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String email = authentication.getName(); // JWT 필터에서 설정한 이메일
-        
-        MemberDto.Member member = memberService.findMemberDtoByEmail(email);
+        MemberDto.Member member = memberService.findMemberByToken(token);
         
         // JWT 키 갱신 필요 여부 체크 (예외 발생해도 응답은 계속 진행)
         if (token != null) {

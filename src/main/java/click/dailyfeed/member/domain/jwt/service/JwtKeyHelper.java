@@ -3,6 +3,7 @@ package click.dailyfeed.member.domain.jwt.service;
 import click.dailyfeed.code.global.jwt.exception.BearerTokenMissingException;
 import click.dailyfeed.code.global.jwt.exception.InvalidTokenException;
 import click.dailyfeed.code.global.jwt.exception.JwtExpiredException;
+import click.dailyfeed.code.global.jwt.predicate.JwtExpiredPredicate;
 import click.dailyfeed.member.domain.jwt.dto.JwtDto;
 import click.dailyfeed.member.domain.jwt.util.JwtProcessor;
 import jakarta.servlet.http.HttpServletResponse;
@@ -63,7 +64,7 @@ public class JwtKeyHelper {
             JwtDto.UserDetails userDetails = validateAndParseToken(token);
 
             // 토큰 만료 여부 확인
-            if (!JwtProcessor.checkIfExpired(userDetails.getExpiration())) {
+            if (JwtExpiredPredicate.EXPIRED.equals(JwtProcessor.checkIfExpired(userDetails.getExpiration()))) {
                 throw new JwtExpiredException();
             }
 
@@ -87,7 +88,7 @@ public class JwtKeyHelper {
         // 기존 토큰에서 사용자 정보 추출
         JwtDto.UserDetails userDetails = validateAndParseToken(oldToken);
 
-        if (!JwtProcessor.checkIfExpired(userDetails.getExpiration())) {
+        if (JwtExpiredPredicate.EXPIRED.equals(JwtProcessor.checkIfExpired(userDetails.getExpiration()))) {
             throw new JwtExpiredException();
         }
 
