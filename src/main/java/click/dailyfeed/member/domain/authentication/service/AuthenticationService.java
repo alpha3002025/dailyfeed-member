@@ -25,7 +25,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.security.Key;
 import java.util.Date;
 
-// TODO : Response 를 Exception -> Enum + ControllerAdvice + Mapper 구조로 전환하려고 하는데, 시간상 현재 버전에서는 모두 Exception 으로만 처리
 
 @RequiredArgsConstructor
 @Transactional
