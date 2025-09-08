@@ -6,6 +6,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -16,12 +17,12 @@ import org.springframework.web.bind.annotation.RestController;
 public class AuthenticationController {
     private final AuthenticationService authenticationService;
 
-    @GetMapping("/signup")
+    @PostMapping("/signup")
     public AuthenticationDto.SignupResponse signup(@RequestBody AuthenticationDto.SignupRequest signupRequest) {
         return authenticationService.signup(signupRequest);
     }
 
-    @GetMapping("/login")
+    @PostMapping("/login")
     public AuthenticationDto.LoginResponse login(
             @RequestBody AuthenticationDto.LoginRequest loginRequest,
             HttpServletResponse httpServletResponse
@@ -29,7 +30,7 @@ public class AuthenticationController {
         return authenticationService.login(loginRequest, httpServletResponse);
     }
 
-    @GetMapping("/logout")
+    @PostMapping("/logout")
     public AuthenticationDto.LogoutResponse logout(
             HttpServletRequest request,
             HttpServletResponse response

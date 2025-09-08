@@ -1,5 +1,8 @@
 package click.dailyfeed.member.domain.authentication.service;
 
+import click.dailyfeed.code.domain.member.member.exception.MemberAlreadyExistsException;
+import click.dailyfeed.code.domain.member.member.exception.MemberNotFoundException;
+import click.dailyfeed.code.domain.member.member.predicate.MemberExistsPredicate;
 import click.dailyfeed.member.domain.jwt.dto.JwtDto;
 import click.dailyfeed.member.domain.jwt.service.JwtKeyHelper;
 import click.dailyfeed.member.domain.jwt.util.JwtProcessor;
@@ -52,9 +55,10 @@ public class AuthenticationService {
     }
 
     public AuthenticationDto.SignupResponse signup(AuthenticationDto.SignupRequest signupRequest) {
-        if (checkIfMemberAlreadyExists(signupRequest)) {
-            return authenticationMapper.ofSignupFail("MEMBER_ALREADY_EXISTS");
+        if (MemberExistsPredicate.EXISTS.equals(checkIfMemberAlreadyExists(signupRequest))) {
+            throw new MemberAlreadyExistsException();
         }
+
         Member newMember = authenticationMapper.newMember(signupRequest, passwordEncoder, "MEMBER");
         Member saved = memberRepository.save(newMember);
         return authenticationMapper.ofSignupSuccess();
@@ -83,7 +87,7 @@ public class AuthenticationService {
     public Member getMemberOrThrow(AuthenticationDto.LoginRequest loginRequest) {
         Member member = memberRepository.findByEmail(loginRequest.getEmail());
         if (member == null) {
-            throw new IllegalArgumentException("MEMBER_NOT_FOUND");
+            throw new MemberNotFoundException();
         }
         return member;
     }
@@ -95,10 +99,10 @@ public class AuthenticationService {
     }
 
     @Transactional(readOnly = true)
-    public Boolean checkIfMemberAlreadyExists(AuthenticationDto.SignupRequest signupRequest) {
+    public MemberExistsPredicate checkIfMemberAlreadyExists(AuthenticationDto.SignupRequest signupRequest) {
         if (memberRepository.findByEmail(signupRequest.getEmail()) == null) {
-            return Boolean.TRUE;
+            return MemberExistsPredicate.NOT_EXISTS;
         }
-        return Boolean.FALSE;
+        return MemberExistsPredicate.EXISTS;
     }
 }
