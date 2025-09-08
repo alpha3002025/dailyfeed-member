@@ -14,7 +14,7 @@ Content-Type: application/json
         
         // Bearer 포함된 전체 토큰 저장
         client.global.set("jwt_token", token);
-        client.log("✅ JWT Token saved: " + token.substring(0, 50) + "...");
+        client.log("✅ JWT Token saved: " + token);
     } else {
         client.log("❌ No Authorization header in response");
     }
