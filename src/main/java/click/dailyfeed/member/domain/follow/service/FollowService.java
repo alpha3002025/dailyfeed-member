@@ -83,6 +83,15 @@ public class FollowService {
         return followMapper.ofFollow(followers, followings);
     }
 
+    @Transactional(readOnly = true)
+    public List<FollowDto.Following> getFollowingMembers(Long memberId, String token, HttpServletResponse httpServletResponse) {
+        JwtDto.UserDetails userDetails = jwtKeyHelper.validateAndParseToken(token);
+
+        getMemberOrThrow(userDetails.getId());
+
+        return getFollowings(memberId);
+    }
+
     // todo (페이징처리가 필요하다) 페이징, token 처리 AOP 적용 🫡
     @Transactional(readOnly = true)
     public List<FollowDto.Follower> getFollowers(Long memberId) {
