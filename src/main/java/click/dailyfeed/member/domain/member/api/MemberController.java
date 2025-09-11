@@ -21,7 +21,6 @@ public class MemberController {
     private final MemberService memberService;
     private final FollowService followService;
 
-    // todo (페이징처리가 필요하다) 페이징, token 처리 AOP 적용 🫡
     @GetMapping("/")
     public DailyfeedServerResponse<MemberDto.Member> getMemberByToken(
             @RequestHeader(value = "Authorization", required = false) String token,

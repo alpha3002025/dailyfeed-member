@@ -11,6 +11,7 @@ import click.dailyfeed.member.domain.member.repository.MemberRepository;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -55,6 +56,7 @@ public class MemberService {
                 .collect(Collectors.toList());
     }
 
+    @Cacheable(value = "members:memberByToken", key="#token")
     public MemberDto.Member findMemberByToken(String token) {
         JwtDto.UserDetails userDetails = jwtKeyHelper.validateAndParseToken(token);
         return memberRepository.findById(userDetails.getId())
@@ -63,7 +65,7 @@ public class MemberService {
     }
 
     public void checkAndRefreshHeader(String token, HttpServletResponse response) {
-        jwtKeyHelper.checkAndRefreshHeader(token, response); // TODO 공통로직으로.. AOP 웁스..
+        jwtKeyHelper.checkAndRefreshHeader(token, response);
     }
 
     public MemberDto.MemberProfile findMemberProfileByToken(String token) {
