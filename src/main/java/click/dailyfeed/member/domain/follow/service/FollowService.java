@@ -61,26 +61,28 @@ public class FollowService {
 
     // todo (페이징처리가 필요하다) 페이징, token 처리 AOP 적용 🫡
     @Transactional(readOnly = true)
-    public FollowDto.Follow getMyFollow(Pageable pageable, String token, HttpServletResponse httpServletResponse) {
+    public FollowDto.FollowPage getMyFollow(Pageable pageable, String token, HttpServletResponse httpServletResponse) {
         JwtDto.UserDetails userDetails = jwtKeyHelper.validateAndParseToken(token);
 
         List<FollowDto.Follower> followers = getFollowers(userDetails.getId());
         List<FollowDto.Following> followings = getFollowings(userDetails.getId());
 
-        return followMapper.ofFollow(followers, followings);
+        return followMapper.ofFollow(followers, followings, pageable);
     }
 
     // todo (페이징처리가 필요하다) 페이징, token 처리 AOP 적용 🫡
+    // (todo) 팔로워 수, 팔로잉 수 (캐싱 → count 쿼리)
     @Transactional(readOnly = true)
-    public FollowDto.Follow getMemberFollow(Long memberId, Pageable pageable, String token, HttpServletResponse httpServletResponse) {
+    public FollowDto.FollowPage getMemberFollow(Long memberId, Pageable pageable, String token, HttpServletResponse httpServletResponse) {
         JwtDto.UserDetails userDetails = jwtKeyHelper.validateAndParseToken(token);
 
-        // 요청 사용자(=userDetails)의 권한 및 존재하는 사용자인지 확인
+        getMemberOrThrow(userDetails.getId());
+        getMemberOrThrow(memberId);
 
         List<FollowDto.Follower> followers = getFollowers(memberId);
         List<FollowDto.Following> followings = getFollowings(memberId);
 
-        return followMapper.ofFollow(followers, followings);
+        return followMapper.ofFollow(followers, followings, pageable);
     }
 
     @Transactional(readOnly = true)

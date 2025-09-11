@@ -61,7 +61,7 @@ public class MemberController {
     // 나의 팔로우 목록
     // todo (페이징처리가 필요하다) 페이징, token 처리 AOP 적용 🫡
     @GetMapping("/followers-followings")
-    public DailyfeedServerResponse<FollowDto.Follow> getMyFollow(
+    public DailyfeedServerResponse<FollowDto.FollowPage> getMyFollow(
             @RequestHeader(value = "Authorization", required = false) String token,
             HttpServletResponse response,
             @PageableDefault(
@@ -71,8 +71,8 @@ public class MemberController {
                     direction = Sort.Direction.DESC
             ) Pageable pageable
     ){
-        FollowDto.Follow follow = followService.getMyFollow(pageable, token, response);
-        return DailyfeedServerResponse.<FollowDto.Follow>builder().ok("Y").reason("SUCCESS").statusCode("200").data(follow).build();
+        FollowDto.FollowPage follow = followService.getMyFollow(pageable, token, response);
+        return DailyfeedServerResponse.<FollowDto.FollowPage>builder().ok("Y").reason("SUCCESS").statusCode("200").data(follow).build();
     }
 
     // TODO (DOC) : 팔로잉 만 List 로 조회해오는 것을 허용한 이유를 문서화
@@ -142,7 +142,7 @@ public class MemberController {
     // 특정 멤버의 팔로워,팔로잉
     // todo (페이징처리가 필요하다) 페이징, token 처리 AOP 적용 🫡
     @GetMapping("/{memberId}/followers-followings")
-    public DailyfeedServerResponse<FollowDto.Follow> getMemberFollow(
+    public DailyfeedServerResponse<FollowDto.FollowPage> getMemberFollow(
             @RequestHeader(value = "Authorization", required = false) String token,
             HttpServletResponse response,
             @PageableDefault(
@@ -152,10 +152,9 @@ public class MemberController {
                     direction = Sort.Direction.DESC
             ) Pageable pageable,
             @PathVariable Long memberId){
-        // 팔로워, 팔로잉 목록
-        // 팔로워 수, 팔로잉 수
-        FollowDto.Follow follow = followService.getMemberFollow(memberId, pageable, token, response);
-        return DailyfeedServerResponse.<FollowDto.Follow>builder().ok("Y").reason("SUCCESS").statusCode("200").data(follow).build();
+        // (todo) 팔로워 수, 팔로잉 수 (캐싱 → count 쿼리)
+        FollowDto.FollowPage follow = followService.getMemberFollow(memberId, pageable, token, response);
+        return DailyfeedServerResponse.<FollowDto.FollowPage>builder().ok("Y").reason("SUCCESS").statusCode("200").data(follow).build();
     }
 
 }
