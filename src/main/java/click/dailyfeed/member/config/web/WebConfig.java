@@ -1,5 +1,6 @@
 package click.dailyfeed.member.config.web;
 
+import click.dailyfeed.pagination.resolver.DailyfeedPageableArgumentResolver;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
@@ -11,9 +12,11 @@ import java.util.List;
 @RequiredArgsConstructor
 public class WebConfig implements WebMvcConfigurer {
     private final AuthenticatedMemberArgumentResolver authenticatedMemberArgumentResolver;
+    private final DailyfeedPageableArgumentResolver dailyfeedPageableArgumentResolver;
 
     @Override
     public void addArgumentResolvers(List<HandlerMethodArgumentResolver> resolvers) {
         resolvers.add(authenticatedMemberArgumentResolver);
+        resolvers.add(dailyfeedPageableArgumentResolver);
     }
 }
