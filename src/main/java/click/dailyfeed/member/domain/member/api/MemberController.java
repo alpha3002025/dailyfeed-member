@@ -8,7 +8,6 @@ import click.dailyfeed.code.global.web.response.DailyfeedScrollResponse;
 import click.dailyfeed.code.global.web.response.DailyfeedServerResponse;
 import click.dailyfeed.member.config.web.AuthenticatedMember;
 import click.dailyfeed.member.domain.follow.service.FollowRedisService;
-import click.dailyfeed.member.domain.follow.service.FollowService;
 import click.dailyfeed.member.domain.member.redis.MemberRedisService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -20,7 +19,6 @@ import java.util.List;
 @RequestMapping("/api/members")
 @RestController
 public class MemberController {
-    private final FollowService followService;
     private final MemberRedisService memberRedisService;
     private final FollowRedisService followRedisService;
 
