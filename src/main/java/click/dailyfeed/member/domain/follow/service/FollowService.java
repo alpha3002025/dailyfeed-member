@@ -1,25 +1,16 @@
 package click.dailyfeed.member.domain.follow.service;
 
-import click.dailyfeed.code.domain.member.follow.dto.FollowDto;
 import click.dailyfeed.code.domain.member.follow.exception.FollowRelationshipAlreadyExistsException;
 import click.dailyfeed.code.domain.member.follow.exception.FollowRelationshipNotFoundException;
 import click.dailyfeed.code.domain.member.member.exception.MemberNotFoundException;
 import click.dailyfeed.member.domain.follow.entity.Follow;
-import click.dailyfeed.member.domain.follow.mapper.FollowMapper;
 import click.dailyfeed.member.domain.follow.repository.FollowRepository;
-import click.dailyfeed.member.domain.jwt.dto.JwtDto;
-import click.dailyfeed.member.domain.jwt.service.JwtKeyHelper;
 import click.dailyfeed.member.domain.member.entity.Member;
 import click.dailyfeed.member.domain.member.repository.MemberRepository;
-import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -27,9 +18,7 @@ import java.util.stream.Collectors;
 @Service
 public class FollowService {
     private final FollowRepository followRepository;
-    private final FollowMapper followMapper;
     private final MemberRepository memberRepository;
-    private final JwtKeyHelper jwtKeyHelper;
 
     public Boolean follow(Long memberToFollowId, Long followerId) {
         Member memberToFollow = getMemberOrThrow(memberToFollowId);
@@ -59,74 +48,6 @@ public class FollowService {
         return Boolean.TRUE;
     }
 
-    // todo (페이징처리가 필요하다) 페이징, token 처리 AOP 적용 🫡
-    @Transactional(readOnly = true)
-    public FollowDto.FollowPage getMyFollow(Pageable pageable, String token, HttpServletResponse httpServletResponse) {
-        JwtDto.UserDetails userDetails = jwtKeyHelper.validateAndParseToken(token);
-
-        List<FollowDto.Follower> followers = getFollowers(userDetails.getId());
-        List<FollowDto.Following> followings = getFollowings(userDetails.getId());
-
-        return followMapper.ofFollow(followers, followings, pageable);
-    }
-
-    // todo (페이징처리가 필요하다) 페이징, token 처리 AOP 적용 🫡
-    // (todo) 팔로워 수, 팔로잉 수 (캐싱 → count 쿼리)
-    @Transactional(readOnly = true)
-    public FollowDto.FollowPage getMemberFollow(Long memberId, Pageable pageable, String token, HttpServletResponse httpServletResponse) {
-        JwtDto.UserDetails userDetails = jwtKeyHelper.validateAndParseToken(token);
-
-        getMemberOrThrow(userDetails.getId());
-        getMemberOrThrow(memberId);
-
-        List<FollowDto.Follower> followers = getFollowers(memberId);
-        List<FollowDto.Following> followings = getFollowings(memberId);
-
-        return followMapper.ofFollow(followers, followings, pageable);
-    }
-
-    @Transactional(readOnly = true)
-    public List<FollowDto.Following> getFollowingMembers(Long memberId, String token, HttpServletResponse httpServletResponse) {
-        JwtDto.UserDetails userDetails = jwtKeyHelper.validateAndParseToken(token);
-
-        getMemberOrThrow(userDetails.getId());
-
-        return getFollowings(memberId);
-    }
-
-    // todo (페이징처리가 필요하다) 페이징, token 처리 AOP 적용 🫡
-    @Transactional(readOnly = true)
-    public List<FollowDto.Follower> getFollowers(Long memberId) {
-        Member leader = getMemberOrThrow(memberId);
-
-        List<Follow> followers = followRepository.findFollowersByMember(leader);
-
-        return followers.stream()
-                .map(Follow::getFollower)
-                .map(followMapper::toFollower)
-                .collect(Collectors.toList());
-    }
-
-    @Transactional(readOnly = true)
-    public List<FollowDto.Following> getFollowings(Long memberId) {
-        Member member = getMemberOrThrow(memberId);
-
-        List<Follow> followings = followRepository.findFollowingByMember(member);
-
-        return followings.stream()
-                .map(Follow::getFollowing)
-                .map(followMapper::toFollowing)
-                .collect(Collectors.toList());
-    }
-
-    @Transactional(readOnly = true)
-    public Boolean isFollowing(Long followerId, Long followingId){
-        Member follower = getMemberOrThrow(followerId);
-        Member following = getMemberOrThrow(followerId);
-
-        return followRepository.existsByFollowerAndFollowing(follower, following);
-    }
-
     public Member getMemberOrThrow(Long memberId) {
         return memberRepository
                 .findById(memberId)
@@ -145,13 +66,4 @@ public class FollowService {
             throw new FollowRelationshipAlreadyExistsException();
         }
     }
-
-    // TODO (삭제) timeline+contents 서비스로 이관
-//    public DailyfeedPageResponse<FollowDto.LatestPost> findRecentActivitiesFromFollowing(Long memberId, Pageable pageable) {
-//        Page<FollowDto.LatestPost> page = followRepository.findActiveFollowingMemberIds(memberId, pageable);
-//        DailyfeedPage<FollowDto.LatestPost> dailyfeedPage = followMapper.fromPage(page);
-//        return DailyfeedPageResponse.<FollowDto.LatestPost>builder()
-//                .content(dailyfeedPage).ok("Y").reason("SUCCESS").statusCode("200")
-//                .build();
-//    }
 }

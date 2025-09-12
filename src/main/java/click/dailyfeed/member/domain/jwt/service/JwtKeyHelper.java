@@ -1,5 +1,6 @@
 package click.dailyfeed.member.domain.jwt.service;
 
+import click.dailyfeed.code.domain.member.member.code.MemberHeaderCode;
 import click.dailyfeed.code.global.jwt.exception.BearerTokenMissingException;
 import click.dailyfeed.code.global.jwt.exception.InvalidTokenException;
 import click.dailyfeed.code.global.jwt.exception.JwtExpiredException;
@@ -106,7 +107,8 @@ public class JwtKeyHelper {
                 String primaryKeyId = jwtKeyRotationService.getPrimaryKeyId();
 
                 if (!currentKeyId.equals(primaryKeyId)) {
-                    response.addHeader("X-Token-Refresh-Needed", "true");
+                    String headerKey = MemberHeaderCode.X_TOKEN_REFRESH_NEEDED.getHeaderKey();
+                    response.addHeader(headerKey, "true");
                     log.info("Token refresh needed - Current: {}, Primary: {}", currentKeyId, primaryKeyId);
                 }
             }
