@@ -2,6 +2,7 @@ package click.dailyfeed.member.domain.follow.repository;
 
 import click.dailyfeed.member.domain.follow.entity.Follow;
 import click.dailyfeed.member.domain.member.entity.Member;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -19,8 +20,12 @@ public interface FollowRepository extends JpaRepository<Follow, Long> {
 
     // 특정 사용자의 팔로워 목록 조회
     @Query("SELECT mf FROM Follow mf WHERE mf.following = :leader")
-    List<Follow> findFollowersByMember(@Param("leader") Member leader);
+    Page<Follow> findFollowersByMember(@Param("leader") Member leader, Pageable pageable);
 
+    @Query("SELECT mf FROM Follow mf WHERE mf.follower = :member")
+    Page<Follow> findFollowingByMember(Member member, Pageable pageable);
+
+    // timeline 내에서 팔로잉 멤버들의 피드 조회를 위한 팔로잉멤버 목록 조회
     @Query("SELECT mf FROM Follow mf WHERE mf.follower = :member")
     List<Follow> findFollowingByMember(Member member);
 
