@@ -8,7 +8,7 @@ import java.util.Objects;
 
 @Getter
 @Entity
-@Table(name = "member_follow")
+@Table(name = "member_follows")
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Follow {

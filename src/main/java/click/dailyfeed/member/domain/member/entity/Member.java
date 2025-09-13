@@ -9,8 +9,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-@Entity
 @Getter
+@Entity
+@Table(name = "members")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(staticName = "ofAll")
 @EqualsAndHashCode(onlyExplicitlyIncluded = true, callSuper = false)
