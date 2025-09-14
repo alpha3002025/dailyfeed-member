@@ -2,6 +2,7 @@ package click.dailyfeed.member.domain.member.api;
 
 import click.dailyfeed.code.domain.member.follow.dto.FollowDto;
 import click.dailyfeed.code.domain.member.member.dto.MemberDto;
+import click.dailyfeed.code.domain.member.member.dto.MemberProfileDto;
 import click.dailyfeed.code.global.web.page.DailyfeedPageable;
 import click.dailyfeed.code.global.web.response.DailyfeedScrollPage;
 import click.dailyfeed.code.global.web.response.DailyfeedScrollResponse;
@@ -32,13 +33,12 @@ public class MemberController {
     }
 
     ///  로그인한 사용자의 프로필
-    // ✅ TODO 임시 ( 팔로우/팔로잉 카운트 및 기타 부가정보들 가져오는 API)
     @GetMapping("/profile")
-    public DailyfeedServerResponse<MemberDto.MemberProfile> getMemberProfile(
+    public DailyfeedServerResponse<MemberProfileDto.MemberProfile> getMemberProfile(
             @AuthenticatedMember MemberDto.Member requestedMember
     ){
-        MemberDto.MemberProfile member = memberRedisService.findMemberProfileById(requestedMember.getId());
-        return DailyfeedServerResponse.<MemberDto.MemberProfile>builder()
+        MemberProfileDto.MemberProfile member = memberRedisService.findMemberProfileById(requestedMember.getId());
+        return DailyfeedServerResponse.<MemberProfileDto.MemberProfile>builder()
                 .data(member).ok("Y").statusCode("200").reason("SUCCESS")
                 .build();
     }
@@ -60,7 +60,7 @@ public class MemberController {
 //    }
 
     @GetMapping("/followings/more")
-    public DailyfeedScrollResponse<DailyfeedScrollPage<FollowDto.Following>> getMemberFollowingsMore(
+    public DailyfeedScrollResponse<DailyfeedScrollPage<MemberProfileDto.Summary>> getMemberFollowingsMore(
             @AuthenticatedMember MemberDto.Member requestedMember,
             DailyfeedPageable dailyfeedPageable
     ){
@@ -68,7 +68,7 @@ public class MemberController {
     }
 
     @GetMapping("/followers/more")
-    public DailyfeedScrollResponse<DailyfeedScrollPage<FollowDto.Follower>> getMemberFollowersMore(
+    public DailyfeedScrollResponse<DailyfeedScrollPage<MemberProfileDto.Summary>> getMemberFollowersMore(
             @AuthenticatedMember MemberDto.Member requestedMember,
             DailyfeedPageable dailyfeedPageable
     ){
@@ -78,29 +78,27 @@ public class MemberController {
     ///  특정 용도
     ///  특정 id 리스트에 대한 멤버 정보 조회 (타임라인)
     @PostMapping("/query/in")
-    public DailyfeedServerResponse<List<MemberDto.Member>> getMembersQueryIn(
+    public DailyfeedServerResponse<List<MemberProfileDto.Summary>> getMembersQueryIn(
             @AuthenticatedMember MemberDto.Member requestedMember,
             @Valid @RequestBody MemberDto.MembersIdsQuery query
     ){
-        List<MemberDto.Member> members = memberRedisService.findMembersByIds(query.getIds());
-        return DailyfeedServerResponse.<List<MemberDto.Member>>builder()
+        List<MemberProfileDto.Summary> members = memberRedisService.findMembersByIds(query.getIds());
+        return DailyfeedServerResponse.<List<MemberProfileDto.Summary>>builder()
                 .data(members).ok("Y").statusCode("200").reason("SUCCESS")
                 .build();
     }
 
     @GetMapping("/query/followings")
-    public DailyfeedServerResponse<List<FollowDto.Following>> getMemberQueryFollowings(
+    public DailyfeedServerResponse<List<MemberProfileDto.Summary>> getMemberQueryFollowings(
             @AuthenticatedMember MemberDto.Member requestedMember
     ){
-        List<FollowDto.Following> followingMembers = followRedisService.getFollowingMembers(requestedMember.getId());
-        return DailyfeedServerResponse.<List<FollowDto.Following>>builder()
+        List<MemberProfileDto.Summary> followingMembers = followRedisService.getFollowingMembers(requestedMember.getId());
+        return DailyfeedServerResponse.<List<MemberProfileDto.Summary>>builder()
                 .ok("Y").reason("SUCCESS").statusCode("200").data(followingMembers)
                 .build();
     }
 
-    /// {memberId}
-    //  ✅ TODO (삭제 or 통합조회 API 검토) : member 하나만 달랑 들고오는 교과서적인 REST API 는 없다.
-    //     member 처럼 다양한 특성을 가진 케이스의 경우 사실상 모든걸 때려박아서 가져오는 API 는 불가능하다고 보임
+    /// {memberId} /// 빠른 조회가 필요할 경우, 특정 Member Id 에 대한 단건 조회만 할 경우 (아이덴티티 조회 전용)
     @Deprecated
     @GetMapping("/{id}")
     public DailyfeedServerResponse<MemberDto.Member> getMember(
@@ -116,12 +114,12 @@ public class MemberController {
 
     // 다른 사람의 프로필 조회
     @GetMapping("/{memberId}/profile")
-    public DailyfeedServerResponse<MemberDto.MemberProfile> getAnotherMemberProfile(
+    public DailyfeedServerResponse<MemberProfileDto.MemberProfile> getAnotherMemberProfile(
             @AuthenticatedMember MemberDto.Member requestedMember,
             @PathVariable("memberId") Long memberId
     ){
-        MemberDto.MemberProfile member = memberRedisService.findMemberProfileById(memberId);
-        return DailyfeedServerResponse.<MemberDto.MemberProfile>builder()
+        MemberProfileDto.MemberProfile member = memberRedisService.findMemberProfileById(memberId);
+        return DailyfeedServerResponse.<MemberProfileDto.MemberProfile>builder()
                 .data(member)
                 .ok("Y").statusCode("200").reason("SUCCESS")
                 .build();
@@ -137,7 +135,7 @@ public class MemberController {
     }
 
     @GetMapping("/{memberId}/followers/more")
-    public DailyfeedScrollResponse<DailyfeedScrollPage<FollowDto.Follower>> getMemberFollowMore(
+    public DailyfeedScrollResponse<DailyfeedScrollPage<MemberProfileDto.Summary>> getMemberFollowMore(
             @AuthenticatedMember MemberDto.Member requestedMember,
             DailyfeedPageable dailyfeedPageable,
             @PathVariable Long memberId){
@@ -145,7 +143,7 @@ public class MemberController {
     }
 
     @GetMapping("/{memberId}/followings/more")
-    public DailyfeedScrollResponse<DailyfeedScrollPage<FollowDto.Following>> getMemberFollowingMore(
+    public DailyfeedScrollResponse<DailyfeedScrollPage<MemberProfileDto.Summary>> getMemberFollowingMore(
             @AuthenticatedMember MemberDto.Member requestedMember,
             DailyfeedPageable dailyfeedPageable,
             @PathVariable Long memberId){

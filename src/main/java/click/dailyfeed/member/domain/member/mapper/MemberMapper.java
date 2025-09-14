@@ -12,16 +12,6 @@ import org.mapstruct.factory.Mappers;
 public interface MemberMapper {
     MemberMapper INSTANCE = Mappers.getMapper(MemberMapper.class);
 
-//    @Mapping(target = "followerCount", expression = "java(Long.valueOf(member.getFollowings().size()))")
-//    @Mapping(target = "followingCount", expression = "java(Long.valueOf(member.getFollowers().size()))")
-//    @Mapping(target = "isFollow", source = "member.followings", qualifiedByName = "isFollow")
-//    MemberDto.Response toDto(Member member);
-//
-//    @Named("isFollow")
-//    default boolean isFollow(List<Follow> follows) {
-//        return true;
-//    }
-
     @Mapping(target = "id", source = "member.id")
     @Mapping(target = "name", source = "member.name")
     @Mapping(target = "email", source = "member.email")

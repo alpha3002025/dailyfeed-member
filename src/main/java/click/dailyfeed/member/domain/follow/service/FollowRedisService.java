@@ -1,6 +1,7 @@
 package click.dailyfeed.member.domain.follow.service;
 
 import click.dailyfeed.code.domain.member.follow.dto.FollowDto;
+import click.dailyfeed.code.domain.member.member.dto.MemberProfileDto;
 import click.dailyfeed.code.domain.member.member.exception.MemberNotFoundException;
 import click.dailyfeed.code.global.web.page.DailyfeedPageable;
 import click.dailyfeed.code.global.web.response.DailyfeedScrollPage;
@@ -9,6 +10,9 @@ import click.dailyfeed.member.domain.follow.entity.Follow;
 import click.dailyfeed.member.domain.follow.mapper.FollowMapper;
 import click.dailyfeed.member.domain.follow.repository.FollowRepository;
 import click.dailyfeed.member.domain.member.entity.Member;
+import click.dailyfeed.member.domain.member.entity.MemberProfile;
+import click.dailyfeed.member.domain.member.mapper.MemberProfileMapper;
+import click.dailyfeed.member.domain.member.repository.MemberProfileRepository;
 import click.dailyfeed.member.domain.member.repository.MemberRepository;
 import click.dailyfeed.pagination.converter.DailyfeedPageableConverter;
 import click.dailyfeed.pagination.mapper.PageMapper;
@@ -27,68 +31,69 @@ import java.util.stream.Collectors;
 @Service
 public class FollowRedisService {
     private final MemberRepository memberRepository;
+    private final MemberProfileRepository memberProfileRepository;
     private final FollowRepository followRepository;
     private final FollowMapper followMapper;
     private final DailyfeedPageableConverter dailyfeedPageableConverter;
     private final PageMapper pageMapper;
+    private final MemberProfileMapper memberProfileMapper;
 
     @Transactional(readOnly = true)
     @Cacheable(value = "follow:getFollowingMembers", key = "#memberId")
-    public List<FollowDto.Following> getFollowingMembers(Long memberId) {
+    public List<MemberProfileDto.Summary> getFollowingMembers(Long memberId) {
         Member member = memberRepository
                 .findById(memberId)
                 .orElseThrow(MemberNotFoundException::new);
 
-        List<Follow> followings = followRepository.findFollowingByMember(member);
+        List<Long> followingIds = followRepository.findFollowingsIdByMemberId(memberId);
+        List<MemberProfile> profiles = memberProfileRepository.findWithImagesByMemberIdsIn(followingIds);
 
-        return followings.stream()
-                .map(Follow::getFollowing)
-                .map(followMapper::toFollowing)
-                .collect(Collectors.toList());
+        return profiles
+                .stream()
+                .map(memberProfileMapper::fromEntityToSummary)
+                .toList();
     }
 
     @Transactional(readOnly = true)
     @Cacheable(value = "follow:getMemberFollowersMore", key = "#memberId + '_from_' + #page + '_size_' + #size")
-    public DailyfeedScrollResponse<DailyfeedScrollPage<FollowDto.Follower>> getMemberFollowersMore(Long memberId, int page, int size, DailyfeedPageable dailyfeedPageable) {
-        Member member = memberRepository
-                .findById(memberId)
-                .orElseThrow(MemberNotFoundException::new);
-
+    public DailyfeedScrollResponse<DailyfeedScrollPage<MemberProfileDto.Summary>> getMemberFollowersMore(Long memberId, int page, int size, DailyfeedPageable dailyfeedPageable) {
         ///  pageable
         Pageable pageable = dailyfeedPageableConverter.convert(dailyfeedPageable);
 
-        ///  follower
-        Page<Follow> followersPage = followRepository.findFollowersByMember(member, pageable);
-        List<FollowDto.Follower> followers = followersPage.getContent().stream()
-                .map(Follow::getFollower)
-                .map(followMapper::toFollower)
-                .collect(Collectors.toList());
+        ///  followings
+        Page<Long> followerIds = followRepository.findFollowersIdByMemberId(memberId, pageable);
 
-        return DailyfeedScrollResponse.<DailyfeedScrollPage<FollowDto.Follower>>builder()
-                .content(pageMapper.fromJpaPage(followersPage, followers))
+        Page<MemberProfile> profiles = memberProfileRepository.findWithImagesByMemberIdsIn(followerIds.getContent(), pageable);
+
+        List<MemberProfileDto.Summary> result = profiles.getContent()
+                .stream()
+                .map(memberProfileMapper::fromEntityToSummary)
+                .toList();
+
+        return DailyfeedScrollResponse.<DailyfeedScrollPage<MemberProfileDto.Summary>>builder()
+                .content(pageMapper.fromJpaPage(followerIds, result))
                 .ok("Y").reason("OK").statusCode("200")
                 .build();
     }
 
     @Transactional(readOnly = true)
     @Cacheable(value = "follow:getMemberFollowingsMore", key = "#memberId + '_from_' + #page + '_size_' + #size")
-    public DailyfeedScrollResponse<DailyfeedScrollPage<FollowDto.Following>> getMemberFollowingsMore(Long memberId, int page, int size, DailyfeedPageable dailyfeedPageable) {
-        Member member = memberRepository
-                .findById(memberId)
-                .orElseThrow(MemberNotFoundException::new);
-
+    public DailyfeedScrollResponse<DailyfeedScrollPage<MemberProfileDto.Summary>> getMemberFollowingsMore(Long memberId, int page, int size, DailyfeedPageable dailyfeedPageable) {
         ///  pageable
         Pageable pageable = dailyfeedPageableConverter.convert(dailyfeedPageable);
 
-        ///  follower
-        Page<Follow> followingPage = followRepository.findFollowingByMember(member, pageable);
-        List<FollowDto.Following> followers = followingPage.getContent().stream()
-                .map(Follow::getFollowing)
-                .map(followMapper::toFollowing)
-                .collect(Collectors.toList());
+        ///  followings
+        Page<Long> followingIds = followRepository.findFollowingsIdByMemberId(memberId, pageable);
 
-        return DailyfeedScrollResponse.<DailyfeedScrollPage<FollowDto.Following>>builder()
-                .content(pageMapper.fromJpaPage(followingPage, followers))
+        Page<MemberProfile> profiles = memberProfileRepository.findWithImagesByMemberIdsIn(followingIds.getContent(), pageable);
+
+        List<MemberProfileDto.Summary> result = profiles.getContent()
+                .stream()
+                .map(memberProfileMapper::fromEntityToSummary)
+                .toList();
+
+        return DailyfeedScrollResponse.<DailyfeedScrollPage<MemberProfileDto.Summary>>builder()
+                .content(pageMapper.fromJpaPage(followingIds, result))
                 .ok("Y").reason("OK").statusCode("200")
                 .build();
     }
@@ -104,31 +109,24 @@ public class FollowRedisService {
         Pageable pageable = dailyfeedPageableConverter.convert(dailyfeedPageable);
 
         ///  follower
-        Page<Follow> followersPage = followRepository.findFollowersByMember(member, pageable);
-        List<FollowDto.Follower> followers = followersPage.getContent().stream()
-                .map(Follow::getFollower)
-                .map(followMapper::toFollower)
-                .collect(Collectors.toList());
-
-        DailyfeedScrollPage<FollowDto.Follower> followerPage = pageMapper.fromJpaPage(followersPage, followers);
-
+        Page<Long> followersId = followRepository.findFollowersIdByMember(member, pageable);
+        Page<MemberProfile> followersProfiles = memberProfileRepository.findWithImagesByMemberIdsIn(followersId.getContent(), pageable);
+        List<MemberProfileDto.Summary> followers = followersProfiles.getContent().stream().map(memberProfileMapper::fromEntityToSummary).toList();
+        DailyfeedScrollPage<MemberProfileDto.Summary> followersPage = pageMapper.fromJpaPage(followersProfiles, followers);
 
         ///  following
-        Page<Follow> followingsPage = followRepository.findFollowingByMember(member, pageable);
-        List<FollowDto.Following> followings = followersPage.getContent().stream()
-                .map(Follow::getFollowing)
-                .map(followMapper::toFollowing)
-                .collect(Collectors.toList());
-
-        DailyfeedScrollPage<FollowDto.Following> followingPage = pageMapper.fromJpaPage(followingsPage, followings);
-
-        FollowDto.FollowScrollPage followScrollPage = FollowDto.FollowScrollPage.builder()
-                .followers(followerPage)
-                .followings(followingPage)
-                .build();
+        Page<Long> followingsId = followRepository.findFollowingsIdByMember(member, pageable);
+        Page<MemberProfile> followingsProfiles = memberProfileRepository.findWithImagesByMemberIdsIn(followingsId.getContent(), pageable);
+        List<MemberProfileDto.Summary> followings = followingsProfiles.getContent().stream().map(memberProfileMapper::fromEntityToSummary).toList();
+        DailyfeedScrollPage<MemberProfileDto.Summary> followingsPage = pageMapper.fromJpaPage(followingsProfiles, followings);
 
         return DailyfeedScrollResponse.<FollowDto.FollowScrollPage>builder()
-                .content(followScrollPage)
+                .content(
+                    FollowDto.FollowScrollPage.builder()
+                            .followers(followersPage)
+                            .followings(followingsPage)
+                            .build()
+                )
                 .ok("Y").reason("OK").statusCode("200")
                 .build();
     }
