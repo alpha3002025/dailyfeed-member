@@ -51,10 +51,10 @@ public class MemberProfileImage extends BaseTimeEntity {
     @Column(name = "file_size")
     private Long fileSize;
 
-    @Column(name = "width")
+    @Column(name = "width", columnDefinition = "smallint unsigned")
     private Integer width;
 
-    @Column(name = "height")
+    @Column(name = "height", columnDefinition = "smallint unsigned")
     private Integer height;
 
     @Column(name = "mime_type", length = 50)

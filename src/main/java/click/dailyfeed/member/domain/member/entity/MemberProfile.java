@@ -75,9 +75,8 @@ public class MemberProfile extends BaseTimeEntity {
     @Builder.Default
     private String languageCode = "en";
 
-    @Column(name = "country_code", length = 2)
+    @Column(name = "country_code", columnDefinition = "CHAR(2)")
     @Convert(converter = CountryCodeConverter.class)
-    @NotNull(message = "Country code is required")
     private CountryCode countryCode;
 
     @Enumerated(EnumType.STRING)
@@ -90,7 +89,7 @@ public class MemberProfile extends BaseTimeEntity {
     @Builder.Default
     private PrivacyLevel privacyLevel = PrivacyLevel.PUBLIC;
 
-    @Column(name = "profile_completion_score")
+    @Column(name = "profile_completion_score", columnDefinition = "TINYINT")
     @Builder.Default
     private Integer profileCompletionScore = 0;
 
