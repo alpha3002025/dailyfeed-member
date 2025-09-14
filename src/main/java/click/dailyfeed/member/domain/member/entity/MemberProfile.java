@@ -5,7 +5,6 @@ import click.dailyfeed.code.domain.member.member.validator.MemberProfileValidati
 import click.dailyfeed.member.domain.base.BaseTimeEntity;
 import click.dailyfeed.member.domain.member.converter.CountryCodeConverter;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import lombok.*;
 
