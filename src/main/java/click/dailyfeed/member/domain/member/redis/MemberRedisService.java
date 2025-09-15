@@ -3,6 +3,7 @@ package click.dailyfeed.member.domain.member.redis;
 import click.dailyfeed.code.domain.member.member.dto.MemberDto;
 import click.dailyfeed.code.domain.member.member.dto.MemberProfileDto;
 import click.dailyfeed.code.domain.member.member.exception.MemberNotFoundException;
+import click.dailyfeed.code.domain.member.member.predicate.HandleExistsPredicate;
 import click.dailyfeed.member.domain.follow.repository.FollowRepository;
 import click.dailyfeed.member.domain.member.entity.Member;
 import click.dailyfeed.member.domain.member.entity.MemberProfile;
@@ -16,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 @Transactional
 @RequiredArgsConstructor
@@ -61,5 +63,17 @@ public class MemberRedisService {
         return memberProfiles.stream()
                 .map(memberProfileMapper::fromEntityToSummary)
                 .toList();
+    }
+
+    @Transactional(readOnly = true)
+    @Cacheable(value = "member:isHandleExists", key = "#handle")
+    public HandleExistsPredicate isHandleExists(String handle) {
+        Optional<MemberProfile> memberProfile = memberProfileRepository
+                .findByHandle(handle);
+
+        if(memberProfile.isEmpty()) {
+            return HandleExistsPredicate.NOT_EXISTS;
+        }
+        return HandleExistsPredicate.EXISTS;
     }
 }

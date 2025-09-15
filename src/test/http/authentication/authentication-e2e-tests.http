@@ -1,0 +1,406 @@
+### Authentication Controller E2E Tests
+### Base URL and Environment Variables
+@baseUrl = {{baseUrl}}
+@apiPath = /api/authentication
+
+###############################################################################
+### 1. 회원가입 테스트 (Signup Tests)
+###############################################################################
+
+### 1-1. 정상 회원가입
+POST {{baseUrl}}{{apiPath}}/signup
+Content-Type: application/json
+
+{
+  "email": "test@example.com",
+  "password": "Password123!",
+  "memberName": "테스트 사용자",
+  "handle": "testuser123",
+  "displayName": "Test User",
+  "bio": "안녕하세요, 테스트 사용자입니다.",
+  "location": "Seoul, Korea",
+  "websiteUrl": "https://example.com",
+  "birthDate": "1990-01-01",
+  "gender": "MALE",
+  "timezone": "Asia/Seoul",
+  "languageCode": "ko",
+  "countryCode": "KR",
+  "privacyLevel": "PUBLIC",
+  "isActive": true,
+  "avatarUrl": "https://example.com/avatar.jpg",
+  "coverUrl": "https://example.com/cover.jpg"
+}
+
+### 1-2. 필수 필드 누락 테스트 (이메일 누락)
+POST {{baseUrl}}{{apiPath}}/signup
+Content-Type: application/json
+
+{
+  "password": "Password123!",
+  "memberName": "테스트 사용자",
+  "handle": "testuser123",
+  "birthDate": "1990-01-01",
+  "gender": "MALE",
+  "countryCode": "KR"
+}
+
+### 1-3. 잘못된 이메일 형식 테스트
+POST {{baseUrl}}{{apiPath}}/signup
+Content-Type: application/json
+
+{
+  "email": "invalid-email",
+  "password": "Password123!",
+  "memberName": "테스트 사용자",
+  "handle": "testuser123",
+  "birthDate": "1990-01-01",
+  "gender": "MALE",
+  "countryCode": "KR"
+}
+
+### 1-4. 약한 비밀번호 테스트
+POST {{baseUrl}}{{apiPath}}/signup
+Content-Type: application/json
+
+{
+  "email": "test2@example.com",
+  "password": "123456",
+  "memberName": "테스트 사용자",
+  "handle": "testuser456",
+  "birthDate": "1990-01-01",
+  "gender": "MALE",
+  "countryCode": "KR"
+}
+
+### 1-5. 잘못된 핸들 형식 테스트 (특수문자 포함)
+POST {{baseUrl}}{{apiPath}}/signup
+Content-Type: application/json
+
+{
+  "email": "test3@example.com",
+  "password": "Password123!",
+  "memberName": "테스트 사용자",
+  "handle": "test-user@123",
+  "birthDate": "1990-01-01",
+  "gender": "MALE",
+  "countryCode": "KR"
+}
+
+### 1-6. 너무 긴 필드값 테스트
+POST {{baseUrl}}{{apiPath}}/signup
+Content-Type: application/json
+
+{
+  "email": "test4@example.com",
+  "password": "Password123!",
+  "memberName": "이것은아주아주아주아주아주아주긴이름입니다아주긴이름이것은아주아주아주아주아주아주긴이름입니다아주긴이름이것은아주아주아주아주아주아주긴이름입니다아주긴이름이것은아주아주아주아주아주아주긴이름입니다아주긴이름이것은아주아주아주아주아주아주긴이름입니다아주긴이름이것은아주아주아주아주아주아주긴이름입니다아주긴이름",
+  "handle": "testuser789",
+  "birthDate": "1990-01-01",
+  "gender": "MALE",
+  "countryCode": "KR"
+}
+
+### 1-7. 미래 생년월일 테스트
+POST {{baseUrl}}{{apiPath}}/signup
+Content-Type: application/json
+
+{
+  "email": "test5@example.com",
+  "password": "Password123!",
+  "memberName": "테스트 사용자",
+  "handle": "testuser999",
+  "birthDate": "2030-01-01",
+  "gender": "MALE",
+  "countryCode": "KR"
+}
+
+### 1-8. 잘못된 URL 형식 테스트
+POST {{baseUrl}}{{apiPath}}/signup
+Content-Type: application/json
+
+{
+  "email": "test6@example.com",
+  "password": "Password123!",
+  "memberName": "테스트 사용자",
+  "handle": "testuser111",
+  "websiteUrl": "not-a-valid-url",
+  "avatarUrl": "invalid-avatar-url",
+  "birthDate": "1990-01-01",
+  "gender": "MALE",
+  "countryCode": "KR"
+}
+
+###############################################################################
+### 2. 로그인 테스트 (Login Tests)
+###############################################################################
+
+### 2-1. 정상 로그인
+POST {{baseUrl}}{{apiPath}}/login
+Content-Type: application/json
+
+{
+  "email": "test@example.com",
+  "password": "Password123!"
+}
+
+### 2-2. 잘못된 이메일로 로그인
+POST {{baseUrl}}{{apiPath}}/login
+Content-Type: application/json
+
+{
+  "email": "wrong@example.com",
+  "password": "Password123!"
+}
+
+### 2-3. 잘못된 비밀번호로 로그인
+POST {{baseUrl}}{{apiPath}}/login
+Content-Type: application/json
+
+{
+  "email": "test@example.com",
+  "password": "WrongPassword!"
+}
+
+### 2-4. 이메일 누락 로그인
+POST {{baseUrl}}{{apiPath}}/login
+Content-Type: application/json
+
+{
+  "password": "Password123!"
+}
+
+### 2-5. 비밀번호 누락 로그인
+POST {{baseUrl}}{{apiPath}}/login
+Content-Type: application/json
+
+{
+  "email": "test@example.com"
+}
+
+### 2-6. 빈 문자열로 로그인
+POST {{baseUrl}}{{apiPath}}/login
+Content-Type: application/json
+
+{
+  "email": "",
+  "password": ""
+}
+
+### 2-7. 공백만 있는 필드로 로그인
+POST {{baseUrl}}{{apiPath}}/login
+Content-Type: application/json
+
+{
+  "email": "   ",
+  "password": "   "
+}
+
+### 2-8. 잘못된 이메일 형식으로 로그인
+POST {{baseUrl}}{{apiPath}}/login
+Content-Type: application/json
+
+{
+  "email": "invalid-email-format",
+  "password": "Password123!"
+}
+
+###############################################################################
+### 3. 로그아웃 테스트 (Logout Tests)
+###############################################################################
+
+### 3-1. 정상 로그아웃 (로그인 후 쿠키 사용)
+POST {{baseUrl}}{{apiPath}}/logout
+Cookie: JSESSIONID=your-session-id-here
+
+### 3-2. 세션 없이 로그아웃
+POST {{baseUrl}}{{apiPath}}/logout
+
+###############################################################################
+### 4. 통합 시나리오 테스트 (Integration Scenarios)
+###############################################################################
+
+### 4-1. 시나리오: 회원가입 → 로그인 → 로그아웃
+### Step 1: 회원가입
+POST {{baseUrl}}{{apiPath}}/signup
+Content-Type: application/json
+
+{
+  "email": "integration@example.com",
+  "password": "Integration123!",
+  "memberName": "통합테스트사용자",
+  "handle": "integrationuser",
+  "birthDate": "1990-01-01",
+  "gender": "FEMALE",
+  "countryCode": "KR"
+}
+
+### Step 2: 로그인 (회원가입 성공 후)
+POST {{baseUrl}}{{apiPath}}/login
+Content-Type: application/json
+
+{
+  "email": "integration@example.com",
+  "password": "Integration123!"
+}
+
+### Step 3: 로그아웃 (로그인 성공 후, 쿠키 필요)
+POST {{baseUrl}}{{apiPath}}/logout
+
+###############################################################################
+### 5. 경계값 테스트 (Boundary Value Tests)
+###############################################################################
+
+### 5-1. 최소 길이 테스트
+POST {{baseUrl}}{{apiPath}}/signup
+Content-Type: application/json
+
+{
+  "email": "a@b.co",
+  "password": "Aa1@aaaa",
+  "memberName": "김김",
+  "handle": "abc",
+  "birthDate": "1990-01-01",
+  "gender": "MALE",
+  "countryCode": "KR",
+  "languageCode": "ko"
+}
+
+### 5-2. 최대 길이 테스트
+POST {{baseUrl}}{{apiPath}}/signup
+Content-Type: application/json
+
+{
+  "email": "verylongemailaddressthatisexactly100characterslong@verylongdomainnamethatmakesthisemailexactly100chars.com",
+  "password": "VeryLongPassword123!ThatIs50CharactersLongExactly",
+  "memberName": "아주아주아주아주아주아주아주아주아주아주아주아주아주긴이름30자",
+  "handle": "verylonghandlename20",
+  "displayName": "아주아주아주아주아주아주아주아주아주아주아주아주아주아주아주아주아주아주아주긴표시명50자",
+  "birthDate": "1990-01-01",
+  "gender": "MALE",
+  "countryCode": "KR",
+  "languageCode": "ko-KR"
+}
+
+###############################################################################
+### 6. 성능 테스트 (Performance Tests)
+###############################################################################
+
+### 6-1. 동시 회원가입 요청 시뮬레이션 (여러 번 실행)
+POST {{baseUrl}}{{apiPath}}/signup
+Content-Type: application/json
+
+{
+  "email": "perf1@example.com",
+  "password": "Performance123!",
+  "memberName": "성능테스트1",
+  "handle": "perfuser001",
+  "birthDate": "1990-01-01",
+  "gender": "MALE",
+  "countryCode": "KR"
+}
+
+### 6-2. 동시 로그인 요청 시뮬레이션
+POST {{baseUrl}}{{apiPath}}/login
+Content-Type: application/json
+
+{
+  "email": "perf1@example.com",
+  "password": "Performance123!"
+}
+
+###############################################################################
+### 7. 보안 테스트 (Security Tests)
+###############################################################################
+
+### 7-1. SQL Injection 시도 (이메일 필드)
+POST {{baseUrl}}{{apiPath}}/signup
+Content-Type: application/json
+
+{
+  "email": "test'; DROP TABLE members; --@example.com",
+  "password": "Password123!",
+  "memberName": "테스트",
+  "handle": "sqltest",
+  "birthDate": "1990-01-01",
+  "gender": "MALE",
+  "countryCode": "KR"
+}
+
+### 7-2. XSS 시도 (memberName 필드)
+POST {{baseUrl}}{{apiPath}}/signup
+Content-Type: application/json
+
+{
+  "email": "xss@example.com",
+  "password": "Password123!",
+  "memberName": "<script>alert('XSS')</script>",
+  "handle": "xsstest",
+  "birthDate": "1990-01-01",
+  "gender": "MALE",
+  "countryCode": "KR"
+}
+
+### 7-3. 매우 큰 페이로드 시도
+POST {{baseUrl}}{{apiPath}}/signup
+Content-Type: application/json
+
+{
+  "email": "large@example.com",
+  "password": "Password123!",
+  "memberName": "테스트",
+  "handle": "largetest",
+  "bio": "A".repeat(10000),
+  "birthDate": "1990-01-01",
+  "gender": "MALE",
+  "countryCode": "KR"
+}
+
+###############################################################################
+### 8. Content-Type 테스트
+###############################################################################
+
+### 8-1. 잘못된 Content-Type
+POST {{baseUrl}}{{apiPath}}/signup
+Content-Type: text/plain
+
+{
+  "email": "test@example.com",
+  "password": "Password123!"
+}
+
+### 8-2. Content-Type 누락
+POST {{baseUrl}}{{apiPath}}/signup
+
+{
+  "email": "test@example.com",
+  "password": "Password123!"
+}
+
+###############################################################################
+### 9. HTTP Method 테스트
+###############################################################################
+
+### 9-1. 잘못된 HTTP Method (GET으로 회원가입 시도)
+GET {{baseUrl}}{{apiPath}}/signup
+
+### 9-2. 잘못된 HTTP Method (PUT으로 로그인 시도)
+PUT {{baseUrl}}{{apiPath}}/login
+Content-Type: application/json
+
+{
+  "email": "test@example.com",
+  "password": "Password123!"
+}
+
+###############################################################################
+### 10. 환경별 테스트 설정
+###############################################################################
+
+### 개발 환경
+# @baseUrl = http://localhost:8080
+
+### 스테이징 환경
+# @baseUrl = https://staging-api.dailyfeed.com
+
+### 프로덕션 환경
+# @baseUrl = https://api.dailyfeed.com

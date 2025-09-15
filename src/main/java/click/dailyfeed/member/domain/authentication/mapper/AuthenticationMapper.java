@@ -35,7 +35,7 @@ public class AuthenticationMapper {
 
     public Member newMember(AuthenticationDto.SignupRequest signupRequest, PasswordEncoder passwordEncoder, String roles){
         return Member.newMember()
-                .name(signupRequest.getName())
+                .name(signupRequest.getMemberName())
                 .email(signupRequest.getEmail())
                 .password(passwordEncoder.encode(signupRequest.getPassword()))
                 .roles(roles)

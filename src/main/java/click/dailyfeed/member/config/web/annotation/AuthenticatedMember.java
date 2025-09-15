@@ -1,4 +1,4 @@
-package click.dailyfeed.member.config.web;
+package click.dailyfeed.member.config.web.annotation;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

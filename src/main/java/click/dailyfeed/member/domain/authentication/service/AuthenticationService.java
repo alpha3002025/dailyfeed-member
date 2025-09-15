@@ -2,13 +2,14 @@ package click.dailyfeed.member.domain.authentication.service;
 
 import click.dailyfeed.code.domain.member.member.exception.MemberAlreadyExistsException;
 import click.dailyfeed.code.domain.member.member.exception.MemberNotFoundException;
+import click.dailyfeed.code.domain.member.member.exception.MemberPasswordInvalidException;
 import click.dailyfeed.code.domain.member.member.predicate.MemberExistsPredicate;
-import click.dailyfeed.member.domain.jwt.dto.JwtDto;
-import click.dailyfeed.member.domain.jwt.service.JwtKeyHelper;
-import click.dailyfeed.member.domain.jwt.util.JwtProcessor;
-import click.dailyfeed.member.domain.jwt.mapper.JwtMapper;
 import click.dailyfeed.member.domain.authentication.dto.AuthenticationDto;
 import click.dailyfeed.member.domain.authentication.mapper.AuthenticationMapper;
+import click.dailyfeed.member.domain.jwt.dto.JwtDto;
+import click.dailyfeed.member.domain.jwt.mapper.JwtMapper;
+import click.dailyfeed.member.domain.jwt.service.JwtKeyHelper;
+import click.dailyfeed.member.domain.jwt.util.JwtProcessor;
 import click.dailyfeed.member.domain.member.entity.Member;
 import click.dailyfeed.member.domain.member.repository.MemberRepository;
 import jakarta.servlet.http.HttpServletRequest;
@@ -16,13 +17,11 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.security.Key;
 import java.util.Date;
 
 
@@ -94,7 +93,7 @@ public class AuthenticationService {
 
     public void checkIfPasswordMatchesOrThrow(String requestPassword, String encryptedPassword) {
         if (!passwordEncoder.matches(requestPassword, encryptedPassword)) {
-            throw new UsernameNotFoundException("PASSWORD_MISMATCH");
+            throw new MemberPasswordInvalidException();
         }
     }
 

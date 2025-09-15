@@ -35,4 +35,6 @@ public interface MemberProfileRepository extends JpaRepository<MemberProfile, Lo
             "AND (img.isPrimary = true OR img IS NULL)")
     List<MemberProfile> findWithImagesByMemberIdsIn(@Param("memberIds") List<Long> memberIds);
 
+
+    Optional<MemberProfile> findByHandle(String handle);
 }

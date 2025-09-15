@@ -7,7 +7,7 @@ import click.dailyfeed.code.global.web.page.DailyfeedPageable;
 import click.dailyfeed.code.global.web.response.DailyfeedScrollPage;
 import click.dailyfeed.code.global.web.response.DailyfeedScrollResponse;
 import click.dailyfeed.code.global.web.response.DailyfeedServerResponse;
-import click.dailyfeed.member.config.web.AuthenticatedMember;
+import click.dailyfeed.member.config.web.annotation.AuthenticatedMember;
 import click.dailyfeed.member.domain.follow.service.FollowRedisService;
 import click.dailyfeed.member.domain.member.redis.MemberRedisService;
 import jakarta.validation.Valid;

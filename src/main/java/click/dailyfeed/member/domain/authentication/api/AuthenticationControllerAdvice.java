@@ -3,7 +3,9 @@ package click.dailyfeed.member.domain.authentication.api;
 import click.dailyfeed.code.domain.member.member.exception.MemberException;
 import click.dailyfeed.code.global.web.response.DailyfeedErrorResponse;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -20,6 +22,49 @@ public class AuthenticationControllerAdvice {
                 e.getMemberExceptionCode().getMessage(),
                 e.getMemberExceptionCode().getReason(),
                 e.getMemberExceptionCode().getCode(),
+                request.getRequestURI()
+        );
+    }
+
+    // validation
+    @ExceptionHandler(value = MethodArgumentNotValidException.class)
+    public DailyfeedErrorResponse handleMethodArgumentNotValidException(
+            MethodArgumentNotValidException e,
+            HttpServletRequest request
+    ){
+        StringBuilder errors = new StringBuilder();
+        e.getBindingResult().getFieldErrors().forEach(error -> {
+            if (errors.length() > 0) {
+                errors.append(", ");
+            }
+            errors.append(error.getDefaultMessage());
+        });
+
+        return DailyfeedErrorResponse.of(
+                errors.toString(),
+                "VALIDATION_ERROR",
+                400,
+                request.getRequestURI()
+        );
+    }
+
+    @ExceptionHandler(value = ConstraintViolationException.class)
+    public DailyfeedErrorResponse handleConstraintViolationException(
+            ConstraintViolationException e,
+            HttpServletRequest request
+    ){
+        StringBuilder errors = new StringBuilder();
+        e.getConstraintViolations().forEach(violation -> {
+            if (errors.length() > 0) {
+                errors.append(", ");
+            }
+            errors.append(violation.getMessage());
+        });
+
+        return DailyfeedErrorResponse.of(
+                errors.toString(),
+                "VALIDATION_ERROR",
+                400,
                 request.getRequestURI()
         );
     }
