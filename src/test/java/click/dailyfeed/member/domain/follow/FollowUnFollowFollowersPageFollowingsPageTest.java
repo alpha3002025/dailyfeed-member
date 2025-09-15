@@ -1,4 +1,4 @@
-package click.dailyfeed.member;
+package click.dailyfeed.member.domain.follow;
 
 import click.dailyfeed.code.domain.member.follow.dto.FollowDto;
 import click.dailyfeed.code.domain.member.member.dto.MemberProfileDto;
@@ -27,7 +27,7 @@ import java.util.List;
 
 @ActiveProfiles({"local-test"})
 @SpringBootTest
-public class MemberApplicationLocalTest {
+public class FollowUnFollowFollowersPageFollowingsPageTest {
     @Autowired
     private MemberDataSet001 memberDataSet001;
 
@@ -46,7 +46,7 @@ public class MemberApplicationLocalTest {
     @Autowired(required = false)
     private CacheManager cacheManager;
 
-    private final static Logger logger = LoggerFactory.getLogger(MemberApplicationLocalTest.class);
+    private final static Logger logger = LoggerFactory.getLogger(FollowUnFollowFollowersPageFollowingsPageTest.class);
 
     // 캐시 비우기 (테스트 시에는 캐시를 비워야 함)
     @BeforeEach
