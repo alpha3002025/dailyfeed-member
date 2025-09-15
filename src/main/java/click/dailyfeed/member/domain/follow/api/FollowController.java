@@ -18,7 +18,7 @@ public class FollowController {
     public DailyfeedServerResponse<Boolean> follow(@AuthenticationPrincipal CustomUserDetails customUserDetails,
                                                    @RequestBody FollowDto.FollowRequest followRequest) {
         Long myId = customUserDetails.getMemberEntity().getId();
-        followService.follow(followRequest.getMemberIdToFollow(), myId);
+        followService.follow(myId, followRequest.getMemberIdToFollow());
         return DailyfeedServerResponse.<Boolean>builder().ok("Y").reason("SUCCESS").statusCode("201").data(Boolean.TRUE).build();
     }
 
@@ -26,7 +26,7 @@ public class FollowController {
     public DailyfeedServerResponse<Boolean> unfollow(@AuthenticationPrincipal CustomUserDetails customUserDetails,
                                                      @RequestBody FollowDto.UnfollowRequest unfollowRequest) {
         Long myId = customUserDetails.getMemberEntity().getId();
-        followService.unfollow(unfollowRequest.getMemberIdToUnfollow(), myId);
+        followService.unfollow(myId, unfollowRequest.getMemberIdToUnfollow());
         return DailyfeedServerResponse.<Boolean>builder().ok("Y").reason("DELETE_SUCCESS").statusCode("204").data(Boolean.TRUE).build();
     }
 }

@@ -20,7 +20,13 @@ public class FollowService {
     private final FollowRepository followRepository;
     private final MemberRepository memberRepository;
 
-    public Boolean follow(Long memberToFollowId, Long followerId) {
+    /**
+     * "followerId 가 memberToFollowId 를 follow 한다"
+     * @param followerId 팔로우 요청한 멤버 id
+     * @param memberToFollowId 팔로우 하려는 멤버 id
+     * @return
+     */
+    public Boolean follow(Long followerId, Long memberToFollowId) {
         Member memberToFollow = getMemberOrThrow(memberToFollowId);
         Member follower = getMemberOrThrow(followerId);
 
@@ -37,7 +43,13 @@ public class FollowService {
         return true;
     }
 
-    public Boolean unfollow(Long memberToUnfollowId, Long followerId) {
+    /**
+     * "followerId 가 memberToUnfollowId 를 unfollow 한다"
+     * @param followerId 언팔로우 요청한 멤버 id
+     * @param memberToUnfollowId 언팔로우 하려는 멤버 id
+     * @return
+     */
+    public Boolean unfollow(Long followerId, Long memberToUnfollowId) {
         Member memberToUnfollow = getMemberOrThrow(memberToUnfollowId);
         Member follower = getMemberOrThrow(followerId);
         Follow follow = getFollowRelationshipOrThrowIfNotFound(memberToUnfollow, follower);
