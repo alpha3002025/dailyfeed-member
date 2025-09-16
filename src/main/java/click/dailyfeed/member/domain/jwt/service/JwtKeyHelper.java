@@ -7,13 +7,18 @@ import click.dailyfeed.code.global.jwt.exception.JwtExpiredException;
 import click.dailyfeed.code.global.jwt.predicate.JwtExpiredPredicate;
 import click.dailyfeed.member.domain.jwt.dto.JwtDto;
 import click.dailyfeed.member.domain.jwt.util.JwtProcessor;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.security.Key;
+import java.util.Date;
 
 @Slf4j
 @Transactional
@@ -22,9 +27,85 @@ import java.security.Key;
 public class JwtKeyHelper {
     private final JwtKeyRotationService jwtKeyRotationService;
 
-    public Key getCurrentJwtKey() {
-        jwtKeyRotationService.initializeKeyIfNeeded();
-        return jwtKeyRotationService.getPrimaryKey();
+    @Value("${jwt.access.expiration.hours:1}")
+    private Integer accessTokenExpirationHours;
+
+    // 기존 메서드들 유지...
+
+    /**
+     * 액세스 토큰 만료 시간 생성 (테스트 가능)
+     */
+    public Date generateAccessTokenExpiration() {
+        return new Date(System.currentTimeMillis() + (accessTokenExpirationHours * 3600000L));
+    }
+
+    /**
+     * 커스텀 만료 시간 생성 (테스트 가능)
+     */
+    public Date generateExpirationDate(long durationMillis) {
+        return new Date(System.currentTimeMillis() + durationMillis);
+    }
+
+    /**
+     * JTI를 포함한 토큰 생성 (만료 시간 자동 생성)
+     */
+    public String generateTokenWithJti(JwtDto.UserDetails userDetails, String jti) {
+        Key primaryKey = jwtKeyRotationService.getPrimaryKey();
+        String primaryKeyId = jwtKeyRotationService.getPrimaryKeyId();
+        Date expirationDate = generateAccessTokenExpiration();
+
+        return Jwts.builder()
+                .setHeaderParam("kid", primaryKeyId)
+                .setId(jti)  // JTI 설정
+                .setSubject(userDetails.getEmail())
+                .setExpiration(expirationDate)
+                .claim("id", userDetails.getId())
+                .claim("email", userDetails.getEmail())
+                .claim("password", userDetails.getPassword())
+                .signWith(primaryKey, SignatureAlgorithm.HS256)
+                .compact();
+    }
+
+    /**
+     * 토큰에서 JTI 추출
+     */
+    public String extractJti(String token) {
+        String cleanToken = token.startsWith("Bearer ") ? token.substring(7) : token;
+        String keyId = JwtProcessor.extractKeyIdOrThrow(cleanToken);
+        Key key = jwtKeyRotationService.getKeyByKeyId(keyId);
+
+        Claims claims = Jwts.parserBuilder()
+                .setSigningKey(key)
+                .build()
+                .parseClaimsJws(cleanToken)
+                .getBody();
+
+        return claims.getId();
+    }
+
+    /**
+     * 토큰에서 만료 시간 추출
+     */
+    public Date extractExpiration(String token) {
+        String cleanToken = token.startsWith("Bearer ") ? token.substring(7) : token;
+        String keyId = JwtProcessor.extractKeyIdOrThrow(cleanToken);
+        Key key = jwtKeyRotationService.getKeyByKeyId(keyId);
+
+        Claims claims = Jwts.parserBuilder()
+                .setSigningKey(key)
+                .build()
+                .parseClaimsJws(cleanToken)
+                .getBody();
+
+        return claims.getExpiration();
+    }
+
+    /**
+     * 토큰에서 Member ID 추출
+     */
+    public Long extractMemberId(String token) {
+        JwtDto.UserDetails userDetails = validateAndParseToken(token);
+        return userDetails.getId();
     }
 
     /**

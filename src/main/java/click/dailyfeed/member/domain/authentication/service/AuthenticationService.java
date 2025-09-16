@@ -4,17 +4,22 @@ import click.dailyfeed.code.domain.member.member.exception.MemberAlreadyExistsEx
 import click.dailyfeed.code.domain.member.member.exception.MemberNotFoundException;
 import click.dailyfeed.code.domain.member.member.exception.MemberPasswordInvalidException;
 import click.dailyfeed.code.domain.member.member.predicate.MemberExistsPredicate;
+import click.dailyfeed.code.global.jwt.exception.InvalidTokenException;
 import click.dailyfeed.member.domain.authentication.dto.AuthenticationDto;
 import click.dailyfeed.member.domain.authentication.mapper.AuthenticationMapper;
 import click.dailyfeed.member.domain.jwt.dto.JwtDto;
 import click.dailyfeed.member.domain.jwt.mapper.JwtMapper;
 import click.dailyfeed.member.domain.jwt.service.JwtKeyHelper;
+import click.dailyfeed.member.domain.jwt.service.TokenService;
 import click.dailyfeed.member.domain.jwt.util.JwtProcessor;
 import click.dailyfeed.member.domain.member.entity.Member;
 import click.dailyfeed.member.domain.member.repository.MemberRepository;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseCookie;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -22,9 +27,10 @@ import org.springframework.security.web.authentication.logout.SecurityContextLog
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Arrays;
 import java.util.Date;
 
-
+@Slf4j
 @RequiredArgsConstructor
 @Transactional
 @Service
@@ -33,23 +39,43 @@ public class AuthenticationService {
     private final MemberRepository memberRepository;
     private final AuthenticationMapper authenticationMapper;
     private final JwtKeyHelper jwtKeyHelper;
+    private final TokenService tokenService;
 
-    @Transactional(readOnly = true)
-    public AuthenticationDto.LoginResponse login(AuthenticationDto.LoginRequest loginRequest, HttpServletResponse response) {
+    @Transactional
+    public AuthenticationDto.LoginResponse login(
+            AuthenticationDto.LoginRequest loginRequest,
+            HttpServletRequest request,
+            HttpServletResponse response) {
         Member member = getMemberOrThrow(loginRequest);
         String encryptedPassword = member.getPassword();
 
         checkIfPasswordMatchesOrThrow(loginRequest.getPassword(), encryptedPassword);
 
-        // 1. JwtProcessor 를 이용해 token 을 만든다 (키 ID 포함)
-        // 토큰 만료 시간을 현재 시간 + 1시간으로 설정
-        Date expirationDate = new Date(System.currentTimeMillis() + 3600000); // 1시간 = 3600000ms
-        JwtDto.UserDetails userDetails = JwtMapper.ofUserDetails(member.getId(), member.getEmail(), member.getPassword(), expirationDate);
-        String token = jwtKeyHelper.generateToken(userDetails); // JwtKeyHelper의 메서드 사용 (키 ID 포함)
+        // UserDetails 생성 (만료 시간은 JwtKeyHelper에서 생성)
+        Date expirationDate = jwtKeyHelper.generateAccessTokenExpiration();
+        JwtDto.UserDetails userDetails = JwtMapper.ofUserDetails(
+                member.getId(),
+                member.getEmail(),
+                member.getPassword(),
+                expirationDate
+        );
 
-        // 2. response Header 에 token 을 심는다.
-        JwtProcessor.addJwtAtResponseHeader(token, response);
+        // 디바이스 정보, IP 추출
+        String deviceInfo = extractDeviceInfo(request);
+        String ipAddress = extractIpAddress(request);
 
+        // 토큰 쌍 생성
+        TokenService.TokenPair tokenPair = tokenService.generateTokenPair(
+                userDetails,
+                deviceInfo,
+                ipAddress
+        );
+
+        // Response에 토큰 설정
+        JwtProcessor.addJwtAtResponseHeader(tokenPair.getAccessToken(), response);
+
+        // 리프레시 토큰은 HttpOnly 쿠키로 설정
+        setRefreshTokenCookie(response, tokenPair.getRefreshToken());
         return authenticationMapper.ofLoginSuccess();
     }
 
@@ -64,22 +90,111 @@ public class AuthenticationService {
     }
 
     public AuthenticationDto.LogoutResponse logout(HttpServletRequest request, HttpServletResponse response) {
-        // Spring Security를 사용한 로그아웃
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        try {
+            String authHeader = request.getHeader("Authorization");
 
-        if (authentication != null) {
-            // SecurityContextLogoutHandler를 사용하여 표준 로그아웃 처리
-            new SecurityContextLogoutHandler().logout(request, response, authentication);
+            if (authHeader != null && authHeader.startsWith("Bearer ")) {
+                String accessToken = authHeader.substring(7);
+                Long memberId = jwtKeyHelper.extractMemberId(accessToken);
 
-            // SecurityContext 명시적 클리어
-            SecurityContextHolder.clearContext();
+                // 로그아웃 처리
+                tokenService.logout(accessToken, memberId);
+            }
+
+            // Spring Security 로그아웃
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            if (authentication != null) {
+                new SecurityContextLogoutHandler().logout(request, response, authentication);
+                SecurityContextHolder.clearContext();
+            }
+
+            // 쿠키 제거
+            removeRefreshTokenCookie(response);
+            response.setHeader("Authorization", "");
+
+            return authenticationMapper.ofLogoutSuccessResponse("LOGOUT_SUCCESS");
+        } catch (Exception e){
+            log.error("Logout error: {}", e.getMessage());
+            return authenticationMapper.ofLogoutSuccessResponse("LOGOUT_FAILED");
         }
+    }
 
-        // JWT 토큰 무효화를 위한 Response Header 설정 (선택사항)
-        response.setHeader("Authorization", "");
-        response.setHeader("Set-Cookie", "JSESSIONID=; Path=/; HttpOnly; Max-Age=0");
+    public AuthenticationDto.TokenRefreshResponse refreshToken(
+            HttpServletRequest request,
+            HttpServletResponse response) {
 
-        return authenticationMapper.ofLogoutSuccessResponse("LOGOUT_SUCCESS");
+        try {
+            String refreshToken = extractRefreshTokenFromCookie(request);
+            String deviceInfo = extractDeviceInfo(request);
+            String ipAddress = extractIpAddress(request);
+
+            TokenService.TokenPair tokenPair = tokenService.refreshTokens(
+                    refreshToken,
+                    deviceInfo,
+                    ipAddress
+            );
+
+            JwtProcessor.addJwtAtResponseHeader(tokenPair.getAccessToken(), response);
+            setRefreshTokenCookie(response, tokenPair.getRefreshToken());
+
+            return AuthenticationDto.TokenRefreshResponse.builder()
+                    .success(true)
+                    .accessToken(tokenPair.getAccessToken())
+                    .expiresIn(tokenPair.getAccessTokenExpiresIn())
+                    .build();
+
+        } catch (Exception e) {
+            log.error("Token refresh error: {}", e.getMessage());
+            throw new InvalidTokenException("Token refresh failed");
+        }
+    }
+
+    // Helper 메서드들 (테스트 가능하도록 protected)
+    protected void setRefreshTokenCookie(HttpServletResponse response, String refreshToken) {
+        ResponseCookie cookie = ResponseCookie.from("refresh_token", refreshToken)
+                .httpOnly(true)
+                .secure(true)
+                .sameSite("Strict")
+                .path("/")
+                .maxAge(30 * 24 * 60 * 60)
+                .build();
+
+        response.addHeader("Set-Cookie", cookie.toString());
+    }
+
+    protected void removeRefreshTokenCookie(HttpServletResponse response) {
+        ResponseCookie cookie = ResponseCookie.from("refresh_token", "")
+                .httpOnly(true)
+                .secure(true)
+                .sameSite("Strict")
+                .path("/")
+                .maxAge(0)
+                .build();
+
+        response.addHeader("Set-Cookie", cookie.toString());
+    }
+
+    protected String extractRefreshTokenFromCookie(HttpServletRequest request) {
+        if (request.getCookies() != null) {
+            return Arrays.stream(request.getCookies())
+                    .filter(cookie -> "refresh_token".equals(cookie.getName()))
+                    .map(Cookie::getValue)
+                    .findFirst()
+                    .orElseThrow(() -> new InvalidTokenException("Refresh token not found"));
+        }
+        throw new InvalidTokenException("No cookies found");
+    }
+
+    protected String extractDeviceInfo(HttpServletRequest request) {
+        return request.getHeader("User-Agent");
+    }
+
+    protected String extractIpAddress(HttpServletRequest request) {
+        String xForwardedFor = request.getHeader("X-Forwarded-For");
+        if (xForwardedFor != null && !xForwardedFor.isEmpty()) {
+            return xForwardedFor.split(",")[0].trim();
+        }
+        return request.getRemoteAddr();
     }
 
     @Transactional(readOnly = true)

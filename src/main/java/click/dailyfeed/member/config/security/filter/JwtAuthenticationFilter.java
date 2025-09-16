@@ -2,32 +2,34 @@ package click.dailyfeed.member.config.security.filter;
 
 import click.dailyfeed.code.global.jwt.predicate.JwtExpiredPredicate;
 import click.dailyfeed.member.domain.jwt.dto.JwtDto;
+import click.dailyfeed.member.domain.jwt.service.JwtKeyHelper;
+import click.dailyfeed.member.domain.jwt.service.TokenService;
 import click.dailyfeed.member.domain.jwt.util.JwtProcessor;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
-import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.security.Key;
 import java.util.Collections;
 
+@Slf4j
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
-    private final AuthenticationManager authenticationManager;
-    private final Key key;
+    private final JwtKeyHelper jwtKeyHelper;
+    private final TokenService tokenService;
 
     public JwtAuthenticationFilter(
-            AuthenticationManager authenticationManager,
-            Key key
+            JwtKeyHelper jwtKeyHelper,
+            TokenService tokenService
     ) {
-        this.authenticationManager = authenticationManager;
-        this.key = key;
+        this.jwtKeyHelper = jwtKeyHelper;
+        this.tokenService = tokenService;
     }
 
     @Override
@@ -35,26 +37,44 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String header = request.getHeader(HttpHeaders.AUTHORIZATION);
 
         try {
-            if (header != null && header.startsWith("Bearer ")) {
-                if(JwtProcessor.checkContainsBearer(header)){
-                    JwtDto.UserDetails userDetails = JwtProcessor.degenerateToken(key, header);
-
-                    if(JwtExpiredPredicate.EXPIRED.equals(JwtProcessor.checkIfExpired(userDetails.getExpiration()))){
-                        throw new IllegalArgumentException("로그인 기한이 만료되었습니다. 다시 로그인 해주세요.");
-                    }
-                    
-                    // JWT 토큰이 이미 검증되었으므로 인증된 상태로 설정
-                    // authorities를 포함한 생성자를 사용하면 자동으로 authenticated = true가 됨
-                    UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(
-                        userDetails.getEmail(), 
-                        null, // 패스워드는 null로 설정 (이미 JWT로 인증됨)
-                        Collections.singletonList(new SimpleGrantedAuthority("ROLE_MEMBER")) // MEMBER 권한
-                    );
-                    SecurityContextHolder.getContext().setAuthentication(auth);
+            if (JwtProcessor.checkContainsBearer(header)) {
+                // JTI 추출 및 블랙리스트 확인
+                String jti = jwtKeyHelper.extractJti(header.substring(7));
+                if (tokenService.isTokenBlacklisted(jti)) {
+                    log.debug("Token is blacklisted: JTI={}", jti);
+                    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                    response.getWriter().write("Token has been revoked");
+                    return;
                 }
+
+                // 토큰 검증 및 사용자 정보 추출
+                JwtDto.UserDetails userDetails = jwtKeyHelper.validateAndParseToken(header);
+
+                // 만료 확인
+                if (JwtExpiredPredicate.EXPIRED.equals(JwtProcessor.checkIfExpired(userDetails.getExpiration()))) {
+                    log.debug("Token expired for user: {}", userDetails.getEmail());
+                    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                    response.getWriter().write("Token expired");
+                    return;
+                }
+
+                // Spring Security 인증 설정
+                UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(
+                        userDetails.getEmail(),
+                        null,
+                        Collections.singletonList(new SimpleGrantedAuthority("ROLE_MEMBER"))
+                );
+                SecurityContextHolder.getContext().setAuthentication(auth);
+
+                // 토큰 갱신 필요 여부 체크
+                jwtKeyHelper.checkAndRefreshHeader(header, response);
+
             }
         } catch (Exception e) {
             // 예외가 발생해도 필터 체인을 계속 진행 (인증 실패로 처리)
+            log.error("JWT authentication failed: {}", e.getMessage());
+            // 인증 실패 시 SecurityContext를 비움
+            SecurityContextHolder.clearContext();
         }
 
         filterChain.doFilter(request, response);

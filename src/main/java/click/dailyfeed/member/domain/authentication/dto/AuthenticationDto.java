@@ -10,7 +10,6 @@ import jakarta.validation.constraints.*;
 import lombok.*;
 import org.hibernate.validator.constraints.URL;
 
-import java.io.Serializable;
 import java.time.LocalDate;
 
 public class AuthenticationDto {
@@ -42,7 +41,7 @@ public class AuthenticationDto {
     @Builder
     @NoArgsConstructor(access = AccessLevel.PRIVATE)
     @AllArgsConstructor(access = AccessLevel.PRIVATE)
-    public static class SignupRequest implements Serializable {
+    public static class SignupRequest {
         @NotBlank(message = "이메일은 필수입니다")
         @Email(message = "올바른 이메일 형식이 아닙니다")
         @Size(max = 100, message = "이메일은 100자를 초과할 수 없습니다")
@@ -134,6 +133,26 @@ public class AuthenticationDto {
         private String ok;
         private String reason;
     }
+
+
+    @Getter
+    @Builder
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class TokenRefreshResponse {
+        private Boolean success;
+        private String accessToken;
+        private Long expiresIn;
+    }
+
+//    @Getter
+//    @Builder
+//    @AllArgsConstructor
+//    @NoArgsConstructor
+//    public static class LogoutResponse {
+//        private Boolean success;
+//        private String message;
+//    }
 
     @Getter
     @Builder

@@ -3,6 +3,7 @@ package click.dailyfeed.member.config.security;
 import click.dailyfeed.member.config.security.filter.JwtAuthenticationFilter;
 import click.dailyfeed.member.config.security.userdetails.CustomUserDetailsService;
 import click.dailyfeed.member.domain.jwt.service.JwtKeyHelper;
+import click.dailyfeed.member.domain.jwt.service.TokenService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -30,6 +31,7 @@ import java.util.List;
 public class SecurityConfig {
     private final CustomUserDetailsService customUserDetailsService;
     private final JwtKeyHelper jwtKeyHelper;
+    private final TokenService tokenService;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -59,7 +61,7 @@ public class SecurityConfig {
             HttpSecurity httpSecurity,
             AuthenticationManager authenticationManager
     ) throws Exception {
-        Key currentJwtKey = jwtKeyHelper.getCurrentJwtKey();
+//        Key currentJwtKey = jwtKeyHelper.getCurrentJwtKey();
         try{
             return httpSecurity
                     .csrf(AbstractHttpConfigurer::disable)
@@ -67,7 +69,7 @@ public class SecurityConfig {
                     .httpBasic(AbstractHttpConfigurer::disable)
                     .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                     .addFilterBefore(
-                            new JwtAuthenticationFilter(authenticationManager, currentJwtKey),
+                            new JwtAuthenticationFilter(jwtKeyHelper, tokenService),
                             UsernamePasswordAuthenticationFilter.class
                     )
                     .sessionManagement(configurer -> configurer.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
@@ -82,6 +84,7 @@ public class SecurityConfig {
                                             "/css/**",
                                             "/api/authentication/login",
                                             "/api/authentication/signup",
+                                            "/api/authentication/refresh",
 //                                            "/api/healthcheck/**",      // istio 및 kubernetes 에서 Rule 적용
                                             "/swagger-ui/**",       // istio 및 kubernetes 에서 Rule 적용
                                             "/swagger-example/**",  // istio 및 kubernetes 에서 Rule 적용
@@ -90,6 +93,7 @@ public class SecurityConfig {
                                     ).permitAll()
                                     .requestMatchers(
                                             "/api/authentication/logout",
+                                            "/api/authentication/logout-all",
                                             "/api/members/**",
                                             "/api/members/follow/**",
                                             "/api/token/**"
