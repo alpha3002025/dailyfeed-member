@@ -1,9 +1,6 @@
 package click.dailyfeed.member.domain.jwt.util;
 
-import click.dailyfeed.code.global.jwt.exception.InvalidTokenException;
-import click.dailyfeed.code.global.jwt.exception.TokenMissingClaimsException;
-import click.dailyfeed.code.global.jwt.exception.TokenMissingExpirationException;
-import click.dailyfeed.code.global.jwt.exception.TokenPayloadEmptyException;
+import click.dailyfeed.code.global.jwt.exception.*;
 import click.dailyfeed.code.global.jwt.predicate.JwtExpiredPredicate;
 import click.dailyfeed.member.domain.jwt.dto.JwtDto;
 import click.dailyfeed.member.domain.jwt.mapper.JwtMapper;
@@ -20,7 +17,7 @@ public class JwtProcessor {
         return Jwts.builder()
                 .setHeaderParam("kid", keyId)
                 .setSubject(userDetails.getEmail())
-                .setExpiration(new Date(System.currentTimeMillis() + 864000000))
+                .setExpiration(userDetails.getExpiration())
                 .claim("id", userDetails.getId())
                 .claim("email", userDetails.getEmail())
                 .claim("password", userDetails.getPassword())
@@ -91,11 +88,8 @@ public class JwtProcessor {
                 .setSigningKey(key)
                 .build();
 
-        if(!JwtProcessor.checkContainsBearer(token))
-            throw new InvalidTokenException("Invalid JWT Token");
-
         // jws
-        Jws<Claims> jws = getJwsOrThrow(jwtParser, token.replace("Bearer ", ""));
+        Jws<Claims> jws = getJwsOrThrow(jwtParser, token);
 
         // id
         Long id = getIdOrThrow(jws);
@@ -173,5 +167,13 @@ public class JwtProcessor {
     public static JwtExpiredPredicate checkIfExpired(Date expiration){
         if(expiration.before(new Date())) return JwtExpiredPredicate.EXPIRED;
         return JwtExpiredPredicate.NOT_EXPIRED;
+    }
+
+    public static String getJwtFromHeaderOrThrow(String authHeader) {
+        if (authHeader == null || authHeader.isBlank() || !authHeader.startsWith("Bearer ")) {
+            throw new BearerTokenMissingException();
+        }
+
+        return authHeader.replace("Bearer ", "");
     }
 }

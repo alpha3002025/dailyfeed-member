@@ -11,7 +11,7 @@ public class JwtMapper {
                 .id(id)
                 .email(email)
                 .password(password)
-                // .expiration(expiration) TODO 제거 예정
+                .expiration(expiration)
                 .build();
     }
 

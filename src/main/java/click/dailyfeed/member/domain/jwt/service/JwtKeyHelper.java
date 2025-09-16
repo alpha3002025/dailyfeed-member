@@ -30,17 +30,15 @@ public class JwtKeyHelper {
     @Value("${jwt.access.expiration.hours:1}")
     private Integer accessTokenExpirationHours;
 
-    // 기존 메서드들 유지...
-
     /**
-     * 액세스 토큰 만료 시간 생성 (테스트 가능)
+     * 액세스 토큰 만료 시간 생성
      */
     public Date generateAccessTokenExpiration() {
         return new Date(System.currentTimeMillis() + (accessTokenExpirationHours * 3600000L));
     }
 
     /**
-     * 커스텀 만료 시간 생성 (테스트 가능)
+     * 커스텀 만료 시간 생성
      */
     public Date generateExpirationDate(long durationMillis) {
         return new Date(System.currentTimeMillis() + durationMillis);
@@ -70,14 +68,13 @@ public class JwtKeyHelper {
      * 토큰에서 JTI 추출
      */
     public String extractJti(String token) {
-        String cleanToken = token.startsWith("Bearer ") ? token.substring(7) : token;
-        String keyId = JwtProcessor.extractKeyIdOrThrow(cleanToken);
+        String keyId = JwtProcessor.extractKeyIdOrThrow(token);
         Key key = jwtKeyRotationService.getKeyByKeyId(keyId);
 
         Claims claims = Jwts.parserBuilder()
                 .setSigningKey(key)
                 .build()
-                .parseClaimsJws(cleanToken)
+                .parseClaimsJws(token)
                 .getBody();
 
         return claims.getId();
@@ -87,14 +84,13 @@ public class JwtKeyHelper {
      * 토큰에서 만료 시간 추출
      */
     public Date extractExpiration(String token) {
-        String cleanToken = token.startsWith("Bearer ") ? token.substring(7) : token;
-        String keyId = JwtProcessor.extractKeyIdOrThrow(cleanToken);
+        String keyId = JwtProcessor.extractKeyIdOrThrow(token);
         Key key = jwtKeyRotationService.getKeyByKeyId(keyId);
 
         Claims claims = Jwts.parserBuilder()
                 .setSigningKey(key)
                 .build()
-                .parseClaimsJws(cleanToken)
+                .parseClaimsJws(token)
                 .getBody();
 
         return claims.getExpiration();
@@ -140,7 +136,7 @@ public class JwtKeyHelper {
             throw new BearerTokenMissingException();
         }
 
-        String token = authorizationHeader.substring(7); // "Bearer " 제거
+        String token = JwtProcessor.getJwtFromHeaderOrThrow(authorizationHeader);
 
         try {
             JwtDto.UserDetails userDetails = validateAndParseToken(token);
@@ -160,12 +156,8 @@ public class JwtKeyHelper {
      * 토큰 갱신 (새로운 Primary Key로 토큰 재발급)
      */
     public String refreshTokenOrThrow(String authorizationHeader) {
-        if (!JwtProcessor.checkContainsBearer(authorizationHeader)) {
-            throw new InvalidTokenException("Invalid Toke Format");
-        }
-
         // JWT 토큰 추출
-        String oldToken = authorizationHeader.substring(7);
+        String oldToken = JwtProcessor.getJwtFromHeaderOrThrow(authorizationHeader);
 
         // 기존 토큰에서 사용자 정보 추출
         JwtDto.UserDetails userDetails = validateAndParseToken(oldToken);
@@ -174,28 +166,22 @@ public class JwtKeyHelper {
             throw new JwtExpiredException();
         }
 
-        return generateToken(userDetails);
+        // JTI 생성하여 올바른 expiration 설정
+        String jti = java.util.UUID.randomUUID().toString();
+        return generateTokenWithJti(userDetails, jti);
     }
 
     /**
      * 갱신 필요 여부 체크 및 헤더 추가
      */
     public void checkAndRefreshHeader(String token, HttpServletResponse response) {
-        try{
-            if(JwtProcessor.checkContainsBearer(token)){
-                String currentToken = token.substring(7);
-                String currentKeyId = JwtProcessor.extractKeyIdOrThrow(currentToken);
-                String primaryKeyId = jwtKeyRotationService.getPrimaryKeyId();
+        String currentKeyId = JwtProcessor.extractKeyIdOrThrow(token);
+        String primaryKeyId = jwtKeyRotationService.getPrimaryKeyId();
 
-                if (!currentKeyId.equals(primaryKeyId)) {
-                    String headerKey = MemberHeaderCode.X_TOKEN_REFRESH_NEEDED.getHeaderKey();
-                    response.addHeader(headerKey, "true");
-                    log.info("Token refresh needed - Current: {}, Primary: {}", currentKeyId, primaryKeyId);
-                }
-            }
-        }
-        catch (Exception e){
-            throw new InvalidTokenException();
+        if (!currentKeyId.equals(primaryKeyId)) {
+            String headerKey = MemberHeaderCode.X_TOKEN_REFRESH_NEEDED.getHeaderKey();
+            response.addHeader(headerKey, "true");
+            log.info("Token refresh needed - Current: {}, Primary: {}", currentKeyId, primaryKeyId);
         }
     }
 }

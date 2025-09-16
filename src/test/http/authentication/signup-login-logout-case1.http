@@ -12,7 +12,7 @@ POST {{baseUrl}}{{apiPath}}/signup
 Content-Type: application/json
 
 {
-  "email": "case1@example.com",
+  "email": "case3@example.com",
   "password": "Password123!",
   "memberName": "테스트 사용자",
   "handle": "testuser123",
@@ -41,91 +41,57 @@ POST {{baseUrl}}{{apiPath}}/login
 Content-Type: application/json
 
 {
-  "email": "case1@example.com",
+  "email": "case3@example.com",
   "password": "Password123!"
 }
 
 > {%
-// 디버깅을 위한 응답 정보 출력
-client.log("=== Login Response Debug ===");
-client.log("Response Status: " + response.status);
-client.log("Response Content-Type: " + response.contentType.mimeType);
+// 로그인 응답 확인
+client.log("Login Response Status: " + response.status);
 
-// 주요 응답 헤더 확인
-client.log("=== Response Headers Check ===");
-var authHeader = response.headers.valueOf("Authorization");
-var contentType = response.headers.valueOf("Content-Type");
-var setCookie = response.headers.valueOf("Set-Cookie");
-
-client.log("Authorization header: " + authHeader);
-client.log("Content-Type header: " + contentType);
-client.log("Set-Cookie header: " + setCookie);
-
-// 응답 바디 확인
-client.log("=== Response Body ===");
+// 토큰 저장
 try {
-    if (response.body) {
-        client.log("Response body type: " + typeof response.body);
-        client.log("Response body: " + JSON.stringify(response.body, null, 2));
+    var token = null;
 
-        // 응답 바디에서 토큰 확인
-        if (response.body.accessToken) {
-            client.log("=== Found accessToken in response body ===");
-            var token = response.body.accessToken;
+    // Authorization 헤더에서 토큰 확인 (메인 소스)
+    var authHeader = response.headers.valueOf("Authorization");
+    if (authHeader && authHeader.startsWith("Bearer ")) {
+        token = authHeader.substring(7);
+        client.log("✓ Found token in Authorization header");
+    }
 
-            // 글로벌 변수에 토큰 저장
-            client.global.set("accessToken", token);
+    // 토큰 저장
+    if (token) {
+        client.global.set("accessToken", token);
+        client.log("✓ Access Token saved: " + token.substring(0, 30) + "...");
 
-            client.log("Access Token saved from body successfully");
-            client.log("Token (first 30 chars): " + token.substring(0, 30) + "...");
-            client.log("Token length: " + token.length);
-        } else if (response.body.data && response.body.data.accessToken) {
-            client.log("=== Found accessToken in response.body.data ===");
-            var token = response.body.data.accessToken;
-
-            // 글로벌 변수에 토큰 저장
-            client.global.set("accessToken", token);
-
-            client.log("Access Token saved from body.data successfully");
-            client.log("Token (first 30 chars): " + token.substring(0, 30) + "...");
-            client.log("Token length: " + token.length);
-        } else {
-            client.log("No accessToken found in response body");
-            client.log("Available fields in response.body: " + Object.keys(response.body).join(", "));
-        }
+        // 디버깅: 저장된 토큰 확인
+        var savedToken = client.global.get("accessToken");
+        client.log("✓ Verified saved token: " + (savedToken ? "OK" : "Failed"));
     } else {
-        client.log("Response body is empty or null");
+        client.log("✗ No access token found in Authorization header");
+
+        // 모든 헤더 출력 (디버깅용)
+        client.log("Available headers: " + response.headers.valuesOf().join(", "));
+    }
+
+    // 응답 상태 확인
+    if (response.body) {
+        client.log("Login status: ok=" + response.body.ok + ", reason=" + response.body.reason);
     }
 } catch (e) {
-    client.log("Error parsing response body: " + e.message);
-}
-
-// Authorization 헤더에서 토큰 확인
-if (authHeader) {
-    client.log("=== Found Authorization header ===");
-    client.log("Authorization header value: " + authHeader);
-
-    // "Bearer " 접두사 제거
-    var headerToken = authHeader.replace("Bearer ", "");
-
-    // 글로벌 변수에 토큰 저장
-    client.global.set("accessToken", headerToken);
-
-    client.log("Access Token saved from header successfully");
-    client.log("Token (first 30 chars): " + headerToken.substring(0, 30) + "...");
-} else {
-    client.log("=== No Authorization header found ===");
+    client.log("Error: " + e.message);
 }
 
 // 테스트
 client.test("Login successful", function() {
     client.assert(response.status === 200, "Response status is 200");
+    client.assert(response.body.ok === "Y", "Login OK status is Y");
 });
 
 client.test("Token received", function() {
-    var hasToken = (response.body && (response.body.accessToken || (response.body.data && response.body.data.accessToken))) ||
-                   response.headers.valueOf("Authorization");
-    client.assert(hasToken, "Token received in response");
+    var savedToken = client.global.get("accessToken");
+    client.assert(savedToken !== null && savedToken !== undefined, "Token received and saved");
 });
 %}
 
@@ -139,8 +105,31 @@ client.test("Token received", function() {
 POST {{baseUrl}}{{apiPath}}/logout
 Authorization: Bearer {{accessToken}}
 
+> {%
+// 로그아웃 응답 확인
+client.log("Logout Response Status: " + response.status);
+
+// 저장된 토큰 확인
+var savedToken = client.global.get("accessToken");
+client.log("Saved token exists: " + (savedToken ? "Yes" : "No"));
+if (savedToken) {
+    client.log("Token being used (first 30 chars): " + savedToken.substring(0, Math.min(30, savedToken.length)) + "...");
+}
+
+// 응답 확인
+if (response.body) {
+    client.log("Response: " + JSON.stringify(response.body));
+}
+%}
+
 ### 3-2. 모든 디바이스에서 로그아웃
 # 모든 디바이스의 토큰을 무효화합니다.
 POST {{baseUrl}}{{apiPath}}/logout-all
 Authorization: Bearer {{accessToken}}
+
+### 3-3. 로그아웃 테스트 (토큰 직접 입력)
+# 로그인 후 받은 토큰을 직접 입력하여 테스트
+# Authorization 헤더의 토큰 값을 로그인 응답에서 복사하여 붙여넣으세요
+POST {{baseUrl}}{{apiPath}}/logout
+Authorization: Bearer eyJraWQiOiIwOWRhZWJlYi0zOGI4LTRlNDUtOWQ0Zi1mMTYyZWNmOTJkOGYiLCJhbGciOiJIUzI1NiJ9.eyJqdGkiOiI3NmUyN2VjNi1lYjVmLTQ5YWEtYjRmNi1mZDJiZDA4MjU5Y2YiLCJzdWIiOiJjYXNlM0BleGFtcGxlLmNvbSIsImV4cCI6MTc1Nzk5NDA3MCwiaWQiOjMsImVtYWlsIjoiY2FzZTNAZXhhbXBsZS5jb20iLCJwYXNzd29yZCI6IiQyYSQxMCRNdTIvalI0dUNJbHZWMVFvZ2tZWWR1NThDVG85ZW1qaFBJU0loVm41VTROVmlQR29HSmFBVyJ9.dcGweAv0sSupzu2xKdpEkR1QSgFdxMusH1fv3OY9dnQ
 

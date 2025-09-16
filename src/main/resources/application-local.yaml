@@ -116,3 +116,12 @@ infrastructure:
         concurrency: 1
 server:
   port: ${SERVER_PORT:8084}
+
+# JWT 설정
+jwt:
+  access:
+    expiration:
+      hours: 24  # 24시간
+  refresh:
+    expiration:
+      days: 30   # 30일
