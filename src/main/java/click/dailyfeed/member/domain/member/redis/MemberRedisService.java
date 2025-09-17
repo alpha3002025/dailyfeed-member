@@ -56,6 +56,16 @@ public class MemberRedisService {
     }
 
     @Transactional(readOnly = true)
+    @Cacheable(value = "members:findMemberSummaryById", key = "#memberId")
+    public MemberProfileDto.Summary findMemberSummaryById(Long memberId) {
+        MemberProfile memberProfile = memberProfileRepository
+                .findMemberProfileByMemberId(memberId)
+                .orElseThrow(MemberNotFoundException::new);
+
+        return memberProfileMapper.fromEntityToSummary(memberProfile);
+    }
+
+    @Transactional(readOnly = true)
     @Cacheable(value = "member:findMembersByIds", key = "#ids")
     public List<MemberProfileDto.Summary> findMembersByIds(List<Long> ids) {
         List<MemberProfile> memberProfiles = memberProfileRepository.findWithImagesByMemberIdsIn(ids);

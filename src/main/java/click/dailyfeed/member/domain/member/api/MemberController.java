@@ -125,6 +125,20 @@ public class MemberController {
                 .build();
     }
 
+    // 다른 사람의 프로필 Summary 조회
+    @GetMapping("/{memberId}/summary")
+    public DailyfeedServerResponse<MemberProfileDto.Summary> getAnotherMemberSummary(
+            @AuthenticatedMember MemberDto.Member requestedMember,
+            @PathVariable("memberId") Long memberId
+    ){
+        MemberProfileDto.Summary member = memberRedisService.findMemberSummaryById(memberId);
+        return DailyfeedServerResponse.<MemberProfileDto.Summary>builder()
+                .data(member)
+                .ok("Y").statusCode("200").reason("SUCCESS")
+                .build();
+    }
+
+
     // 특정 멤버의 팔로워,팔로잉
     @GetMapping("/{memberId}/followers-followings")
     public DailyfeedScrollResponse<FollowDto.FollowScrollPage> getMemberFollow(
