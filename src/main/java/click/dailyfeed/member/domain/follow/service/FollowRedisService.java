@@ -71,7 +71,7 @@ public class FollowRedisService {
                 .toList();
 
         return DailyfeedScrollResponse.<DailyfeedScrollPage<MemberProfileDto.Summary>>builder()
-                .content(pageMapper.fromJpaPage(followerIds, result))
+                .content(pageMapper.fromJpaPageToDailyfeedScrollPage(followerIds, result))
                 .ok("Y").reason("OK").statusCode("200")
                 .build();
     }
@@ -93,7 +93,7 @@ public class FollowRedisService {
                 .toList();
 
         return DailyfeedScrollResponse.<DailyfeedScrollPage<MemberProfileDto.Summary>>builder()
-                .content(pageMapper.fromJpaPage(followingIds, result))
+                .content(pageMapper.fromJpaPageToDailyfeedScrollPage(followingIds, result))
                 .ok("Y").reason("OK").statusCode("200")
                 .build();
     }
@@ -112,13 +112,13 @@ public class FollowRedisService {
         Page<Long> followersId = followRepository.findFollowersIdByMember(member, pageable);
         Page<MemberProfile> followersProfiles = memberProfileRepository.findWithImagesByMemberIdsIn(followersId.getContent(), pageable);
         List<MemberProfileDto.Summary> followers = followersProfiles.getContent().stream().map(memberProfileMapper::fromEntityToSummary).toList();
-        DailyfeedScrollPage<MemberProfileDto.Summary> followersPage = pageMapper.fromJpaPage(followersProfiles, followers);
+        DailyfeedScrollPage<MemberProfileDto.Summary> followersPage = pageMapper.fromJpaPageToDailyfeedScrollPage(followersProfiles, followers);
 
         ///  following
         Page<Long> followingsId = followRepository.findFollowingsIdByMember(member, pageable);
         Page<MemberProfile> followingsProfiles = memberProfileRepository.findWithImagesByMemberIdsIn(followingsId.getContent(), pageable);
         List<MemberProfileDto.Summary> followings = followingsProfiles.getContent().stream().map(memberProfileMapper::fromEntityToSummary).toList();
-        DailyfeedScrollPage<MemberProfileDto.Summary> followingsPage = pageMapper.fromJpaPage(followingsProfiles, followings);
+        DailyfeedScrollPage<MemberProfileDto.Summary> followingsPage = pageMapper.fromJpaPageToDailyfeedScrollPage(followingsProfiles, followings);
 
         return DailyfeedScrollResponse.<FollowDto.FollowScrollPage>builder()
                 .content(
