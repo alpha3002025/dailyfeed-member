@@ -45,7 +45,7 @@ public interface MemberProfileMapper {
                 .id(memberProfile.getId())
                 .memberId(memberProfile.getId())
                 .memberName(memberProfile.getMemberName())
-                .handle(memberProfile.getHandle())
+                .memberHandle(memberProfile.getHandle())
                 .displayName(memberProfile.getDisplayName())
                 .verificationStatus(memberProfile.getVerificationStatus())
                 .avatarUrl(memberProfile.getAvatarUrl())
