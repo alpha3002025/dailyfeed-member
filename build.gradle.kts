@@ -36,6 +36,7 @@ allprojects {
     dependencies {
         implementation(project(":dailyfeed-code"))
         implementation(project(":dailyfeed-pagination-support"))
+        implementation(project(":dailyfeed-redis-support"))
 
         // spring
         implementation("org.springframework.boot:spring-boot-starter-data-jpa")

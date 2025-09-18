@@ -10,6 +10,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 @ComponentScan(basePackages = {
         "click.dailyfeed.member",
         "click.dailyfeed.pagination",
+        "click.dailyfeed.redis",
 })
 public class MemberApplication {
 
