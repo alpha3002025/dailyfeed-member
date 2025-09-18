@@ -1,6 +1,7 @@
 package click.dailyfeed.member.domain.authentication.api;
 
 import click.dailyfeed.code.domain.member.member.exception.MemberException;
+import click.dailyfeed.code.global.web.code.ResponseSuccessCode;
 import click.dailyfeed.code.global.web.response.DailyfeedErrorResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
@@ -19,9 +20,9 @@ public class AuthenticationControllerAdvice {
             HttpServletRequest request) {
 
         return DailyfeedErrorResponse.of(
-                e.getMemberExceptionCode().getMessage(),
-                e.getMemberExceptionCode().getReason(),
                 e.getMemberExceptionCode().getCode(),
+                ResponseSuccessCode.FAIL,
+                e.getMemberExceptionCode().getMessage(),
                 request.getRequestURI()
         );
     }
@@ -41,9 +42,9 @@ public class AuthenticationControllerAdvice {
         });
 
         return DailyfeedErrorResponse.of(
-                errors.toString(),
-                "VALIDATION_ERROR",
                 400,
+                ResponseSuccessCode.FAIL,
+                errors.toString(),
                 request.getRequestURI()
         );
     }
@@ -62,9 +63,9 @@ public class AuthenticationControllerAdvice {
         });
 
         return DailyfeedErrorResponse.of(
-                errors.toString(),
-                "VALIDATION_ERROR",
                 400,
+                ResponseSuccessCode.FAIL,
+                errors.toString(),
                 request.getRequestURI()
         );
     }
@@ -77,9 +78,9 @@ public class AuthenticationControllerAdvice {
         e.printStackTrace();
         log.error(e.getMessage(), e);
         return DailyfeedErrorResponse.of(
-                "서버 내부 오류가 발생했습니다",
-                "INTERNAL_SERVER_ERROR",
                 500,
+                ResponseSuccessCode.FAIL,
+                "서버 내부 오류가 발생했습니다",
                 request.getRequestURI()
         );
     }

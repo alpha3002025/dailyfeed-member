@@ -3,10 +3,10 @@ package click.dailyfeed.member.domain.follow.service;
 import click.dailyfeed.code.domain.member.follow.dto.FollowDto;
 import click.dailyfeed.code.domain.member.member.dto.MemberProfileDto;
 import click.dailyfeed.code.domain.member.member.exception.MemberNotFoundException;
+import click.dailyfeed.code.global.web.code.ResponseSuccessCode;
 import click.dailyfeed.code.global.web.page.DailyfeedPageable;
-import click.dailyfeed.code.global.web.response.DailyfeedScrollPage;
+import click.dailyfeed.code.global.web.page.DailyfeedScrollPage;
 import click.dailyfeed.code.global.web.response.DailyfeedScrollResponse;
-import click.dailyfeed.member.domain.follow.entity.Follow;
 import click.dailyfeed.member.domain.follow.mapper.FollowMapper;
 import click.dailyfeed.member.domain.follow.repository.FollowRepository;
 import click.dailyfeed.member.domain.member.entity.Member;
@@ -20,11 +20,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Transactional
 @RequiredArgsConstructor
@@ -72,7 +72,8 @@ public class FollowRedisService {
 
         return DailyfeedScrollResponse.<DailyfeedScrollPage<MemberProfileDto.Summary>>builder()
                 .content(pageMapper.fromJpaPageToDailyfeedScrollPage(followerIds, result))
-                .ok("Y").reason("OK").statusCode("200")
+                .status(HttpStatus.OK.value())
+                .result(ResponseSuccessCode.SUCCESS)
                 .build();
     }
 
@@ -94,7 +95,8 @@ public class FollowRedisService {
 
         return DailyfeedScrollResponse.<DailyfeedScrollPage<MemberProfileDto.Summary>>builder()
                 .content(pageMapper.fromJpaPageToDailyfeedScrollPage(followingIds, result))
-                .ok("Y").reason("OK").statusCode("200")
+                .status(HttpStatus.OK.value())
+                .result(ResponseSuccessCode.SUCCESS)
                 .build();
     }
 
@@ -127,7 +129,8 @@ public class FollowRedisService {
                             .followings(followingsPage)
                             .build()
                 )
-                .ok("Y").reason("OK").statusCode("200")
+                .status(HttpStatus.OK.value())
+                .result(ResponseSuccessCode.SUCCESS)
                 .build();
     }
 }

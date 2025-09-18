@@ -2,6 +2,7 @@ package click.dailyfeed.member.domain.member.api;
 
 import click.dailyfeed.code.domain.member.member.exception.MemberException;
 import click.dailyfeed.code.global.jwt.exception.JwtException;
+import click.dailyfeed.code.global.web.code.ResponseSuccessCode;
 import click.dailyfeed.code.global.web.response.DailyfeedErrorResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
@@ -18,9 +19,9 @@ public class MemberControllerAdvice {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public DailyfeedErrorResponse handleMemberException(MemberException e, HttpServletRequest request) {
         return DailyfeedErrorResponse.of(
+                HttpStatus.BAD_REQUEST.value(),
+                ResponseSuccessCode.FAIL,
                 e.getMemberExceptionCode().getMessage(),
-                e.getMemberExceptionCode().getReason(),
-                e.getMemberExceptionCode().getCode(),
                 request.getRequestURI()
         );
     }
@@ -29,9 +30,9 @@ public class MemberControllerAdvice {
     @ResponseStatus(HttpStatus.UNAUTHORIZED)
     public DailyfeedErrorResponse handleJwtException(JwtException e, HttpServletRequest request) {
         return DailyfeedErrorResponse.of(
+                HttpStatus.UNAUTHORIZED.value(),
+                ResponseSuccessCode.FAIL,
                 e.getJwtExceptionCode().getMessage(),
-                e.getJwtExceptionCode().getReason(),
-                e.getJwtExceptionCode().getCode(),
                 request.getRequestURI()
         );
     }
@@ -39,12 +40,10 @@ public class MemberControllerAdvice {
     @ExceptionHandler(RuntimeException.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public DailyfeedErrorResponse handleRuntimeException(RuntimeException e, HttpServletRequest request) {
-        log.error("Unexpected runtime exception occurred", e);
-
         return DailyfeedErrorResponse.of(
+                HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                ResponseSuccessCode.FAIL,
                 "서버 내부 오류가 발생했습니다.",
-                "INTERNAL_SERVER_ERROR",
-                500,
                 request.getRequestURI()
         );
     }
@@ -52,12 +51,10 @@ public class MemberControllerAdvice {
     @ExceptionHandler(Exception.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public DailyfeedErrorResponse handleException(Exception e, HttpServletRequest request) {
-        log.error("Unexpected runtime exception occurred", e);
-
         return DailyfeedErrorResponse.of(
+                HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                ResponseSuccessCode.FAIL,
                 "서버 내부 오류가 발생했습니다.",
-                "INTERNAL_SERVER_ERROR",
-                500,
                 request.getRequestURI()
         );
     }

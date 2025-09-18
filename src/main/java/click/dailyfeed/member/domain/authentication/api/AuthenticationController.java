@@ -1,5 +1,10 @@
 package click.dailyfeed.member.domain.authentication.api;
 
+import click.dailyfeed.code.domain.authentication.code.AuthenticationExceptionCode;
+import click.dailyfeed.code.domain.authentication.exception.AuthenticationException;
+import click.dailyfeed.code.domain.member.member.dto.MemberDto;
+import click.dailyfeed.code.global.web.code.ResponseSuccessCode;
+import click.dailyfeed.code.global.web.response.DailyfeedServerResponse;
 import click.dailyfeed.member.domain.authentication.dto.AuthenticationDto;
 import click.dailyfeed.member.domain.authentication.service.AuthenticationService;
 import click.dailyfeed.member.domain.jwt.service.JwtKeyHelper;
@@ -9,6 +14,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -24,7 +30,7 @@ public class AuthenticationController {
     private final TokenService tokenService;
 
     @PostMapping("/signup")
-    public AuthenticationDto.SignupResponse signup(
+    public DailyfeedServerResponse<MemberDto.Member> signup(
             @Valid @RequestBody AuthenticationDto.SignupRequest signupRequest
     ) {
         log.info("Received signup request - memberName: {}, countryCode: {}, email: {}",
@@ -33,7 +39,7 @@ public class AuthenticationController {
     }
 
     @PostMapping("/login")
-    public AuthenticationDto.LoginResponse login(
+    public DailyfeedServerResponse<Boolean> login(
             @Valid @RequestBody AuthenticationDto.LoginRequest loginRequest,
             HttpServletRequest httpServletRequest,
             HttpServletResponse httpServletResponse
@@ -42,7 +48,7 @@ public class AuthenticationController {
     }
 
     @PostMapping("/logout")
-    public AuthenticationDto.LogoutResponse logout(
+    public DailyfeedServerResponse<Boolean> logout(
             HttpServletRequest request,
             HttpServletResponse response
     ){
@@ -50,14 +56,14 @@ public class AuthenticationController {
     }
 
     @PostMapping("/refresh")
-    public AuthenticationDto.TokenRefreshResponse refreshToken(
+    public DailyfeedServerResponse<AuthenticationDto.TokenRefreshResponse> refreshToken(
             HttpServletRequest request,
             HttpServletResponse response) {
         return authenticationService.refreshToken(request, response);
     }
 
     @PostMapping("/logout-all")
-    public AuthenticationDto.LogoutResponse logoutAllDevices(
+    public DailyfeedServerResponse<Boolean> logoutAllDevices(
             HttpServletRequest request) {
         try {
             String authHeader = request.getHeader("Authorization");
@@ -65,24 +71,22 @@ public class AuthenticationController {
                 String accessToken = authHeader.substring(7);
                 Long memberId = jwtKeyHelper.extractMemberId(accessToken);
                 tokenService.logoutAllDevices(memberId);
-
-                return AuthenticationDto.LogoutResponse.builder()
-                        .ok("Y")
-                        .reason("All devices logged out successfully")
+                return DailyfeedServerResponse.<Boolean>builder()
+                        .content(Boolean.TRUE)
+                        .status(HttpStatus.OK.value())
+                        .result(ResponseSuccessCode.SUCCESS)
                         .build();
             }
 
-            return AuthenticationDto.LogoutResponse.builder()
-                    .ok("N")
-                    .reason("Invalid token")
+            return DailyfeedServerResponse.<Boolean>builder()
+                    .content(Boolean.TRUE)
+                    .status(HttpStatus.OK.value())
+                    .result(ResponseSuccessCode.SUCCESS)
                     .build();
 
         } catch (Exception e) {
             log.error("Logout all devices error: {}", e.getMessage());
-            return AuthenticationDto.LogoutResponse.builder()
-                    .ok("N")
-                    .reason("Logout failed")
-                    .build();
+            throw new AuthenticationException(AuthenticationExceptionCode.LOGOUT_FAIL_UNAUTHORIZED);
         }
     }
 

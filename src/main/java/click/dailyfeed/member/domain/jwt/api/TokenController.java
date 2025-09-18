@@ -1,8 +1,10 @@
 package click.dailyfeed.member.domain.jwt.api;
 
+import click.dailyfeed.code.global.web.code.ResponseSuccessCode;
 import click.dailyfeed.code.global.web.response.DailyfeedServerResponse;
 import click.dailyfeed.member.domain.jwt.service.JwtKeyHelper;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -15,14 +17,13 @@ public class TokenController {
     private final JwtKeyHelper jwtKeyHelper;
 
     @GetMapping("/refresh")
-    public DailyfeedServerResponse<String> refreshKey(
+    public DailyfeedServerResponse<Boolean> refreshKey(
             @RequestHeader("Authorization") String authorizationHeader
     ){
-        return DailyfeedServerResponse.<String>builder()
-                .ok("Y")
-                .statusCode("200")
-                .reason("KEY_REFRESH")
-                .data(jwtKeyHelper.refreshTokenOrThrow(authorizationHeader))
+        return DailyfeedServerResponse.<Boolean>builder()
+                .status(HttpStatus.OK.value())
+                .result(ResponseSuccessCode.SUCCESS)
+                .content(Boolean.TRUE)
                 .build();
     }
 }

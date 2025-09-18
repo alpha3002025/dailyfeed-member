@@ -1,10 +1,15 @@
 package click.dailyfeed.member.domain.authentication.service;
 
+import click.dailyfeed.code.domain.authentication.code.AuthenticationExceptionCode;
+import click.dailyfeed.code.domain.authentication.exception.AuthenticationException;
+import click.dailyfeed.code.domain.member.member.dto.MemberDto;
 import click.dailyfeed.code.domain.member.member.exception.MemberAlreadyExistsException;
 import click.dailyfeed.code.domain.member.member.exception.MemberNotFoundException;
 import click.dailyfeed.code.domain.member.member.exception.MemberPasswordInvalidException;
 import click.dailyfeed.code.domain.member.member.predicate.MemberExistsPredicate;
 import click.dailyfeed.code.global.jwt.exception.InvalidTokenException;
+import click.dailyfeed.code.global.web.code.ResponseSuccessCode;
+import click.dailyfeed.code.global.web.response.DailyfeedServerResponse;
 import click.dailyfeed.member.domain.authentication.dto.AuthenticationDto;
 import click.dailyfeed.member.domain.authentication.mapper.AuthenticationMapper;
 import click.dailyfeed.member.domain.jwt.dto.JwtDto;
@@ -19,6 +24,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -42,7 +48,7 @@ public class AuthenticationService {
     private final TokenService tokenService;
 
     @Transactional
-    public AuthenticationDto.LoginResponse login(
+    public DailyfeedServerResponse<Boolean> login(
             AuthenticationDto.LoginRequest loginRequest,
             HttpServletRequest request,
             HttpServletResponse response) {
@@ -76,20 +82,30 @@ public class AuthenticationService {
 
         // 리프레시 토큰은 HttpOnly 쿠키로 설정
         setRefreshTokenCookie(response, tokenPair.getRefreshToken());
-        return authenticationMapper.ofLoginSuccess();
+
+        return DailyfeedServerResponse.<Boolean>builder()
+                .status(HttpStatus.OK.value())
+                .result(ResponseSuccessCode.SUCCESS)
+                .content(Boolean.TRUE)
+                .build();
     }
 
-    public AuthenticationDto.SignupResponse signup(AuthenticationDto.SignupRequest signupRequest) {
+    public DailyfeedServerResponse<MemberDto.Member> signup(AuthenticationDto.SignupRequest signupRequest) {
         if (MemberExistsPredicate.EXISTS.equals(checkIfMemberAlreadyExists(signupRequest))) {
             throw new MemberAlreadyExistsException();
         }
 
         Member newMember = authenticationMapper.newMember(signupRequest, passwordEncoder, "MEMBER");
         Member saved = memberRepository.save(newMember);
-        return authenticationMapper.ofSignupSuccess();
+
+        return DailyfeedServerResponse.<MemberDto.Member>builder()
+                .status(HttpStatus.CREATED.value())
+                .result(ResponseSuccessCode.SUCCESS)
+                .content(authenticationMapper.fromMemberEntityToMemberDto(saved))
+                .build();
     }
 
-    public AuthenticationDto.LogoutResponse logout(HttpServletRequest request, HttpServletResponse response) {
+    public DailyfeedServerResponse<Boolean> logout(HttpServletRequest request, HttpServletResponse response) {
         try {
             String authHeader = request.getHeader("Authorization");
 
@@ -112,14 +128,18 @@ public class AuthenticationService {
             removeRefreshTokenCookie(response);
             response.setHeader("Authorization", "");
 
-            return authenticationMapper.ofLogoutSuccessResponse("LOGOUT_SUCCESS");
+            return DailyfeedServerResponse.<Boolean>builder()
+                    .status(HttpStatus.OK.value())
+                    .result(ResponseSuccessCode.SUCCESS)
+                    .content(Boolean.TRUE)
+                    .build();
         } catch (Exception e){
             log.error("Logout error: {}", e.getMessage());
-            return authenticationMapper.ofLogoutSuccessResponse("LOGOUT_FAILED");
+            throw new AuthenticationException(AuthenticationExceptionCode.LOGOUT_FAIL_BAD_REQUEST);
         }
     }
 
-    public AuthenticationDto.TokenRefreshResponse refreshToken(
+    public DailyfeedServerResponse<AuthenticationDto.TokenRefreshResponse> refreshToken(
             HttpServletRequest request,
             HttpServletResponse response) {
 
@@ -137,10 +157,15 @@ public class AuthenticationService {
             JwtProcessor.addJwtAtResponseHeader(tokenPair.getAccessToken(), response);
             setRefreshTokenCookie(response, tokenPair.getRefreshToken());
 
-            return AuthenticationDto.TokenRefreshResponse.builder()
-                    .success(true)
+            AuthenticationDto.TokenRefreshResponse refeshResponse = AuthenticationDto.TokenRefreshResponse.builder()
                     .accessToken(tokenPair.getAccessToken())
                     .expiresIn(tokenPair.getAccessTokenExpiresIn())
+                    .build();
+
+            return DailyfeedServerResponse.<AuthenticationDto.TokenRefreshResponse>builder()
+                    .status(HttpStatus.OK.value())
+                    .result(ResponseSuccessCode.SUCCESS)
+                    .content(refeshResponse)
                     .build();
 
         } catch (Exception e) {

@@ -14,6 +14,5 @@ public interface MemberMapper {
 
     @Mapping(target = "id", source = "member.id")
     @Mapping(target = "name", source = "member.name")
-    @Mapping(target = "email", source = "member.email")
     MemberDto.Member ofMember(Member member);
 }

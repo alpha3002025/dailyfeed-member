@@ -126,41 +126,10 @@ public class AuthenticationDto {
 
     @Getter
     @Builder
-    @NoArgsConstructor(access = AccessLevel.PROTECTED)
-    @AllArgsConstructor
-    public static class SignupResponse{
-        private String statusCode;
-        private String ok;
-        private String reason;
-    }
-
-
-    @Getter
-    @Builder
     @AllArgsConstructor
     @NoArgsConstructor
     public static class TokenRefreshResponse {
-        private Boolean success;
         private String accessToken;
         private Long expiresIn;
-    }
-
-//    @Getter
-//    @Builder
-//    @AllArgsConstructor
-//    @NoArgsConstructor
-//    public static class LogoutResponse {
-//        private Boolean success;
-//        private String message;
-//    }
-
-    @Getter
-    @Builder
-    @NoArgsConstructor(access = AccessLevel.PROTECTED)
-    @AllArgsConstructor
-    public static class LogoutResponse {
-        private String statusCode;
-        private String ok;
-        private String reason;
     }
 }
