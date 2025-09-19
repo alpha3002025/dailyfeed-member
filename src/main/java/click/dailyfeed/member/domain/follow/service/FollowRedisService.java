@@ -3,10 +3,9 @@ package click.dailyfeed.member.domain.follow.service;
 import click.dailyfeed.code.domain.member.follow.dto.FollowDto;
 import click.dailyfeed.code.domain.member.member.dto.MemberProfileDto;
 import click.dailyfeed.code.domain.member.member.exception.MemberNotFoundException;
-import click.dailyfeed.code.global.web.code.ResponseSuccessCode;
+import click.dailyfeed.code.global.cache.RedisKeyConstant;
 import click.dailyfeed.code.global.web.page.DailyfeedPageable;
 import click.dailyfeed.code.global.web.page.DailyfeedScrollPage;
-import click.dailyfeed.code.global.web.response.DailyfeedScrollResponse;
 import click.dailyfeed.member.domain.follow.mapper.FollowMapper;
 import click.dailyfeed.member.domain.follow.repository.FollowRepository;
 import click.dailyfeed.member.domain.member.entity.Member;
@@ -20,7 +19,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -39,7 +37,7 @@ public class FollowRedisService {
     private final MemberProfileMapper memberProfileMapper;
 
     @Transactional(readOnly = true)
-    @Cacheable(value = "follow:getFollowingMembers", key = "#memberId")
+    @Cacheable(value = RedisKeyConstant.FollowRedisService.INTERNAL_LIST_FOLLOWING_MEMBERS_BY_MEMBER_ID , key = "#memberId")
     public List<MemberProfileDto.Summary> getFollowingMembers(Long memberId) {
         Member member = memberRepository
                 .findById(memberId)
@@ -55,12 +53,12 @@ public class FollowRedisService {
     }
 
     @Transactional(readOnly = true)
-    @Cacheable(value = "follow:getMemberFollowersMore", key = "#memberId + '_from_' + #page + '_size_' + #size")
-    public DailyfeedScrollResponse<DailyfeedScrollPage<MemberProfileDto.Summary>> getMemberFollowersMore(Long memberId, int page, int size, DailyfeedPageable dailyfeedPageable) {
+    @Cacheable(value = RedisKeyConstant.FollowRedisService.WEB_PAGE_FOLLOWERS_MORE_BY_MEMBER_ID, key = "#memberId + '_from_' + #page + '_size_' + #size")
+    public DailyfeedScrollPage<MemberProfileDto.Summary> getMemberFollowersMore(Long memberId, int page, int size, DailyfeedPageable dailyfeedPageable) {
         ///  pageable
         Pageable pageable = dailyfeedPageableConverter.convert(dailyfeedPageable);
 
-        ///  followings
+        ///  followers
         Page<Long> followerIds = followRepository.findFollowersIdByMemberId(memberId, pageable);
 
         Page<MemberProfile> profiles = memberProfileRepository.findWithImagesByMemberIdsIn(followerIds.getContent(), pageable);
@@ -70,16 +68,12 @@ public class FollowRedisService {
                 .map(memberProfileMapper::fromEntityToSummary)
                 .toList();
 
-        return DailyfeedScrollResponse.<DailyfeedScrollPage<MemberProfileDto.Summary>>builder()
-                .content(pageMapper.fromJpaPageToDailyfeedScrollPage(followerIds, result))
-                .status(HttpStatus.OK.value())
-                .result(ResponseSuccessCode.SUCCESS)
-                .build();
+        return pageMapper.fromJpaPageToDailyfeedScrollPage(followerIds, result);
     }
 
     @Transactional(readOnly = true)
-    @Cacheable(value = "follow:getMemberFollowingsMore", key = "#memberId + '_from_' + #page + '_size_' + #size")
-    public DailyfeedScrollResponse<DailyfeedScrollPage<MemberProfileDto.Summary>> getMemberFollowingsMore(Long memberId, int page, int size, DailyfeedPageable dailyfeedPageable) {
+    @Cacheable(value = RedisKeyConstant.FollowRedisService.WEB_PAGE_FOLLOWINGS_MORE_BY_MEMBER_ID, key = "#memberId + '_from_' + #page + '_size_' + #size")
+    public DailyfeedScrollPage<MemberProfileDto.Summary> getMemberFollowingsMore(Long memberId, int page, int size, DailyfeedPageable dailyfeedPageable) {
         ///  pageable
         Pageable pageable = dailyfeedPageableConverter.convert(dailyfeedPageable);
 
@@ -93,16 +87,12 @@ public class FollowRedisService {
                 .map(memberProfileMapper::fromEntityToSummary)
                 .toList();
 
-        return DailyfeedScrollResponse.<DailyfeedScrollPage<MemberProfileDto.Summary>>builder()
-                .content(pageMapper.fromJpaPageToDailyfeedScrollPage(followingIds, result))
-                .status(HttpStatus.OK.value())
-                .result(ResponseSuccessCode.SUCCESS)
-                .build();
+        return pageMapper.fromJpaPageToDailyfeedScrollPage(followingIds, result);
     }
 
     @Transactional(readOnly = true)
-    @Cacheable(value = "follow:getMemberFollow", key = "#memberId")
-    public DailyfeedScrollResponse<FollowDto.FollowScrollPage> getMemberFollow(Long memberId, DailyfeedPageable dailyfeedPageable) {
+    @Cacheable(value = RedisKeyConstant.FollowRedisService.WEB_GET_FOLLOW_BY_MEMBER_ID, key = "#memberId")
+    public FollowDto.FollowScrollPage getMemberFollow(Long memberId, DailyfeedPageable dailyfeedPageable) {
         Member member = memberRepository
                 .findById(memberId)
                 .orElseThrow(MemberNotFoundException::new);
@@ -122,15 +112,9 @@ public class FollowRedisService {
         List<MemberProfileDto.Summary> followings = followingsProfiles.getContent().stream().map(memberProfileMapper::fromEntityToSummary).toList();
         DailyfeedScrollPage<MemberProfileDto.Summary> followingsPage = pageMapper.fromJpaPageToDailyfeedScrollPage(followingsProfiles, followings);
 
-        return DailyfeedScrollResponse.<FollowDto.FollowScrollPage>builder()
-                .content(
-                    FollowDto.FollowScrollPage.builder()
-                            .followers(followersPage)
-                            .followings(followingsPage)
-                            .build()
-                )
-                .status(HttpStatus.OK.value())
-                .result(ResponseSuccessCode.SUCCESS)
+        return FollowDto.FollowScrollPage.builder()
+                .followers(followersPage)
+                .followings(followingsPage)
                 .build();
     }
 }

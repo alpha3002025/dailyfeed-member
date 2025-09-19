@@ -186,9 +186,9 @@ public class FollowUnFollowFollowersPageFollowingsPageTest {
         Assertions.assertThat(case3_followMembers.getContent()).hasSize(0);
 
         // 멤버 'A' 의 팔로잉,팔로워
-        DailyfeedScrollResponse<FollowDto.FollowScrollPage> scrollResponse = followRedisService.getMemberFollow(member.getId(), DailyfeedPageable.of(0, 10));
-        Assertions.assertThat(scrollResponse.getContent().getFollowings().getContent().size()).isEqualTo(0);
-        Assertions.assertThat(scrollResponse.getContent().getFollowers().getContent().size()).isEqualTo(0);
+        FollowDto.FollowScrollPage scrollResponse = followRedisService.getMemberFollow(member.getId(), DailyfeedPageable.of(0, 10));
+        Assertions.assertThat(scrollResponse.getFollowings().getContent().size()).isEqualTo(0);
+        Assertions.assertThat(scrollResponse.getFollowers().getContent().size()).isEqualTo(0);
     }
 
 }

@@ -55,7 +55,12 @@ public class MemberController {
             @AuthenticatedMember MemberDto.Member requestMember,
             DailyfeedPageable dailyfeedPageable
     ){
-        return followRedisService.getMemberFollow(requestMember.getId(), dailyfeedPageable);
+        FollowDto.FollowScrollPage result = followRedisService.getMemberFollow(requestMember.getId(), dailyfeedPageable);
+        return DailyfeedScrollResponse.<FollowDto.FollowScrollPage>builder()
+                .content(result)
+                .status(HttpStatus.OK.value())
+                .result(ResponseSuccessCode.SUCCESS)
+                .build();
     }
 
 //    @GetMapping("/followings") // 처음 받아온 /followers-followings → /more
@@ -70,7 +75,13 @@ public class MemberController {
             @AuthenticatedMember MemberDto.Member requestedMember,
             DailyfeedPageable dailyfeedPageable
     ){
-        return followRedisService.getMemberFollowingsMore(requestedMember.getId(), dailyfeedPageable.getPage(), dailyfeedPageable.getSize(), dailyfeedPageable);
+
+        DailyfeedScrollPage<MemberProfileDto.Summary> result = followRedisService.getMemberFollowingsMore(requestedMember.getId(), dailyfeedPageable.getPage(), dailyfeedPageable.getSize(), dailyfeedPageable);
+        return DailyfeedScrollResponse.<DailyfeedScrollPage<MemberProfileDto.Summary>>builder()
+                .content(result)
+                .status(HttpStatus.OK.value())
+                .result(ResponseSuccessCode.SUCCESS)
+                .build();
     }
 
     @GetMapping("/followers/more")
@@ -78,7 +89,12 @@ public class MemberController {
             @AuthenticatedMember MemberDto.Member requestedMember,
             DailyfeedPageable dailyfeedPageable
     ){
-        return followRedisService.getMemberFollowersMore(requestedMember.getId(), dailyfeedPageable.getPage(), dailyfeedPageable.getSize(), dailyfeedPageable);
+        DailyfeedScrollPage<MemberProfileDto.Summary> result = followRedisService.getMemberFollowersMore(requestedMember.getId(), dailyfeedPageable.getPage(), dailyfeedPageable.getSize(), dailyfeedPageable);
+        return DailyfeedScrollResponse.<DailyfeedScrollPage<MemberProfileDto.Summary>>builder()
+                .content(result)
+                .status(HttpStatus.OK.value())
+                .result(ResponseSuccessCode.SUCCESS)
+                .build();
     }
 
     ///  특정 용도
@@ -88,7 +104,7 @@ public class MemberController {
             @AuthenticatedMember MemberDto.Member requestedMember,
             @Valid @RequestBody MemberDto.MembersIdsQuery query
     ){
-        List<MemberProfileDto.Summary> members = memberRedisService.findMembersByIds(query.getIds());
+        List<MemberProfileDto.Summary> members = memberRedisService.findMembersByIdsIn(query.getIds());
         return DailyfeedServerResponse.<List<MemberProfileDto.Summary>>builder()
                 .content(members)
                 .status(HttpStatus.OK.value())
@@ -156,7 +172,12 @@ public class MemberController {
             @AuthenticatedMember MemberDto.Member requestedMember,
             DailyfeedPageable dailyfeedPageable,
             @PathVariable Long memberId){
-        return followRedisService.getMemberFollow(memberId, dailyfeedPageable);
+        FollowDto.FollowScrollPage result = followRedisService.getMemberFollow(memberId, dailyfeedPageable);
+        return DailyfeedScrollResponse.<FollowDto.FollowScrollPage>builder()
+                .content(result)
+                .status(HttpStatus.OK.value())
+                .result(ResponseSuccessCode.SUCCESS)
+                .build();
     }
 
     @GetMapping("/{memberId}/followers/more")
@@ -164,7 +185,12 @@ public class MemberController {
             @AuthenticatedMember MemberDto.Member requestedMember,
             DailyfeedPageable dailyfeedPageable,
             @PathVariable Long memberId){
-        return followRedisService.getMemberFollowersMore(memberId, dailyfeedPageable.getPage(), dailyfeedPageable.getSize(), dailyfeedPageable);
+        DailyfeedScrollPage<MemberProfileDto.Summary> result = followRedisService.getMemberFollowersMore(memberId, dailyfeedPageable.getPage(), dailyfeedPageable.getSize(), dailyfeedPageable);
+        return DailyfeedScrollResponse.<DailyfeedScrollPage<MemberProfileDto.Summary>>builder()
+                .content(result)
+                .status(HttpStatus.OK.value())
+                .result(ResponseSuccessCode.SUCCESS)
+                .build();
     }
 
     @GetMapping("/{memberId}/followings/more")
@@ -172,6 +198,11 @@ public class MemberController {
             @AuthenticatedMember MemberDto.Member requestedMember,
             DailyfeedPageable dailyfeedPageable,
             @PathVariable Long memberId){
-        return followRedisService.getMemberFollowingsMore(memberId, dailyfeedPageable.getPage(), dailyfeedPageable.getSize(), dailyfeedPageable);
+        DailyfeedScrollPage<MemberProfileDto.Summary> result = followRedisService.getMemberFollowingsMore(memberId, dailyfeedPageable.getPage(), dailyfeedPageable.getSize(), dailyfeedPageable);
+        return DailyfeedScrollResponse.<DailyfeedScrollPage<MemberProfileDto.Summary>>builder()
+                .content(result)
+                .status(HttpStatus.OK.value())
+                .result(ResponseSuccessCode.SUCCESS)
+                .build();
     }
 }
