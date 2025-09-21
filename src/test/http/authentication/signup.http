@@ -1,9 +1,0 @@
-### 회원가입
-POST http://localhost:8084/api/authentication/signup
-Content-Type: application/json
-
-{
-  "email": "test1@example.com",
-  "password": "Test1234!",
-  "name": "이름이에요"
-}
