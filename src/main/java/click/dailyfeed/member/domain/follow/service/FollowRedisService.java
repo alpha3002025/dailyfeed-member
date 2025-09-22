@@ -31,7 +31,6 @@ public class FollowRedisService {
     private final MemberRepository memberRepository;
     private final MemberProfileRepository memberProfileRepository;
     private final FollowRepository followRepository;
-    private final FollowMapper followMapper;
     private final DailyfeedPageableConverter dailyfeedPageableConverter;
     private final PageMapper pageMapper;
     private final MemberProfileMapper memberProfileMapper;

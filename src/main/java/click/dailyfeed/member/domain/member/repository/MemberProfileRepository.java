@@ -26,6 +26,18 @@ public interface MemberProfileRepository extends JpaRepository<MemberProfile, Lo
                     "AND mp.isActive = true")
     Page<MemberProfile> findWithImagesByMemberIdsIn(@Param("memberIds") List<Long> memberIds, Pageable pageable);
 
+    // TODO (아래 코드는 Frontend 테스트를 위한 임시 버전)
+    /// Paging 제거 버전으로 변경할것 + 회원수 카운트는 캐시 및 단순 limit, offset 활용 (전체 멤버 수를 카운트할 경우 부하 발생)
+    @Query(value = "SELECT DISTINCT mp FROM MemberProfile mp " +
+            "INNER JOIN mp.member m " +
+            "LEFT JOIN FETCH mp.profileImages img " +
+            "WHERE mp.isActive = true " +
+            "AND (img.isPrimary = true OR img IS NULL)",
+            countQuery = "SELECT COUNT(DISTINCT mp) FROM MemberProfile mp " +
+                    "INNER JOIN mp.member m " +
+                    "WHERE mp.isActive = true")
+    Page<MemberProfile> findWithImagesOrderByCreatedAtWithPaging(Pageable pageable);
+
 
     @Query(value = "SELECT DISTINCT mp FROM MemberProfile mp " +
             "INNER JOIN mp.member m " +

@@ -1,11 +1,19 @@
 package click.dailyfeed.member.domain.follow.api;
 
 import click.dailyfeed.code.domain.member.follow.dto.FollowDto;
+import click.dailyfeed.code.domain.member.member.dto.MemberDto;
+import click.dailyfeed.code.domain.member.member.dto.MemberProfileDto;
 import click.dailyfeed.code.global.web.code.ResponseSuccessCode;
+import click.dailyfeed.code.global.web.page.DailyfeedPage;
+import click.dailyfeed.code.global.web.response.DailyfeedPageResponse;
 import click.dailyfeed.code.global.web.response.DailyfeedServerResponse;
 import click.dailyfeed.member.config.security.userdetails.CustomUserDetails;
+import click.dailyfeed.member.config.web.annotation.AuthenticatedMember;
 import click.dailyfeed.member.domain.follow.service.FollowService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -17,9 +25,9 @@ public class FollowController {
     private final FollowService followService;
 
     @PostMapping("/")
-    public DailyfeedServerResponse<Boolean> follow(@AuthenticationPrincipal CustomUserDetails customUserDetails,
+    public DailyfeedServerResponse<Boolean> follow(@AuthenticatedMember MemberDto.Member member,
                                                    @RequestBody FollowDto.FollowRequest followRequest) {
-        Long myId = customUserDetails.getMemberEntity().getId();
+        Long myId = member.getId();
         followService.follow(myId, followRequest.getMemberIdToFollow());
         return DailyfeedServerResponse.<Boolean>builder()
                 .status(HttpStatus.CREATED.value())
@@ -29,14 +37,33 @@ public class FollowController {
     }
 
     @DeleteMapping("/")
-    public DailyfeedServerResponse<Boolean> unfollow(@AuthenticationPrincipal CustomUserDetails customUserDetails,
+    public DailyfeedServerResponse<Boolean> unfollow(@AuthenticatedMember MemberDto.Member member,
                                                      @RequestBody FollowDto.UnfollowRequest unfollowRequest) {
-        Long myId = customUserDetails.getMemberEntity().getId();
+        Long myId = member.getId();
         followService.unfollow(myId, unfollowRequest.getMemberIdToUnfollow());
         return DailyfeedServerResponse.<Boolean>builder()
                 .status(HttpStatus.NO_CONTENT.value())
                 .result(ResponseSuccessCode.SUCCESS)
                 .content(Boolean.TRUE)
+                .build();
+    }
+
+    /// 사용자 추천
+    @GetMapping("/recommend/newbie")
+    public DailyfeedPageResponse<MemberProfileDto.Summary> getRecommendNewbie(
+            @AuthenticatedMember MemberDto.Member member,
+            @PageableDefault(
+                    size = 10,
+                    page = 0,
+                    sort = "createdAt",
+                    direction = Sort.Direction.DESC
+            ) Pageable pageable
+    ){
+        DailyfeedPage<MemberProfileDto.Summary> content = followService.getRecommendNewbie(pageable);
+        return DailyfeedPageResponse.<MemberProfileDto.Summary>builder()
+                .content(content)
+                .status(HttpStatus.OK.value())
+                .result(ResponseSuccessCode.SUCCESS)
                 .build();
     }
 }

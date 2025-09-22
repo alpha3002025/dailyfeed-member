@@ -2,15 +2,26 @@ package click.dailyfeed.member.domain.follow.service;
 
 import click.dailyfeed.code.domain.member.follow.exception.FollowRelationshipAlreadyExistsException;
 import click.dailyfeed.code.domain.member.follow.exception.FollowRelationshipNotFoundException;
+import click.dailyfeed.code.domain.member.member.dto.MemberProfileDto;
 import click.dailyfeed.code.domain.member.member.exception.MemberNotFoundException;
+import click.dailyfeed.code.global.web.page.DailyfeedPage;
+import click.dailyfeed.code.global.web.response.DailyfeedPageResponse;
 import click.dailyfeed.member.domain.follow.entity.Follow;
 import click.dailyfeed.member.domain.follow.repository.FollowRepository;
 import click.dailyfeed.member.domain.member.entity.Member;
+import click.dailyfeed.member.domain.member.entity.MemberProfile;
+import click.dailyfeed.member.domain.member.mapper.MemberProfileMapper;
+import click.dailyfeed.member.domain.member.repository.MemberProfileRepository;
 import click.dailyfeed.member.domain.member.repository.MemberRepository;
+import click.dailyfeed.pagination.mapper.PageMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -19,6 +30,9 @@ import org.springframework.transaction.annotation.Transactional;
 public class FollowService {
     private final FollowRepository followRepository;
     private final MemberRepository memberRepository;
+    private final MemberProfileRepository memberProfileRepository;
+    private final MemberProfileMapper memberProfileMapper;
+    private final PageMapper pageMapper;
 
     /**
      * "followerId 가 memberToFollowId 를 follow 한다"
@@ -77,5 +91,15 @@ public class FollowService {
         if(exists) {
             throw new FollowRelationshipAlreadyExistsException();
         }
+    }
+
+    @Transactional(readOnly = true)
+    public DailyfeedPage<MemberProfileDto.Summary> getRecommendNewbie(Pageable pageable) {
+        Page<MemberProfile> memberProfiles = memberProfileRepository.findWithImagesOrderByCreatedAtWithPaging(pageable);
+        List<MemberProfileDto.Summary> content = memberProfiles.stream()
+                .map(memberProfileMapper::fromEntityToSummary)
+                .toList();
+
+        return pageMapper.fromJpaPageToDailyfeedPage(memberProfiles, content);
     }
 }
