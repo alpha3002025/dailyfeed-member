@@ -1,0 +1,170 @@
+### Authentication Controller E2E Tests
+### Base URL and Environment Variables
+@baseUrl = {{baseUrl}}
+@apiPath = /api/authentication
+@followApiPath = /api/members/follow
+
+###############################################################################
+### 1. 사용자 A,B,C,D 회원가입 (내가 진짜 돈이 없어서 손으로 직접 쓴다. Claude 돌리고 싶은데..)
+###############################################################################
+
+### 1-1. 정상 회원가입 (멤버 A)
+POST {{baseUrl}}{{apiPath}}/signup
+Content-Type: application/json
+
+{
+  "email": "case2-member-a@example.com",
+  "password": "Password123!",
+  "memberName": "case2 member A",
+  "handle": "case2_member_a",
+  "displayName": "Case2. Member A",
+  "bio": "Case 2 테스트 : A 사용자입니다. 반가워요. 🚜 🚜 🚜 🚜 🚜",
+  "location": "Seoul, Korea",
+  "websiteUrl": "https://example.com",
+  "birthDate": "1990-01-01",
+  "gender": "MALE",
+  "timezone": "Asia/Seoul",
+  "languageCode": "ko",
+  "countryCode": "KR",
+  "privacyLevel": "PUBLIC",
+  "isActive": true,
+  "avatarUrl": "https://example.com/avatar.jpg",
+  "coverUrl": "https://example.com/cover.jpg"
+}
+
+> {%
+    client.test("회원가입 성공", function() {
+        client.assert(response.status === 201, "응답 상태코드가 201이어야 함");
+        client.assert(response.body.result === "SUCCESS", "결과가 SUCCESS여야 함");
+    });
+
+    // content.id 값을 member_b 변수에 저장
+    client.global.set("member_a_id", response.body.content.id);
+    console.log("member_a_id:", client.global.get("member_a_id"));
+%}
+
+
+### 1-2. 정상 회원가입 (멤버 B)
+POST {{baseUrl}}{{apiPath}}/signup
+Content-Type: application/json
+
+{
+  "email": "case2-member-b@example.com",
+  "password": "Password123!",
+  "memberName": "case2 member B",
+  "handle": "case2_member_b",
+  "displayName": "Case2. Member B",
+  "bio": "Case 2 테스트 : B 사용자입니다. 반가워요. 🚜 🚜 🚜 🚜 🚜",
+  "location": "Seoul, Korea",
+  "websiteUrl": "https://example.com",
+  "birthDate": "1990-01-01",
+  "gender": "MALE",
+  "timezone": "Asia/Seoul",
+  "languageCode": "ko",
+  "countryCode": "KR",
+  "privacyLevel": "PUBLIC",
+  "isActive": true,
+  "avatarUrl": "https://example.com/avatar.jpg",
+  "coverUrl": "https://example.com/cover.jpg"
+}
+
+> {%
+    client.test("회원가입 성공", function() {
+        client.assert(response.status === 201, "응답 상태코드가 201이어야 함");
+        client.assert(response.body.result === "SUCCESS", "결과가 SUCCESS여야 함");
+    });
+
+    // content.id 값을 member_b 변수에 저장
+    client.global.set("member_b_id", response.body.content.id);
+    console.log("member_b_id:", client.global.get("member_b_id"));
+%}
+
+
+### 1-2. 정상 회원가입 (멤버 C)
+POST {{baseUrl}}{{apiPath}}/signup
+Content-Type: application/json
+
+{
+  "email": "case2-member-c@example.com",
+  "password": "Password123!",
+  "memberName": "case2 member C",
+  "handle": "case2_member_c",
+  "displayName": "Case2. Member C",
+  "bio": "Case 2 테스트 : C 사용자입니다. 반가워요. 🚜 🚜 🚜 🚜 🚜",
+  "location": "Seoul, Korea",
+  "websiteUrl": "https://example.com",
+  "birthDate": "1990-01-01",
+  "gender": "MALE",
+  "timezone": "Asia/Seoul",
+  "languageCode": "ko",
+  "countryCode": "KR",
+  "privacyLevel": "PUBLIC",
+  "isActive": true,
+  "avatarUrl": "https://example.com/avatar.jpg",
+  "coverUrl": "https://example.com/cover.jpg"
+}
+
+> {%
+    client.test("회원가입 성공", function() {
+        client.assert(response.status === 201, "응답 상태코드가 201이어야 함");
+        client.assert(response.body.result === "SUCCESS", "결과가 SUCCESS여야 함");
+    });
+
+    // content.id 값을 member_b 변수에 저장
+    client.global.set("member_c_id", response.body.content.id);
+    console.log("member_c_id:", client.global.get("member_c_id"));
+%}
+
+
+### 1-2. 정상 회원가입 (멤버 D)
+POST {{baseUrl}}{{apiPath}}/signup
+Content-Type: application/json
+
+{
+  "email": "case2-member-d@example.com",
+  "password": "Password123!",
+  "memberName": "case2 member D",
+  "handle": "case2_member_d",
+  "displayName": "Case2. Member D",
+  "bio": "Case 2 테스트 : D 사용자입니다. 반가워요. 🚜 🚜 🚜 🚜 🚜",
+  "location": "Seoul, Korea",
+  "websiteUrl": "https://example.com",
+  "birthDate": "1990-01-01",
+  "gender": "MALE",
+  "timezone": "Asia/Seoul",
+  "languageCode": "ko",
+  "countryCode": "KR",
+  "privacyLevel": "PUBLIC",
+  "isActive": true,
+  "avatarUrl": "https://example.com/avatar.jpg",
+  "coverUrl": "https://example.com/cover.jpg"
+}
+
+> {%
+    client.test("회원가입 성공", function() {
+        client.assert(response.status === 201, "응답 상태코드가 201이어야 함");
+        client.assert(response.body.result === "SUCCESS", "결과가 SUCCESS여야 함");
+    });
+
+    // content.id 값을 member_b 변수에 저장
+    client.global.set("member_d_id", response.body.content.id);
+    console.log("member_d_id:", client.global.get("member_d_id"));
+%}
+
+
+###############################################################################
+### 2. 멤버 A 로 로그인
+###############################################################################
+
+
+
+
+###############################################################################
+### 3. A가 B,C,D 를 팔로우 (A의 팔로잉(팔로우)이 3개여야 함)
+###############################################################################
+POST {{baseUrl}}{{followApiPath}}
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+{
+  "memberIdToFollow": {{member_b_id}}
+}
