@@ -86,7 +86,7 @@ public class AuthenticationService {
         return DailyfeedServerResponse.<Boolean>builder()
                 .status(HttpStatus.OK.value())
                 .result(ResponseSuccessCode.SUCCESS)
-                .content(Boolean.TRUE)
+                .data(Boolean.TRUE)
                 .build();
     }
 
@@ -101,7 +101,7 @@ public class AuthenticationService {
         return DailyfeedServerResponse.<MemberDto.Member>builder()
                 .status(HttpStatus.CREATED.value())
                 .result(ResponseSuccessCode.SUCCESS)
-                .content(authenticationMapper.fromMemberEntityToMemberDto(saved))
+                .data(authenticationMapper.fromMemberEntityToMemberDto(saved))
                 .build();
     }
 
@@ -131,7 +131,7 @@ public class AuthenticationService {
             return DailyfeedServerResponse.<Boolean>builder()
                     .status(HttpStatus.OK.value())
                     .result(ResponseSuccessCode.SUCCESS)
-                    .content(Boolean.TRUE)
+                    .data(Boolean.TRUE)
                     .build();
         } catch (Exception e){
             log.error("Logout error: {}", e.getMessage());
@@ -165,7 +165,7 @@ public class AuthenticationService {
             return DailyfeedServerResponse.<AuthenticationDto.TokenRefreshResponse>builder()
                     .status(HttpStatus.OK.value())
                     .result(ResponseSuccessCode.SUCCESS)
-                    .content(refeshResponse)
+                    .data(refeshResponse)
                     .build();
 
         } catch (Exception e) {

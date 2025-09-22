@@ -23,7 +23,7 @@ public class TokenController {
         return DailyfeedServerResponse.<Boolean>builder()
                 .status(HttpStatus.OK.value())
                 .result(ResponseSuccessCode.SUCCESS)
-                .content(Boolean.TRUE)
+                .data(Boolean.TRUE)
                 .build();
     }
 }

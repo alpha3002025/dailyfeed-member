@@ -7,7 +7,6 @@ import click.dailyfeed.code.global.web.code.ResponseSuccessCode;
 import click.dailyfeed.code.global.web.page.DailyfeedPage;
 import click.dailyfeed.code.global.web.response.DailyfeedPageResponse;
 import click.dailyfeed.code.global.web.response.DailyfeedServerResponse;
-import click.dailyfeed.member.config.security.userdetails.CustomUserDetails;
 import click.dailyfeed.member.config.web.annotation.AuthenticatedMember;
 import click.dailyfeed.member.domain.follow.service.FollowService;
 import lombok.RequiredArgsConstructor;
@@ -15,7 +14,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @RequestMapping("/api/members/follow")
@@ -32,7 +30,7 @@ public class FollowController {
         return DailyfeedServerResponse.<Boolean>builder()
                 .status(HttpStatus.CREATED.value())
                 .result(ResponseSuccessCode.SUCCESS)
-                .content(Boolean.TRUE)
+                .data(Boolean.TRUE)
                 .build();
     }
 
@@ -44,7 +42,7 @@ public class FollowController {
         return DailyfeedServerResponse.<Boolean>builder()
                 .status(HttpStatus.NO_CONTENT.value())
                 .result(ResponseSuccessCode.SUCCESS)
-                .content(Boolean.TRUE)
+                .data(Boolean.TRUE)
                 .build();
     }
 
@@ -61,7 +59,7 @@ public class FollowController {
     ){
         DailyfeedPage<MemberProfileDto.Summary> content = followService.getRecommendNewbie(pageable);
         return DailyfeedPageResponse.<MemberProfileDto.Summary>builder()
-                .content(content)
+                .data(content)
                 .status(HttpStatus.OK.value())
                 .result(ResponseSuccessCode.SUCCESS)
                 .build();

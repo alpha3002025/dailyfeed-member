@@ -72,14 +72,14 @@ public class AuthenticationController {
                 Long memberId = jwtKeyHelper.extractMemberId(accessToken);
                 tokenService.logoutAllDevices(memberId);
                 return DailyfeedServerResponse.<Boolean>builder()
-                        .content(Boolean.TRUE)
+                        .data(Boolean.TRUE)
                         .status(HttpStatus.OK.value())
                         .result(ResponseSuccessCode.SUCCESS)
                         .build();
             }
 
             return DailyfeedServerResponse.<Boolean>builder()
-                    .content(Boolean.TRUE)
+                    .data(Boolean.TRUE)
                     .status(HttpStatus.OK.value())
                     .result(ResponseSuccessCode.SUCCESS)
                     .build();

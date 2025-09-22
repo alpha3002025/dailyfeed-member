@@ -30,7 +30,7 @@ public class MemberController {
             @AuthenticatedMember MemberDto.Member member
     ) {
         return DailyfeedServerResponse.<MemberDto.Member>builder()
-                .content(member)
+                .data(member)
                 .status(HttpStatus.OK.value())
                 .result(ResponseSuccessCode.SUCCESS)
                 .build();
@@ -43,7 +43,7 @@ public class MemberController {
     ){
         MemberProfileDto.MemberProfile member = memberRedisService.findMemberProfileById(requestedMember.getId());
         return DailyfeedServerResponse.<MemberProfileDto.MemberProfile>builder()
-                .content(member)
+                .data(member)
                 .status(HttpStatus.OK.value())
                 .result(ResponseSuccessCode.SUCCESS)
                 .build();
@@ -57,7 +57,7 @@ public class MemberController {
     ){
         FollowDto.FollowScrollPage result = followRedisService.getMemberFollow(requestMember.getId(), dailyfeedPageable);
         return DailyfeedScrollResponse.<FollowDto.FollowScrollPage>builder()
-                .content(result)
+                .data(result)
                 .status(HttpStatus.OK.value())
                 .result(ResponseSuccessCode.SUCCESS)
                 .build();
@@ -78,7 +78,7 @@ public class MemberController {
 
         DailyfeedScrollPage<MemberProfileDto.Summary> result = followRedisService.getMemberFollowingsMore(requestedMember.getId(), dailyfeedPageable.getPage(), dailyfeedPageable.getSize(), dailyfeedPageable);
         return DailyfeedScrollResponse.<DailyfeedScrollPage<MemberProfileDto.Summary>>builder()
-                .content(result)
+                .data(result)
                 .status(HttpStatus.OK.value())
                 .result(ResponseSuccessCode.SUCCESS)
                 .build();
@@ -91,7 +91,7 @@ public class MemberController {
     ){
         DailyfeedScrollPage<MemberProfileDto.Summary> result = followRedisService.getMemberFollowersMore(requestedMember.getId(), dailyfeedPageable.getPage(), dailyfeedPageable.getSize(), dailyfeedPageable);
         return DailyfeedScrollResponse.<DailyfeedScrollPage<MemberProfileDto.Summary>>builder()
-                .content(result)
+                .data(result)
                 .status(HttpStatus.OK.value())
                 .result(ResponseSuccessCode.SUCCESS)
                 .build();
@@ -106,7 +106,7 @@ public class MemberController {
     ){
         List<MemberProfileDto.Summary> members = memberRedisService.findMembersByIdsIn(query.getIds());
         return DailyfeedServerResponse.<List<MemberProfileDto.Summary>>builder()
-                .content(members)
+                .data(members)
                 .status(HttpStatus.OK.value())
                 .result(ResponseSuccessCode.SUCCESS)
                 .build();
@@ -120,7 +120,7 @@ public class MemberController {
         return DailyfeedServerResponse.<List<MemberProfileDto.Summary>>builder()
                 .status(HttpStatus.OK.value())
                 .result(ResponseSuccessCode.SUCCESS)
-                .content(followingMembers)
+                .data(followingMembers)
                 .build();
     }
 
@@ -132,7 +132,7 @@ public class MemberController {
     ){
         MemberDto.Member member = memberRedisService.getMemberOrThrow(id);
         return DailyfeedServerResponse.<MemberDto.Member>builder()
-                .content(member)
+                .data(member)
                 .status(HttpStatus.OK.value())
                 .result(ResponseSuccessCode.SUCCESS)
                 .build();
@@ -146,7 +146,7 @@ public class MemberController {
     ){
         MemberProfileDto.MemberProfile member = memberRedisService.findMemberProfileById(memberId);
         return DailyfeedServerResponse.<MemberProfileDto.MemberProfile>builder()
-                .content(member)
+                .data(member)
                 .status(HttpStatus.OK.value())
                 .result(ResponseSuccessCode.SUCCESS)
                 .build();
@@ -160,7 +160,7 @@ public class MemberController {
     ){
         MemberProfileDto.Summary member = memberRedisService.findMemberSummaryById(memberId);
         return DailyfeedServerResponse.<MemberProfileDto.Summary>builder()
-                .content(member)
+                .data(member)
                 .status(HttpStatus.OK.value())
                 .result(ResponseSuccessCode.SUCCESS)
                 .build();
@@ -174,7 +174,7 @@ public class MemberController {
             @PathVariable Long memberId){
         FollowDto.FollowScrollPage result = followRedisService.getMemberFollow(memberId, dailyfeedPageable);
         return DailyfeedScrollResponse.<FollowDto.FollowScrollPage>builder()
-                .content(result)
+                .data(result)
                 .status(HttpStatus.OK.value())
                 .result(ResponseSuccessCode.SUCCESS)
                 .build();
@@ -187,7 +187,7 @@ public class MemberController {
             @PathVariable Long memberId){
         DailyfeedScrollPage<MemberProfileDto.Summary> result = followRedisService.getMemberFollowersMore(memberId, dailyfeedPageable.getPage(), dailyfeedPageable.getSize(), dailyfeedPageable);
         return DailyfeedScrollResponse.<DailyfeedScrollPage<MemberProfileDto.Summary>>builder()
-                .content(result)
+                .data(result)
                 .status(HttpStatus.OK.value())
                 .result(ResponseSuccessCode.SUCCESS)
                 .build();
@@ -200,7 +200,7 @@ public class MemberController {
             @PathVariable Long memberId){
         DailyfeedScrollPage<MemberProfileDto.Summary> result = followRedisService.getMemberFollowingsMore(memberId, dailyfeedPageable.getPage(), dailyfeedPageable.getSize(), dailyfeedPageable);
         return DailyfeedScrollResponse.<DailyfeedScrollPage<MemberProfileDto.Summary>>builder()
-                .content(result)
+                .data(result)
                 .status(HttpStatus.OK.value())
                 .result(ResponseSuccessCode.SUCCESS)
                 .build();
