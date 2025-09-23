@@ -46,10 +46,10 @@ public class JwtProcessor {
 
             token = token.trim();
 
-            // Bearer 접두사 제거
-            if (token.startsWith("Bearer ")) {
-                token = token.substring(7).trim();
-            }
+//            // Bearer 접두사 제거
+//            if (token.startsWith("Bearer ")) {
+//                token = token.substring(7).trim();
+//            }
 
             // 모든 공백 문자 제거
             token = token.replaceAll("\\s", "");

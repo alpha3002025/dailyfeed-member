@@ -1,10 +1,6 @@
 package click.dailyfeed.member.domain.jwt.service;
 
 import click.dailyfeed.code.domain.member.member.code.MemberHeaderCode;
-import click.dailyfeed.code.global.jwt.exception.BearerTokenMissingException;
-import click.dailyfeed.code.global.jwt.exception.InvalidTokenException;
-import click.dailyfeed.code.global.jwt.exception.JwtExpiredException;
-import click.dailyfeed.code.global.jwt.predicate.JwtExpiredPredicate;
 import click.dailyfeed.member.domain.jwt.dto.JwtDto;
 import click.dailyfeed.member.domain.jwt.util.JwtProcessor;
 import io.jsonwebtoken.Claims;
@@ -126,49 +122,6 @@ public class JwtKeyHelper {
 
         // 3. 토큰 검증 및 파싱
         return JwtProcessor.degenerateToken(key, token);
-    }
-
-    /**
-     * Authorization 헤더에서 멤버 ID 추출
-     */
-    public Long getMemberIdFromAuthHeader(String authorizationHeader) {
-        if (!JwtProcessor.checkContainsBearer(authorizationHeader)) {
-            throw new BearerTokenMissingException();
-        }
-
-        String token = JwtProcessor.getJwtFromHeaderOrThrow(authorizationHeader);
-
-        try {
-            JwtDto.UserDetails userDetails = validateAndParseToken(token);
-
-            // 토큰 만료 여부 확인
-            if (JwtExpiredPredicate.EXPIRED.equals(JwtProcessor.checkIfExpired(userDetails.getExpiration()))) {
-                throw new JwtExpiredException();
-            }
-
-            return userDetails.getId();
-        } catch (Exception e) {
-            throw new InvalidTokenException();
-        }
-    }
-
-    /**
-     * 토큰 갱신 (새로운 Primary Key로 토큰 재발급)
-     */
-    public String refreshTokenOrThrow(String authorizationHeader) {
-        // JWT 토큰 추출
-        String oldToken = JwtProcessor.getJwtFromHeaderOrThrow(authorizationHeader);
-
-        // 기존 토큰에서 사용자 정보 추출
-        JwtDto.UserDetails userDetails = validateAndParseToken(oldToken);
-
-        if (JwtExpiredPredicate.EXPIRED.equals(JwtProcessor.checkIfExpired(userDetails.getExpiration()))) {
-            throw new JwtExpiredException();
-        }
-
-        // JTI 생성하여 올바른 expiration 설정
-        String jti = java.util.UUID.randomUUID().toString();
-        return generateTokenWithJti(userDetails, jti);
     }
 
     /**

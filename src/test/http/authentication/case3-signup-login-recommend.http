@@ -6,30 +6,30 @@
 ###############################################################################
 ### 1. 회원가입 테스트 (Signup Tests)
 ###############################################################################
-
-### 1-1. 정상 회원가입
-POST {{baseUrl}}{{apiPath}}/signup
-Content-Type: application/json
-
-{
-  "email": "case3-signup-login-recommend@example.com",
-  "password": "Password123!",
-  "memberName": "case3-signup-login-recommend",
-  "handle": "case3_signup_login_recommend",
-  "displayName": "case3-signup-login-recommend",
-  "bio": "안녕하세요, 테스트 사용자입니다.",
-  "location": "Seoul, Korea",
-  "websiteUrl": "https://example.com",
-  "birthDate": "1990-01-01",
-  "gender": "MALE",
-  "timezone": "Asia/Seoul",
-  "languageCode": "ko",
-  "countryCode": "KR",
-  "privacyLevel": "PUBLIC",
-  "isActive": true,
-  "avatarUrl": "https://example.com/avatar.jpg",
-  "coverUrl": "https://example.com/cover.jpg"
-}
+#
+#### 1-1. 정상 회원가입
+#POST {{baseUrl}}{{apiPath}}/signup
+#Content-Type: application/json
+#
+#{
+#  "email": "case3_D@gmail.com",
+#  "password": "Password123!@#$",
+#  "memberName": "case3_D",
+#  "handle": "case3_D",
+#  "displayName": "case3_D",
+#  "bio": "안녕하세요, 테스트 사용자입니다.",
+#  "location": "Seoul, Korea",
+#  "websiteUrl": "https://example.com",
+#  "birthDate": "1990-01-01",
+#  "gender": "MALE",
+#  "timezone": "Asia/Seoul",
+#  "languageCode": "ko",
+#  "countryCode": "KR",
+#  "privacyLevel": "PUBLIC",
+#  "isActive": true,
+#  "avatarUrl": "https://example.com/avatar.jpg",
+#  "coverUrl": "https://example.com/cover.jpg"
+#}
 
 
 ###############################################################################
@@ -41,8 +41,8 @@ POST {{baseUrl}}{{apiPath}}/login
 Content-Type: application/json
 
 {
-  "email": "case3-signup-login-recommend@example.com",
-  "password": "Password123!"
+  "email": "case3_D@gmail.com",
+  "password": "Password123!@#$"
 }
 
 > {%

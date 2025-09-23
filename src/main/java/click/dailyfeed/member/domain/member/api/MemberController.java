@@ -25,7 +25,7 @@ public class MemberController {
     private final MemberRedisService memberRedisService;
     private final FollowRedisService followRedisService;
 
-    @GetMapping("/")
+    @GetMapping({""})
     public DailyfeedServerResponse<MemberDto.Member> getMemberByToken(
             @AuthenticatedMember MemberDto.Member member
     ) {

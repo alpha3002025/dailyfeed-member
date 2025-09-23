@@ -50,9 +50,9 @@ public class AuthenticatedMemberArgumentResolver implements HandlerMethodArgumen
     }
 
     public String extractToken(String authHeader) {
-        if (authHeader == null || authHeader.isBlank() || !authHeader.startsWith("Bearer ")) {
-            throw new BearerTokenMissingException();
-        }
+//        if (authHeader == null || authHeader.isBlank() || !authHeader.startsWith("Bearer ")) {
+//            throw new BearerTokenMissingException();
+//        }
 
         return authHeader.replace("Bearer ", "");
     }

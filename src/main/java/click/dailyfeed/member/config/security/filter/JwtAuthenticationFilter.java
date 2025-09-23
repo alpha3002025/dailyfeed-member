@@ -34,11 +34,20 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        String header = request.getHeader(HttpHeaders.AUTHORIZATION);
+        String path = request.getRequestURI();
+
+        // 인증이 필요하지 않은 엔드포인트는 JWT 검증을 건너뜀
+        if (shouldSkipAuthentication(path)) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
+        String token = request.getHeader(HttpHeaders.AUTHORIZATION);
+        if(token != null && !token.isBlank() && token.contains("Bearer ")) {
+            token = JwtProcessor.getJwtFromHeaderOrThrow(token); // 로그인 이후에는 여기를 들러...헐
+        }
 
         try {
-            String token = JwtProcessor.getJwtFromHeaderOrThrow(header);
-
             // JTI 추출 및 블랙리스트 확인
             String jti = jwtKeyHelper.extractJti(token);
             if (tokenService.isTokenBlacklisted(jti)) {
@@ -68,7 +77,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             SecurityContextHolder.getContext().setAuthentication(auth);
 
             // 토큰 갱신 필요 여부 체크
-            jwtKeyHelper.checkAndRefreshHeader(header, response);
+            jwtKeyHelper.checkAndRefreshHeader(token, response);
         } catch (Exception e) {
             // 예외가 발생해도 필터 체인을 계속 진행 (인증 실패로 처리)
             log.error("JWT authentication failed: {}", e.getMessage());
@@ -76,7 +85,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             SecurityContextHolder.clearContext();
 
             // 보호된 엔드포인트 요청의 경우 401 반환
-            String path = request.getRequestURI();
             if (path.startsWith("/api/authentication/logout") ||
                 path.startsWith("/api/members/") ||
                 path.startsWith("/api/token/")) {
@@ -87,5 +95,20 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
 
         filterChain.doFilter(request, response);
+    }
+
+    private boolean shouldSkipAuthentication(String path) {
+        return path.equals("/") ||
+               path.startsWith("/welcome") ||
+               path.startsWith("/img/") ||
+               path.startsWith("/css/") ||
+               path.equals("/api/authentication/login") ||
+               path.equals("/api/authentication/signup") ||
+               path.equals("/api/authentication/refresh") ||
+               path.startsWith("/swagger-ui/") ||
+               path.startsWith("/swagger-example/") ||
+               path.equals("/swagger-ui.html") ||
+               path.startsWith("/api-docs") ||
+               path.startsWith("/v3/api-docs/");
     }
 }
