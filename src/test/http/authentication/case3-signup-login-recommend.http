@@ -99,7 +99,44 @@ client.test("Token received", function() {
 ###############################################################################
 ### 3. 최신 멤버 추천
 ###############################################################################
-@apiFollowPath = /api/members/follow/recommend
+@path3 = /api/members/follow
 
-GET {{baseUrl}}{{apiFollowPath}}
+### 테스트 3.1
+GET {{baseUrl}}{{path3}}/recommend/newbie
 Authorization: Bearer {{accessToken}}
+
+
+###############################################################################
+### 4. 팔로우
+###############################################################################
+@path4 = /api/members/follow
+
+### 테스트 4.1
+POST {{baseUrl}}{{path4}}
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "memberIdToFollow": 4
+}
+
+### 테스트 4.2
+DELETE {{baseUrl}}{{path4}}
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "memberIdToUnfollow": 4
+}
+
+
+###############################################################################
+### 5. 팔로잉 중인 회원 조회
+###############################################################################
+@path5 = /api/members/followers-followings
+
+### 테스트 5.1
+GET {{baseUrl}}{{path5}}
+Authorization: Bearer {{accessToken}}
+
+
