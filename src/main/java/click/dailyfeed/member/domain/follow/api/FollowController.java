@@ -22,7 +22,7 @@ import org.springframework.web.bind.annotation.*;
 public class FollowController {
     private final FollowService followService;
 
-    @PostMapping("/")
+    @PostMapping("")
     public DailyfeedServerResponse<Boolean> follow(@AuthenticatedMember MemberDto.Member member,
                                                    @RequestBody FollowDto.FollowRequest followRequest) {
         Long myId = member.getId();
@@ -34,7 +34,7 @@ public class FollowController {
                 .build();
     }
 
-    @DeleteMapping("/")
+    @DeleteMapping("")
     public DailyfeedServerResponse<Boolean> unfollow(@AuthenticatedMember MemberDto.Member member,
                                                      @RequestBody FollowDto.UnfollowRequest unfollowRequest) {
         Long myId = member.getId();
@@ -57,7 +57,7 @@ public class FollowController {
                     direction = Sort.Direction.DESC
             ) Pageable pageable
     ){
-        DailyfeedPage<MemberProfileDto.Summary> content = followService.getRecommendNewbie(pageable);
+        DailyfeedPage<MemberProfileDto.Summary> content = followService.getRecommendNewbie(pageable, member);
         return DailyfeedPageResponse.<MemberProfileDto.Summary>builder()
                 .data(content)
                 .status(HttpStatus.OK.value())

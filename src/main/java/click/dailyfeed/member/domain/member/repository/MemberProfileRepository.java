@@ -32,11 +32,15 @@ public interface MemberProfileRepository extends JpaRepository<MemberProfile, Lo
             "INNER JOIN mp.member m " +
             "LEFT JOIN FETCH mp.profileImages img " +
             "WHERE mp.isActive = true " +
+            "AND m.id != :myId " +
+            "AND NOT EXISTS (SELECT 1 FROM Follow f WHERE f.follower.id = :myId AND f.following.id = m.id) " +
             "AND (img.isPrimary = true OR img IS NULL)",
             countQuery = "SELECT COUNT(DISTINCT mp) FROM MemberProfile mp " +
                     "INNER JOIN mp.member m " +
-                    "WHERE mp.isActive = true")
-    Page<MemberProfile> findWithImagesOrderByCreatedAtWithPaging(Pageable pageable);
+                    "WHERE mp.isActive = true " +
+                    "AND m.id != :myId " +
+                    "AND NOT EXISTS (SELECT 1 FROM Follow f WHERE f.follower.id = :myId AND f.following.id = m.id)")
+    Page<MemberProfile> findWithImagesOrderByCreatedAtWithPaging(Pageable pageable, Long myId);
 
 
     @Query(value = "SELECT DISTINCT mp FROM MemberProfile mp " +
