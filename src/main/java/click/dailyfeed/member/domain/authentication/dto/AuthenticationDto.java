@@ -36,6 +36,8 @@ public class AuthenticationDto {
         private String reason;
     }
 
+
+    // TODO  필요없는 필드 삭제 예정
     @Getter
     @Setter
     @Builder
