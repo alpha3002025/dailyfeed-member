@@ -1,7 +1,6 @@
 package click.dailyfeed.member.config.web.argumentresolver;
 
 import click.dailyfeed.code.domain.member.member.dto.MemberDto;
-import click.dailyfeed.code.global.jwt.exception.BearerTokenMissingException;
 import click.dailyfeed.member.config.web.annotation.AuthenticatedMember;
 import click.dailyfeed.member.domain.jwt.dto.JwtDto;
 import click.dailyfeed.member.domain.jwt.service.JwtKeyHelper;
