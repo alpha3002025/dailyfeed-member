@@ -5,6 +5,7 @@ import click.dailyfeed.member.domain.jwt.dto.JwtDto;
 import click.dailyfeed.member.domain.jwt.service.JwtKeyHelper;
 import click.dailyfeed.member.domain.jwt.service.TokenService;
 import click.dailyfeed.member.domain.jwt.util.JwtProcessor;
+import io.jsonwebtoken.Claims;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -48,8 +49,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
 
         try {
+            // key id 추출
+            String keyId = JwtProcessor.extractKeyIdOrThrow(token);
+            Claims claims = jwtKeyHelper.readClaim(keyId, token);
+
             // JTI 추출 및 블랙리스트 확인
-            String jti = jwtKeyHelper.extractJti(token);
+            String jti = jwtKeyHelper.extractJti(claims);
             if (tokenService.isTokenBlacklisted(jti)) {
                 log.debug("Token is blacklisted: JTI={}", jti);
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
@@ -58,7 +63,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             }
 
             // 토큰 검증 및 사용자 정보 추출
-            JwtDto.UserDetails userDetails = jwtKeyHelper.validateAndParseToken(token);
+            JwtDto.UserDetails userDetails = jwtKeyHelper.readUserDetailsFromToken(keyId, token);
 
             // 만료 확인
             if (JwtExpiredPredicate.EXPIRED.equals(JwtProcessor.checkIfExpired(userDetails.getExpiration()))) {

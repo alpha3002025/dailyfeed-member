@@ -49,6 +49,20 @@ public class MemberController {
                 .build();
     }
 
+    /// 로그인한 사용자의 Summary
+    @GetMapping("/summary")
+    public DailyfeedServerResponse<MemberProfileDto.Summary> getMemberSummary(
+            @AuthenticatedMember MemberDto.Member requestedMember
+    ){
+        MemberProfileDto.Summary member = memberRedisService.findMemberSummaryById(requestedMember.getId());
+        return DailyfeedServerResponse.<MemberProfileDto.Summary>builder()
+                .data(member)
+                .status(HttpStatus.OK.value())
+                .result(ResponseSuccessCode.SUCCESS)
+                .build();
+    }
+
+
     /// 나의 팔로워/팔로우 목록
     @GetMapping("/followers-followings")
     public DailyfeedScrollResponse<FollowDto.FollowScrollPage> getMyFollow(

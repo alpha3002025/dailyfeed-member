@@ -31,12 +31,14 @@ public class MemberRedisService {
     private final MemberProfileMapper memberProfileMapper;
 
     @Transactional(readOnly = true)
-    @Cacheable(value = RedisKeyConstant.MemberRedisService.WEB_GET_MEMBER_BY_ID, key="#memberId")
+//    @Cacheable(value = RedisKeyConstant.MemberRedisService.WEB_GET_MEMBER_BY_ID, key="#memberId")
     public MemberDto.Member getMemberOrThrow(Long memberId) {
-        return memberRepository
+        MemberDto.Member member = memberRepository
                 .findById(memberId)
                 .map(memberMapper::ofMember)
                 .orElseThrow(MemberNotFoundException::new);
+
+        return member;
     }
 
     @Transactional(readOnly = true)

@@ -7,8 +7,10 @@ import click.dailyfeed.member.domain.jwt.entity.TokenBlacklist;
 import click.dailyfeed.member.domain.jwt.mapper.JwtMapper;
 import click.dailyfeed.member.domain.jwt.repository.RefreshTokenRepository;
 import click.dailyfeed.member.domain.jwt.repository.TokenBlacklistRepository;
+import click.dailyfeed.member.domain.jwt.util.JwtProcessor;
 import click.dailyfeed.member.domain.member.entity.Member;
 import click.dailyfeed.member.domain.member.repository.MemberRepository;
+import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -114,9 +116,12 @@ public class TokenService {
      */
     public void logout(String accessToken, Long memberId) {
         try {
+            String keyId = JwtProcessor.extractKeyIdOrThrow(accessToken);
+
             // 액세스 토큰에서 정보 추출
-            String jti = jwtKeyHelper.extractJti(accessToken);
-            Date expirationDate = jwtKeyHelper.extractExpiration(accessToken);
+            Claims claims = jwtKeyHelper.readClaim(keyId, accessToken);
+            String jti = jwtKeyHelper.extractJti(claims);
+            Date expirationDate = jwtKeyHelper.extractExpiration(claims);
             LocalDateTime expiresAt = convertToLocalDateTime(expirationDate);
 
             // 블랙리스트에 추가

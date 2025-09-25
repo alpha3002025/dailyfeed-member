@@ -4,6 +4,7 @@ import click.dailyfeed.code.domain.member.member.dto.MemberDto;
 import click.dailyfeed.member.config.web.annotation.AuthenticatedMember;
 import click.dailyfeed.member.domain.jwt.dto.JwtDto;
 import click.dailyfeed.member.domain.jwt.service.JwtKeyHelper;
+import click.dailyfeed.member.domain.jwt.util.JwtProcessor;
 import click.dailyfeed.member.domain.member.redis.MemberRedisService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -39,13 +40,17 @@ public class AuthenticatedMemberArgumentResolver implements HandlerMethodArgumen
         String authHeader = request.getHeader("Authorization");
         String jwt = extractToken(authHeader);
 
-        /// Member 존재하는지 체크
-        JwtDto.UserDetails userDetails = jwtKeyHelper.validateAndParseToken(jwt);
+        /// key Id 추출
+        String keyId = JwtProcessor.extractKeyIdOrThrow(jwt);
+
+        /// jwt body 추출
+        JwtDto.UserDetails userDetails = jwtKeyHelper.readUserDetailsFromToken(keyId, jwt);
 
         /// Key Refresh 필요한지 체크
         jwtKeyHelper.checkAndRefreshHeader(jwt, response);
 
-        return memberRedisService.getMemberOrThrow(userDetails.getId());
+        MemberDto.Member memberOrThrow = memberRedisService.getMemberOrThrow(userDetails.getId());
+        return memberOrThrow;
     }
 
     public String extractToken(String authHeader) {

@@ -60,11 +60,7 @@ public class JwtKeyHelper {
                 .compact();
     }
 
-    /**
-     * 토큰에서 JTI 추출
-     */
-    public String extractJti(String token) {
-        String keyId = JwtProcessor.extractKeyIdOrThrow(token);
+    public Claims readClaim(String keyId, String token) {
         Key key = jwtKeyRotationService.getKeyByKeyId(keyId);
 
         Claims claims = Jwts.parserBuilder()
@@ -73,22 +69,20 @@ public class JwtKeyHelper {
                 .parseClaimsJws(token)
                 .getBody();
 
+        return claims;
+    }
+
+    /**
+     * 토큰에서 JTI 추출
+     */
+    public String extractJti(Claims claims) {
         return claims.getId();
     }
 
     /**
      * 토큰에서 만료 시간 추출
      */
-    public Date extractExpiration(String token) {
-        String keyId = JwtProcessor.extractKeyIdOrThrow(token);
-        Key key = jwtKeyRotationService.getKeyByKeyId(keyId);
-
-        Claims claims = Jwts.parserBuilder()
-                .setSigningKey(key)
-                .build()
-                .parseClaimsJws(token)
-                .getBody();
-
+    public Date extractExpiration(Claims claims) {
         return claims.getExpiration();
     }
 
@@ -96,7 +90,8 @@ public class JwtKeyHelper {
      * 토큰에서 Member ID 추출
      */
     public Long extractMemberId(String token) {
-        JwtDto.UserDetails userDetails = validateAndParseToken(token);
+        String keyId = JwtProcessor.extractKeyIdOrThrow(token);
+        JwtDto.UserDetails userDetails = readUserDetailsFromToken(keyId, token);
         return userDetails.getId();
     }
 
@@ -113,10 +108,7 @@ public class JwtKeyHelper {
     /**
      * JWT 토큰 검증 및 사용자 정보 추출
      */
-    public JwtDto.UserDetails validateAndParseToken(String token) {
-        // 1. 토큰에서 Key ID 추출
-        String keyId = JwtProcessor.extractKeyIdOrThrow(token);
-
+    public JwtDto.UserDetails readUserDetailsFromToken(String keyId, String token) {
         // 2. Key ID로 해당 Key 조회
         Key key = jwtKeyRotationService.getKeyByKeyId(keyId);
 
