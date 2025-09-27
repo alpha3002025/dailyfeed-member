@@ -11,7 +11,8 @@ import java.util.List;
 import java.util.Optional;
 
 public interface MemberProfileRepository extends JpaRepository<MemberProfile, Long> {
-    @Query("SELECT mp FROM MemberProfile mp JOIN FETCH mp.member m WHERE m.id = :memberId")
+
+    @Query("SELECT mp FROM MemberProfile mp JOIN FETCH mp.member m LEFT JOIN FETCH mp.profileImages mpi WHERE m.id = :memberId")
     Optional<MemberProfile> findMemberProfileByMemberId(@Param("memberId") Long memberId);
 
     @Query(value = "SELECT DISTINCT mp FROM MemberProfile mp " +

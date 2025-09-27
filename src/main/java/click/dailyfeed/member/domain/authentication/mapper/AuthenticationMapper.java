@@ -31,12 +31,10 @@ public class AuthenticationMapper {
                 .websiteUrl(signupRequest.getWebsiteUrl())
                 .birthDate(signupRequest.getBirthDate())
                 .gender(signupRequest.getGender())
-                .timezone(signupRequest.getTimezone())
                 .languageCode(signupRequest.getLanguageCode())
                 .countryCode(signupRequest.getCountryCode())
                 .verificationStatus(signupRequest.getVerificationStatus())
                 .privacyLevel(signupRequest.getPrivacyLevel())
-                .profileCompletionScore(signupRequest.getProfileCompletionScore())
                 .isActive(signupRequest.getIsActive())
                 .build();
 

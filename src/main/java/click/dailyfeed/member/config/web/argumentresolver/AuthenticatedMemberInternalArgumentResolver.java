@@ -1,7 +1,7 @@
 package click.dailyfeed.member.config.web.argumentresolver;
 
 import click.dailyfeed.code.domain.member.member.dto.MemberDto;
-import click.dailyfeed.member.config.web.annotation.AuthenticatedMember;
+import click.dailyfeed.member.config.web.annotation.InternalAuthenticatedMember;
 import click.dailyfeed.member.domain.jwt.dto.JwtDto;
 import click.dailyfeed.member.domain.jwt.service.JwtKeyHelper;
 import click.dailyfeed.member.domain.jwt.util.JwtProcessor;
@@ -18,13 +18,13 @@ import org.springframework.web.method.support.ModelAndViewContainer;
 
 @Component
 @RequiredArgsConstructor
-public class AuthenticatedMemberArgumentResolver implements HandlerMethodArgumentResolver {
+public class AuthenticatedMemberInternalArgumentResolver implements HandlerMethodArgumentResolver {
     private final JwtKeyHelper jwtKeyHelper;
     private final MemberRedisService memberRedisService;
 
     @Override
     public boolean supportsParameter(MethodParameter parameter) {
-        return parameter.hasParameterAnnotation(AuthenticatedMember.class) &&
+        return parameter.hasParameterAnnotation(InternalAuthenticatedMember.class) &&
                 parameter.getParameterType().equals(MemberDto.Member.class);
     }
 

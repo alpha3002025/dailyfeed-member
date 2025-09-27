@@ -26,16 +26,6 @@ public class AuthenticationDto {
         private String password;
     }
 
-    @Getter
-    @Builder
-    @NoArgsConstructor(access = AccessLevel.PROTECTED)
-    @AllArgsConstructor
-    public static class LoginResponse{
-        private String statusCode;
-        private String ok;
-        private String reason;
-    }
-
 
     // TODO  필요없는 필드 삭제 예정
     @Getter
@@ -57,16 +47,16 @@ public class AuthenticationDto {
 
         @NotBlank(message = "회원명은 필수입니다")
         @Size(min = 2, max = 30, message = "회원명은 2자 이상 30자 이하여야 합니다")
-        private String memberName;
+        private String memberName; /// 실제 이름, 성명
 
         @NotBlank(message = "핸들은 필수입니다")
         @Size(min = 3, max = 50, message = "핸들은 3자 이상 50자 이하여야 합니다")
         @Pattern(regexp = MemberProfileValidation.HandleValidation.PATTERN, message = "핸들은 영문, 숫자, 언더스코어만 사용 가능합니다")
         @UniqueHandle
-        private String handle;
+        private String handle; /// 원하는 id (문자열 기반 id)
 
         @Size(max = 50, message = "표시명은 50자를 초과할 수 없습니다")
-        private String displayName;
+        private String displayName; /// 닉네임
 
         @Size(max = 500, message = "소개는 500자를 초과할 수 없습니다")
         private String bio;
@@ -96,16 +86,15 @@ public class AuthenticationDto {
         @NotNull(message = "국가 코드는 필수입니다")
         private CountryCode countryCode;
 
+        // TODO SEASON 2
         @Builder.Default
         private VerificationStatus verificationStatus = VerificationStatus.NONE;
 
+        // TODO SEASON 2
         @Builder.Default
         private PrivacyLevel privacyLevel = PrivacyLevel.PUBLIC;
 
-        @Min(value = 0, message = "프로필 완성도는 0 이상이어야 합니다")
-        @Max(value = 100, message = "프로필 완성도는 100 이하여야 합니다")
-        @Builder.Default
-        private Integer profileCompletionScore = 0;
+        private final Integer profileCompletionScore = 0;
 
         @NotNull(message = "활성 상태는 필수입니다")
         @Builder.Default
@@ -115,15 +104,10 @@ public class AuthenticationDto {
         @Size(max = 500, message = "아바타 URL은 500자를 초과할 수 없습니다")
         private String avatarUrl;
 
+        // TODO SEASON 2
         @URL(message = "올바른 커버 URL 형식이 아닙니다")
         @Size(max = 500, message = "커버 URL은 500자를 초과할 수 없습니다")
         private String coverUrl;
-
-        @Min(value = 0, message = "팔로워 수는 0 이상이어야 합니다")
-        private Long followersCount;
-
-        @Min(value = 0, message = "팔로잉 수는 0 이상이어야 합니다")
-        private Long followingsCount;
     }
 
     @Getter

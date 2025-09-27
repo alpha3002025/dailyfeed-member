@@ -1,6 +1,6 @@
 package click.dailyfeed.member.config.web;
 
-import click.dailyfeed.member.config.web.argumentresolver.AuthenticatedMemberArgumentResolver;
+import click.dailyfeed.member.config.web.argumentresolver.AuthenticatedMemberInternalArgumentResolver;
 import click.dailyfeed.pagination.resolver.DailyfeedPageableArgumentResolver;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -19,12 +19,12 @@ import java.util.List;
 @Configuration
 @RequiredArgsConstructor
 public class WebConfig implements WebMvcConfigurer {
-    private final AuthenticatedMemberArgumentResolver authenticatedMemberArgumentResolver;
+    private final AuthenticatedMemberInternalArgumentResolver authenticatedMemberInternalArgumentResolver;
     private final DailyfeedPageableArgumentResolver dailyfeedPageableArgumentResolver;
 
     @Override
     public void addArgumentResolvers(List<HandlerMethodArgumentResolver> resolvers) {
-        resolvers.add(authenticatedMemberArgumentResolver);
+        resolvers.add(authenticatedMemberInternalArgumentResolver);
         resolvers.add(dailyfeedPageableArgumentResolver);
     }
 

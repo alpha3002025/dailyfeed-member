@@ -66,10 +66,6 @@ public class MemberProfile extends BaseTimeEntity {
     @Column(name = "gender", length = 30)
     private GenderType gender;
 
-    @Column(name = "timezone", length = 50)
-    @Builder.Default
-    private String timezone = "UTC";
-
     @Column(name = "language_code", length = 10)
     @Builder.Default
     private String languageCode = "en";
@@ -163,5 +159,62 @@ public class MemberProfile extends BaseTimeEntity {
         }
         return profileImages.stream()
                 .anyMatch(img -> "COVER".equals(img.getImageType().name()));
+    }
+
+
+    /// updaters
+    public void updateMemberName(String memberName) {
+        this.memberName = memberName;
+    }
+
+    public void updateDisplayName(String displayName) {
+        this.displayName = displayName;
+    }
+
+    public void updateBio(String bio) {
+        this.bio = bio;
+    }
+
+    public void updateLocation(String location) {
+        this.location = location;
+    }
+
+    public void updateWebsiteUrl(String websiteUrl) {
+        this.websiteUrl = websiteUrl;
+    }
+
+    public void updateBirthDate(LocalDate birthDate) {
+        this.birthDate = birthDate;
+    }
+
+    public void updateGender(GenderType gender) {
+        this.gender = gender;
+    }
+
+    public void updateLanguageCode(String languageCode) {
+        this.languageCode = languageCode;
+    }
+
+    public void updateCountryCode(CountryCode countryCode) {
+        this.countryCode = countryCode;
+    }
+
+    public void updatePrivacyLevel(PrivacyLevel privacyLevel) {
+        this.privacyLevel = privacyLevel;
+    }
+
+    public void updateHandle(String newHandle) {
+        this.handle = newHandle;
+    }
+
+    public void updateAvatarUrl(String imageUrl) {
+        Optional<MemberProfileImage> avatarUrl = profileImages.stream()
+                .filter(image -> image.getImageType().equals(ImageType.AVATAR))
+                .filter(MemberProfileImage::getIsPrimary)
+                .findFirst();
+
+        avatarUrl.ifPresent(image -> {
+            image.updateImageUrl(imageUrl);
+        });
     }
 }

@@ -6,8 +6,6 @@ import click.dailyfeed.member.domain.base.BaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.util.Optional;
-
 @Getter
 @Entity
 @Table(name = "member_profile_images", schema = "dailyfeed",
@@ -94,5 +92,9 @@ public class MemberProfileImage extends BaseTimeEntity {
 
     public void updateMemberProfile(MemberProfile memberProfile) {
         this.memberProfile = memberProfile;
+    }
+
+    public void updateImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
     }
 }

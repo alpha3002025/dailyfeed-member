@@ -7,7 +7,7 @@ import click.dailyfeed.code.global.web.code.ResponseSuccessCode;
 import click.dailyfeed.code.global.web.page.DailyfeedPage;
 import click.dailyfeed.code.global.web.response.DailyfeedPageResponse;
 import click.dailyfeed.code.global.web.response.DailyfeedServerResponse;
-import click.dailyfeed.member.config.web.annotation.AuthenticatedMember;
+import click.dailyfeed.member.config.web.annotation.InternalAuthenticatedMember;
 import click.dailyfeed.member.domain.follow.service.FollowService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
@@ -23,7 +23,7 @@ public class FollowController {
     private final FollowService followService;
 
     @PostMapping("")
-    public DailyfeedServerResponse<Boolean> follow(@AuthenticatedMember MemberDto.Member member,
+    public DailyfeedServerResponse<Boolean> follow(@InternalAuthenticatedMember MemberDto.Member member,
                                                    @RequestBody FollowDto.FollowRequest followRequest) {
         Long myId = member.getId();
         followService.follow(myId, followRequest.getMemberIdToFollow());
@@ -35,7 +35,7 @@ public class FollowController {
     }
 
     @DeleteMapping("")
-    public DailyfeedServerResponse<Boolean> unfollow(@AuthenticatedMember MemberDto.Member member,
+    public DailyfeedServerResponse<Boolean> unfollow(@InternalAuthenticatedMember MemberDto.Member member,
                                                      @RequestBody FollowDto.UnfollowRequest unfollowRequest) {
         Long myId = member.getId();
         followService.unfollow(myId, unfollowRequest.getMemberIdToUnfollow());
@@ -49,7 +49,7 @@ public class FollowController {
     /// 사용자 추천
     @GetMapping("/recommend/newbie")
     public DailyfeedPageResponse<MemberProfileDto.Summary> getRecommendNewbie(
-            @AuthenticatedMember MemberDto.Member member,
+            @InternalAuthenticatedMember MemberDto.Member member,
             @PageableDefault(
                     size = 10,
                     page = 0,

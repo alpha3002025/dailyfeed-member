@@ -13,7 +13,7 @@ public interface MemberProfileMapper {
     default MemberProfileDto.MemberProfile fromEntity(MemberProfile memberProfile, Long followersCount, Long followingsCount) {
         return MemberProfileDto.MemberProfile.builder()
                 .id(memberProfile.getId())
-                .memberId(memberProfile.getId())
+                .memberId(memberProfile.getMember().getId())
                 .memberName(memberProfile.getMemberName())
                 .handle(memberProfile.getHandle())
                 .displayName(memberProfile.getDisplayName())
@@ -22,7 +22,6 @@ public interface MemberProfileMapper {
                 .websiteUrl(memberProfile.getWebsiteUrl())
                 .birthDate(memberProfile.getBirthDate())
                 .gender(memberProfile.getGender())
-                .timezone(memberProfile.getTimezone())
                 .languageCode(memberProfile.getLanguageCode())
                 .countryCode(memberProfile.getCountryCode())
                 .verificationStatus(memberProfile.getVerificationStatus())
@@ -43,7 +42,7 @@ public interface MemberProfileMapper {
     ){
         return MemberProfileDto.Summary.builder()
                 .id(memberProfile.getId())
-                .memberId(memberProfile.getId())
+                .memberId(memberProfile.getMember().getId())
                 .memberName(memberProfile.getMemberName())
                 .memberHandle(memberProfile.getHandle())
                 .displayName(memberProfile.getDisplayName())
@@ -51,5 +50,23 @@ public interface MemberProfileMapper {
                 .avatarUrl(memberProfile.getAvatarUrl())
                 .updatedAt(memberProfile.getUpdatedAt())
                 .build();
+    }
+
+    default MemberProfile updateMember(MemberProfile memberProfile, MemberProfileDto.UpdateRequest updateRequest){
+        if (updateRequest.getMemberName() != null) memberProfile.updateMemberName(updateRequest.getMemberName());
+        if (updateRequest.getDisplayName() != null) memberProfile.updateDisplayName(updateRequest.getDisplayName());
+        if (updateRequest.getBio() != null) memberProfile.updateBio(updateRequest.getBio());
+        if (updateRequest.getLocation() != null) memberProfile.updateLocation(updateRequest.getLocation());
+        if (updateRequest.getWebsiteUrl() != null) memberProfile.updateWebsiteUrl(updateRequest.getWebsiteUrl());
+        if (updateRequest.getBirthDate() != null) memberProfile.updateBirthDate(updateRequest.getBirthDate());
+        if (updateRequest.getGender() != null) memberProfile.updateGender(updateRequest.getGender());
+        if (updateRequest.getLanguageCode() != null) memberProfile.updateLanguageCode(updateRequest.getLanguageCode());
+        if (updateRequest.getCountryCode() != null) memberProfile.updateCountryCode(updateRequest.getCountryCode());
+        if (updateRequest.getPrivacyLevel() != null) memberProfile.updatePrivacyLevel(updateRequest.getPrivacyLevel());
+
+        if (updateRequest.getAvatarUrl() != null) {
+            memberProfile.updateAvatarUrl(updateRequest.getAvatarUrl());
+        }
+        return memberProfile;
     }
 }

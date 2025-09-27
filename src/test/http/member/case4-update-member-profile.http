@@ -1,0 +1,123 @@
+### Authentication Controller E2E Tests
+### Base URL and Environment Variables
+@baseUrl = {{baseUrl}}
+@apiPath = /api/authentication
+
+###############################################################################
+### 2. 로그인 테스트 (Login Tests)
+###############################################################################
+
+### 2-1. 정상 로그인
+POST {{baseUrl}}{{apiPath}}/login
+Content-Type: application/json
+
+{
+  "email": "case3_D@gmail.com",
+  "password": "Password123!@#$"
+}
+
+> {%
+// 로그인 응답 확인
+client.log("Login Response Status: " + response.status);
+
+// 토큰 저장
+try {
+    var token = null;
+
+    // Authorization 헤더에서 토큰 확인 (메인 소스)
+    var authHeader = response.headers.valueOf("Authorization");
+    if (authHeader && authHeader.startsWith("Bearer ")) {
+        token = authHeader.substring(7);
+        client.log("✓ Found token in Authorization header");
+    }
+
+    // 토큰 저장
+    if (token) {
+        client.global.set("accessToken", token);
+        client.log("✓ Access Token saved: " + token);
+
+        // 디버깅: 저장된 토큰 확인
+        var savedToken = client.global.get("accessToken");
+        client.log("✓ Verified saved token: " + (savedToken ? "OK" : "Failed"));
+    } else {
+        client.log("✗ No access token found in Authorization header");
+
+        // 모든 헤더 출력 (디버깅용)
+        client.log("Available headers: " + response.headers.valuesOf().join(", "));
+    }
+
+    // 응답 상태 확인
+    if (response.body) {
+        client.log("Login status: ok=" + response.body.ok + ", reason=" + response.body.reason);
+    }
+} catch (e) {
+    client.log("Error: " + e.message);
+}
+
+// 테스트
+client.test("Login successful", function() {
+    client.assert(response.status === 200, "Response status is 200");
+    client.assert(response.body.ok === "Y", "Login OK status is Y");
+});
+
+client.test("Token received", function() {
+    var savedToken = client.global.get("accessToken");
+    client.assert(savedToken !== null && savedToken !== undefined, "Token received and saved");
+});
+%}
+
+
+###############################################################################
+### 2. 멤버 Profile Update 요청
+###############################################################################
+@path2 = /api/members/profile
+
+### 테스트 2.1
+PUT {{baseUrl}}{{path2}}
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "memberName": "홍길동",
+  "displayName": "동에번쩍서에번쩍홍길동",
+  "bio": "안녕하세요, 저는 홍길동입니다.",
+  "location": "서울, 대한민국",
+  "websiteUrl": "https://example.com",
+  "birthDate": "1990-01-15",
+  "gender": "MALE",
+  "languageCode": "ko",
+  "countryCode": "KR",
+  "privacyLevel": "PUBLIC",
+  "avatarUrl": "http://localhost:8080/api/image/view/006204b4-b608-4b8e-9ece-c1f570fa2538",
+  "previousAvatarUrl": [
+    "http://localhost:8080/api/image/view/8389df1f-94cf-4b8c-ac6b-2f3f7e2f1210",
+    "http://localhost:8080/api/image/view/a3bab1a1-8f69-4e34-9f2e-af3f7ecbfa5d"
+  ]
+}
+
+###############################################################################
+### 3. 멤버 Profile Handle Update 요청
+###############################################################################
+@path3 = /api/members/profile/handle
+
+### 테스트 3.1
+PUT {{baseUrl}}{{path3}}
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "newHandle": "gildong_2026"
+}
+
+
+### 테스트 3.2 확인
+@path3_2 = /api/members/profile
+GET {{baseUrl}}{{path3_2}}
+Authorization: Bearer {{accessToken}}
+
+
+### 테스트 3.3 멤버 id 로 확인
+@path3_3 = /api/members/profile/4
+GET {{baseUrl}}{{path3_3}}
+Authorization: Bearer {{accessToken}}
+

@@ -35,6 +35,7 @@ allprojects {
 
     dependencies {
         implementation(project(":dailyfeed-code"))
+        implementation(project(":dailyfeed-feign"))
         implementation(project(":dailyfeed-pagination-support"))
         implementation(project(":dailyfeed-redis-support"))
 

@@ -79,10 +79,8 @@ public class SignupInsertTest {
                 .gender(GenderType.valueOf(gender))
                 .avatarUrl(avatarUrl)
                 .countryCode(CountryCode.KR)
-                .timezone("UTC")
                 .languageCode("en")
                 .isActive(true)
-                .profileCompletionScore(0)
                 .build();
 
         return signupRequest;

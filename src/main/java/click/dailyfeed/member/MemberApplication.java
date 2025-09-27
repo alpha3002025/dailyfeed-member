@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 @EnableJpaAuditing
 @SpringBootApplication
 @ComponentScan(basePackages = {
+		"click.dailyfeed.feign",
         "click.dailyfeed.member",
         "click.dailyfeed.pagination",
         "click.dailyfeed.redis",
