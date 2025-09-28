@@ -88,7 +88,7 @@ dailyfeed:
           read: 10000
     image:
       feign:
-        url: ${SEARCH_SERVICE_URL:http://localhost:8085}
+        url: ${IMAGE_SERVICE_URL:http://localhost:8085}
         timeout:
           connect: 5000
           read: 10000

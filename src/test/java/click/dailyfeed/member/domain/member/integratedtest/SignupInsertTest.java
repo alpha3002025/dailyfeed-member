@@ -9,6 +9,8 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvFileSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.FilterType;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,6 +21,12 @@ import java.time.LocalDate;
 /// 로컬에서 테스트를 위한 회원 데이터를 넣는 테스트 코드
 @ActiveProfiles({"local-test"})
 @SpringBootTest
+@ComponentScan(
+        excludeFilters = @ComponentScan.Filter(
+                type = FilterType.REGEX,
+                pattern = "click.dailyfeed.feign..*"
+        )
+)
 public class SignupInsertTest {
     @Autowired
     private AuthenticationService authenticationService;

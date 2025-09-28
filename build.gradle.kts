@@ -30,6 +30,12 @@ allprojects {
         mavenCentral()
     }
 
+    dependencyManagement {
+        imports {
+            mavenBom("org.springframework.cloud:spring-cloud-dependencies:2025.0.0")
+        }
+    }
+
     val querydslVersion = "5.0.0:jakarta"
     val mapstructVersion = "1.5.4.Final"
 
