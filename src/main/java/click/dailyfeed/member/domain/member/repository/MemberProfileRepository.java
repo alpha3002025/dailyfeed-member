@@ -15,6 +15,9 @@ public interface MemberProfileRepository extends JpaRepository<MemberProfile, Lo
     @Query("SELECT mp FROM MemberProfile mp JOIN FETCH mp.member m LEFT JOIN FETCH mp.profileImages mpi WHERE m.id = :memberId")
     Optional<MemberProfile> findMemberProfileByMemberId(@Param("memberId") Long memberId);
 
+    @Query("SELECT mp FROM MemberProfile mp JOIN FETCH mp.member m LEFT JOIN FETCH mp.profileImages mpi WHERE mp.handle = :handle")
+    Optional<MemberProfile> findByHandle(String handle);
+
     @Query(value = "SELECT DISTINCT mp FROM MemberProfile mp " +
             "INNER JOIN mp.member m " +
             "LEFT JOIN FETCH mp.profileImages img " +
@@ -51,7 +54,4 @@ public interface MemberProfileRepository extends JpaRepository<MemberProfile, Lo
             "AND mp.isActive = true " +
             "AND (img.isPrimary = true OR img IS NULL)")
     List<MemberProfile> findWithImagesByMemberIdsIn(@Param("memberIds") List<Long> memberIds);
-
-
-    Optional<MemberProfile> findByHandle(String handle);
 }

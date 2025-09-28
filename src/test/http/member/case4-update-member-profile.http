@@ -121,3 +121,12 @@ Authorization: Bearer {{accessToken}}
 GET {{baseUrl}}{{path3_3}}
 Authorization: Bearer {{accessToken}}
 
+
+###############################################################################
+### 4. 다른사람의 프로필 조회 (member handle 로)
+###############################################################################
+@path4_1 = /api/members/profile/@case3_C
+GET {{baseUrl}}{{path4_1}}
+Authorization: Bearer {{accessToken}}
+
+

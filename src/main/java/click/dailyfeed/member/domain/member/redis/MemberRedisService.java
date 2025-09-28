@@ -59,6 +59,20 @@ public class MemberRedisService {
     }
 
     @Transactional(readOnly = true)
+    public MemberProfileDto.MemberProfile findMemberProfileByHandle(String memberHandle) {
+        MemberProfile memberProfile = memberProfileRepository
+                .findByHandle(memberHandle)
+                .orElseThrow(MemberNotFoundException::new);
+
+        Long memberId = memberProfile.getMember().getId();
+
+        Long followersCount = followRepository.countFollowersByMemberId(memberId);
+        Long followingsCount = followRepository.countFollowingByMemberId(memberId);
+
+        return memberProfileMapper.fromEntity(memberProfile, followersCount, followingsCount);
+    }
+
+    @Transactional(readOnly = true)
     @Cacheable(value = RedisKeyConstant.MemberRedisService.WEB_GET_MEMBER_PROFILE_SUMMARY_BY_ID, key = "#memberId")
     public MemberProfileDto.Summary findMemberSummaryById(Long memberId) {
         MemberProfile memberProfile = memberProfileRepository

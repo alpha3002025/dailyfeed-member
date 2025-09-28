@@ -56,6 +56,19 @@ public class MemberController {
                 .build();
     }
 
+    @GetMapping("/profile/@{memberHandle}")
+    public DailyfeedServerResponse<MemberProfileDto.MemberProfile> getMemberProfileByHandle(
+            @InternalAuthenticatedMember MemberDto.Member requestedMember,
+            @PathVariable("memberHandle") String memberHandle
+    ){
+        MemberProfileDto.MemberProfile member = memberRedisService.findMemberProfileByHandle(memberHandle);
+        return DailyfeedServerResponse.<MemberProfileDto.MemberProfile>builder()
+                .data(member)
+                .status(HttpStatus.OK.value())
+                .result(ResponseSuccessCode.SUCCESS)
+                .build();
+    }
+
     // 다른 사람의 프로필 조회
     @GetMapping("/profile/{memberId}")
     public DailyfeedServerResponse<MemberProfileDto.MemberProfile> getMemberProfileByMemberId(
