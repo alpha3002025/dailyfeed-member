@@ -52,18 +52,28 @@ public class AuthenticationMapper {
                     .build();
             memberProfile.addProfileImage(avatarImage);
         }
-
-        // 커버 이미지가 제공된 경우 추가
-        if (signupRequest.getCoverUrl() != null && !signupRequest.getCoverUrl().trim().isEmpty()) {
-            MemberProfileImage coverImage = MemberProfileImage.builder()
+        else{ // 아바타 이미지가 제공되지 않은 경우
+            MemberProfileImage avatarImage = MemberProfileImage.builder()
                     .memberProfile(memberProfile)
-                    .imageType(ImageType.COVER)
+                    .imageType(ImageType.AVATAR)
                     .imageCategory(ImageCategory.ORIGINAL)
-                    .imageUrl(signupRequest.getCoverUrl())
+                    .imageUrl(MemberProfile.DEFAULT_AVATAR_URL)
                     .isPrimary(true)
                     .build();
-            memberProfile.addProfileImage(coverImage);
+            memberProfile.addProfileImage(avatarImage);
         }
+
+        // 커버 이미지가 제공된 경우 추가
+//        if (signupRequest.getCoverUrl() != null && !signupRequest.getCoverUrl().trim().isEmpty()) {
+//            MemberProfileImage coverImage = MemberProfileImage.builder()
+//                    .memberProfile(memberProfile)
+//                    .imageType(ImageType.COVER)
+//                    .imageCategory(ImageCategory.ORIGINAL)
+//                    .imageUrl(signupRequest.getCoverUrl())
+//                    .isPrimary(true)
+//                    .build();
+//            memberProfile.addProfileImage(coverImage);
+//        }
 
         return member;
     }

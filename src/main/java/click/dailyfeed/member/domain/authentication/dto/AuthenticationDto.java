@@ -100,8 +100,8 @@ public class AuthenticationDto {
         @Builder.Default
         private Boolean isActive = true;
 
-        @URL(message = "올바른 아바타 URL 형식이 아닙니다")
-        @Size(max = 500, message = "아바타 URL은 500자를 초과할 수 없습니다")
+//        @URL(message = "올바른 아바타 URL 형식이 아닙니다")
+//        @Size(max = 500, message = "아바타 URL은 500자를 초과할 수 없습니다")
         private String avatarUrl;
 
         // TODO SEASON 2

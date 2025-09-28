@@ -12,7 +12,7 @@ POST {{baseUrl}}{{apiPath}}/signup
 Content-Type: application/json
 
 {
-  "email": "case3@example.com",
+  "email": "case3_P@example.com",
   "password": "Password123!",
   "memberName": "테스트 사용자",
   "handle": "testuser123",
@@ -26,9 +26,7 @@ Content-Type: application/json
   "languageCode": "ko",
   "countryCode": "KR",
   "privacyLevel": "PUBLIC",
-  "isActive": true,
-  "avatarUrl": "https://example.com/avatar.jpg",
-  "coverUrl": "https://example.com/cover.jpg"
+  "isActive": true
 }
 
 

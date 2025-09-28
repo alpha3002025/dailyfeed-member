@@ -98,7 +98,7 @@ public class MemberProfile extends BaseTimeEntity {
     private List<MemberProfileImage> profileImages = new ArrayList<>();
 
     // 기본 이미지 URL 상수
-    public static final String DEFAULT_AVATAR_URL = "https://cdn-icons-png.flaticon.com/512/10302/10302971.png";
+    public static final String DEFAULT_AVATAR_URL = "no-image";
     public static final String DEFAULT_COVER_URL = "https://cdn-icons-png.flaticon.com/512/10302/10302971.png";
 
     // 편의 메서드
