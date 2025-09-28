@@ -6,7 +6,6 @@ import click.dailyfeed.code.domain.member.member.exception.MemberNotFoundExcepti
 import click.dailyfeed.code.global.cache.RedisKeyConstant;
 import click.dailyfeed.code.global.web.page.DailyfeedPageable;
 import click.dailyfeed.code.global.web.page.DailyfeedScrollPage;
-import click.dailyfeed.member.domain.follow.mapper.FollowMapper;
 import click.dailyfeed.member.domain.follow.repository.FollowRepository;
 import click.dailyfeed.member.domain.member.entity.Member;
 import click.dailyfeed.member.domain.member.entity.MemberProfile;
@@ -16,6 +15,7 @@ import click.dailyfeed.member.domain.member.repository.MemberRepository;
 import click.dailyfeed.pagination.converter.DailyfeedPageableConverter;
 import click.dailyfeed.pagination.mapper.PageMapper;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -24,6 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+@Slf4j
 @Transactional
 @RequiredArgsConstructor
 @Service

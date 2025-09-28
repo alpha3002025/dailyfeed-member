@@ -157,7 +157,6 @@ public class MemberController {
             @InternalAuthenticatedMember MemberDto.Member requestedMember,
             DailyfeedPageable dailyfeedPageable
     ){
-
         DailyfeedScrollPage<MemberProfileDto.Summary> result = followRedisService.getMemberFollowingsMore(requestedMember.getId(), dailyfeedPageable.getPage(), dailyfeedPageable.getSize(), dailyfeedPageable);
         return DailyfeedScrollResponse.<DailyfeedScrollPage<MemberProfileDto.Summary>>builder()
                 .data(result)

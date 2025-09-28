@@ -12,7 +12,7 @@ POST {{baseUrl}}{{apiPath}}/login
 Content-Type: application/json
 
 {
-  "email": "case3_D@gmail.com",
+  "email": "case3_C@gmail.com",
   "password": "Password123!@#$"
 }
 
@@ -127,6 +127,27 @@ Authorization: Bearer {{accessToken}}
 ###############################################################################
 @path4_1 = /api/members/profile/@case3_C
 GET {{baseUrl}}{{path4_1}}
+Authorization: Bearer {{accessToken}}
+
+
+###############################################################################
+### 5. followers, following
+###############################################################################
+
+### 5.1. followers-followings
+@path5_1 = /api/members/followers-followings
+GET {{baseUrl}}{{path5_1}}
+Authorization: Bearer {{accessToken}}
+
+
+### 5.2. followers
+@path5_2 = /api/members/followers/more
+GET {{baseUrl}}{{path5_2}}
+Authorization: Bearer {{accessToken}}
+
+### 5.3. followings
+@path5_3 = /api/members/followings/more
+GET {{baseUrl}}{{path5_3}}
 Authorization: Bearer {{accessToken}}
 
 
