@@ -12,6 +12,8 @@ import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
         "click.dailyfeed.member",
         "click.dailyfeed.pagination",
         "click.dailyfeed.redis",
+}, excludeFilters = {
+		@ComponentScan.Filter(type = org.springframework.context.annotation.FilterType.ASSIGNABLE_TYPE, classes = click.dailyfeed.feign.config.web.FeignWebConfig.class)
 })
 public class MemberApplication {
 
