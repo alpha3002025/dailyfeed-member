@@ -44,7 +44,7 @@ public interface MemberProfileRepository extends JpaRepository<MemberProfile, Lo
                     "WHERE mp.isActive = true " +
                     "AND m.id != :myId " +
                     "AND NOT EXISTS (SELECT 1 FROM Follow f WHERE f.follower.id = :myId AND f.following.id = m.id)")
-    Page<MemberProfile> findWithImagesOrderByCreatedAtWithPaging(Pageable pageable, Long myId);
+    Page<MemberProfile> findWithImagesOrderByCreatedAtWithPaging(Long myId, Pageable pageable);
 
 
     @Query(value = "SELECT DISTINCT mp FROM MemberProfile mp " +

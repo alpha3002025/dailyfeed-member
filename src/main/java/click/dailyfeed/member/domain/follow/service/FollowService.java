@@ -6,7 +6,6 @@ import click.dailyfeed.code.domain.member.member.dto.MemberDto;
 import click.dailyfeed.code.domain.member.member.dto.MemberProfileDto;
 import click.dailyfeed.code.domain.member.member.exception.MemberNotFoundException;
 import click.dailyfeed.code.global.web.page.DailyfeedPage;
-import click.dailyfeed.code.global.web.response.DailyfeedPageResponse;
 import click.dailyfeed.member.domain.follow.entity.Follow;
 import click.dailyfeed.member.domain.follow.repository.FollowRepository;
 import click.dailyfeed.member.domain.member.entity.Member;
@@ -96,7 +95,7 @@ public class FollowService {
 
     @Transactional(readOnly = true)
     public DailyfeedPage<MemberProfileDto.Summary> getRecommendNewbie(Pageable pageable, MemberDto.Member requestedMember) {
-        Page<MemberProfile> memberProfiles = memberProfileRepository.findWithImagesOrderByCreatedAtWithPaging(pageable, requestedMember.getId());
+        Page<MemberProfile> memberProfiles = memberProfileRepository.findWithImagesOrderByCreatedAtWithPaging(requestedMember.getId(), pageable);
         List<MemberProfileDto.Summary> content = memberProfiles.stream()
                 .map(memberProfileMapper::fromEntityToSummary)
                 .toList();
