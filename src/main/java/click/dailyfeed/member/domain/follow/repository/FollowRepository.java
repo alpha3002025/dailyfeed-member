@@ -62,6 +62,14 @@ public interface FollowRepository extends JpaRepository<Follow, Long> {
             "WHERE f.follower.id = :memberId")
     List<Long> findFollowingsIdByMemberId(@Param("memberId") Long memberId);
 
+    // memberId 가 someone 을 following 중인지
+    @Query("SELECT f.following.id " +
+            "FROM Follow f " +
+            "INNER JOIN f.following following " +
+            "INNER JOIN Member m ON m.id = following.id " + // member 테이블에 존재하는지 체크
+            "WHERE f.follower.id = :memberId " +
+            "AND f.following.id = :someoneId")
+    Optional<Follow> findMemberFollowingSomeone(@Param("memberId") Long memberId, @Param("someoneId") Long someoneId);
 
     // 팔로워 조회 (나를 팔로우하는 사람들)
     @Query("SELECT f " +

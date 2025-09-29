@@ -4,13 +4,30 @@ create table if not exists dailyfeed.members
     id                 bigint auto_increment PRIMARY KEY,
     email              varchar(100) null,
     password           varchar(100)  null,
-    name               varchar(100) null,
     roles              varchar(100) null,
     created_at         datetime     null,
     updated_at         datetime     null,
     constraint member_unique_email
     unique (email)
-);
+    );
+
+-- member_emails
+create table if not exists member_emails (
+                                             id                      bigint auto_increment primary key,
+                                             member_id               bigint not null,
+                                             email                   varchar(100) not null,
+    is_active               boolean default false,
+    verified                boolean default false,
+    created_at              datetime default current_timestamp,
+    activated_at            datetime null,
+    deactivated_at          datetime null,
+
+    -- 핵심 인덱스
+    unique key uk_email (email),
+    unique key uk_user_active (member_id, is_active),
+    index idx_active_verified (is_active, verified, email), -- 로그인 최적화
+    index idx_cleanup (is_active, created_at) -- 배치 정리용
+    );
 
 -- member_follow
 create table if not exists dailyfeed.member_follows
@@ -33,7 +50,6 @@ create table if not exists dailyfeed.member_profiles
     website_url         varchar(500),
     birth_date          date,
     gender              varchar(30),    -- 'male', 'female', 'other', 'prefer_not_to_say'
-    timezone            varchar(50) default 'utc',
     language_code       varchar(10) default 'en',
     country_code        char(2),
     verification_status varchar(20),    -- 'none', 'pending', 'verified' default 'none'
@@ -50,12 +66,12 @@ create table if not exists dailyfeed.member_profiles
     index idx_updated_at (updated_at)
 
     -- FOREIGN KEY (member_id) REFERENCES members(member_id) ON DELETE CASCADE
-);
+    );
 
 -- member_profile_images
 create table if not exists dailyfeed.member_profile_images
 (
-    image_id            bigint PRIMARY KEY auto_increment,
+    image_id            bigint auto_increment PRIMARY KEY,
     profile_id          bigint not null,
     image_type          varchar(20), -- 'avatar', 'cover', 'gallery' default 'avatar'
     image_category      varchar(20) not null, -- 'original', 'small', 'medium', 'large', 'thumbnail' not null
@@ -77,7 +93,7 @@ create table if not exists dailyfeed.member_profile_images
 
     -- foreign key (profile_id) references member_profiles(profile_id) on delete cascade,
     unique key unique_primary_avatar (profile_id, image_type, is_primary)
-);
+    );
 
 
 -- comments
@@ -93,7 +109,7 @@ create table if not exists dailyfeed.comments
     like_count bigint     null,
     created_at datetime     null,
     updated_at datetime     null
-);
+    );
 
 -- posts
 create table if not exists dailyfeed.posts
@@ -107,7 +123,7 @@ create table if not exists dailyfeed.posts
     is_deleted         tinyint(1)   null,
     created_at         datetime     null,
     updated_at         datetime     null
-);
+    );
 
 -- jwt_keys
 create table if not exists dailyfeed.jwt_keys
@@ -120,15 +136,15 @@ create table if not exists dailyfeed.jwt_keys
     is_primary         tinyint(1)   not null,
     created_at         datetime     null,
     updated_at         datetime     null
-);
+    );
 
 -- Refresh Token 테이블
-create table if not exists refresh_tokens (
-    id                 bigint auto_increment PRIMARY KEY,
-    token_id           varchar(255) unique not null,
+create table if not exists dailyfeed.jwt_refresh_tokens (
+                                                            id                 bigint auto_increment PRIMARY KEY,
+                                                            token_id           varchar(255) unique not null,
     member_id          bigint not null,
     token_value        varchar(512) unique not null,
-    access_token_jti   varchar(255) not null,
+    access_token_id    varchar(255) not null, -- == jti
     expires_at         timestamp not null,
     is_revoked         boolean default false,
     device_info        varchar(500),
@@ -137,22 +153,22 @@ create table if not exists refresh_tokens (
     updated_at         timestamp default current_timestamp on update current_timestamp,
     index idx_token_value (token_value),
     index idx_member_id (member_id),
-    index idx_access_token_jti (access_token_jti),
+    index idx_access_token_id (access_token_id),
     index idx_expires_at (expires_at)
-);
+    );
 
 -- Token Blacklist 테이블
-CREATE TABLE token_blacklist (
-    id              bigint auto_increment primary key,
-    jti             varchar(255) unique not null,
+create table if not exists dailyfeed.jwt_blacklist (
+                                                       id              bigint auto_increment PRIMARY KEY,
+                                                       jti             varchar(255) unique not null,
     member_id       bigint not null,
     expires_at      timestamp not null,
     reason          varchar(100),
     created_at      timestamp default current_timestamp,
     updated_at      timestamp default current_timestamp on update current_timestamp,
-    index           idx_token_jti (jti),
-    index           idx_expires_at (expires_at)
-);
+    index idx_token_jti (jti),
+    index idx_expires_at (expires_at)
+    );
 
 
 

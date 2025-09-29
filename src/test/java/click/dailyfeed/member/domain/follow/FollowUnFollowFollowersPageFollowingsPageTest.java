@@ -3,7 +3,7 @@ package click.dailyfeed.member.domain.follow;
 import click.dailyfeed.code.domain.member.follow.dto.FollowDto;
 import click.dailyfeed.code.domain.member.member.dto.MemberProfileDto;
 import click.dailyfeed.code.global.web.page.DailyfeedPageable;
-import click.dailyfeed.code.global.web.response.DailyfeedScrollResponse;
+import click.dailyfeed.member.domain.follow.entity.Follow;
 import click.dailyfeed.member.domain.follow.repository.FollowRepository;
 import click.dailyfeed.member.domain.follow.service.FollowRedisService;
 import click.dailyfeed.member.domain.follow.service.FollowService;
@@ -24,6 +24,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 @ActiveProfiles({"local-test"})
 @SpringBootTest
@@ -84,23 +85,23 @@ public class FollowUnFollowFollowersPageFollowingsPageTest {
         followService.follow(members.get(2).getId(), member.getId());
         followService.follow(members.get(3).getId(), member.getId());
 
-//        List<String> a_followingMemberNames = member.getFollowings()
-//                .stream()
-//                .map(follow -> follow.getFollower().getId())
-//                .toList();
-//
-//        List<String> a_followerMemberNames = member.getFollowers()
-//                .stream()
-//                .map(follow -> follow.getFollower().getName())
-//                .toList();
+        List<Long> a_followingMemberIds = member.getFollowings()
+                .stream()
+                .map(follow -> follow.getFollower().getId())
+                .toList();
 
-//        logger.info("a_followingMemberNames: {}", a_followingMemberNames.toString());
-//        logger.info("a_followerMemberNames: {}", a_followerMemberNames.toString());
-//
-//        Assertions.assertThat(member.getFollowers()).hasSize(3);
-//        Assertions.assertThat(member.getFollowings()).hasSize(0);
-//        Assertions.assertThat(a_followingMemberNames).isEmpty();
-//        Assertions.assertThat(a_followerMemberNames).contains("B", "C", "D");
+        List<Long> a_followerMemberIds = member.getFollowers()
+                .stream()
+                .map(follow -> follow.getFollower().getId())
+                .toList();
+
+        logger.info("a_followingMemberIds: {}", a_followingMemberIds.toString());
+        logger.info("a_followerMemberIds: {}", a_followerMemberIds.toString());
+
+        Assertions.assertThat(member.getFollowers()).hasSize(3);
+        Assertions.assertThat(member.getFollowings()).hasSize(0);
+        Assertions.assertThat(a_followingMemberIds).isEmpty();
+        Assertions.assertThat(a_followerMemberIds).contains(members.get(1).getId(), members.get(2).getId(), members.get(3).getId());
     }
 
     @Transactional
@@ -189,6 +190,43 @@ public class FollowUnFollowFollowersPageFollowingsPageTest {
         FollowDto.FollowScrollPage scrollResponse = followRedisService.getMemberFollow(member.getId(), DailyfeedPageable.of(0, 10));
         Assertions.assertThat(scrollResponse.getFollowings().getContent().size()).isEqualTo(0);
         Assertions.assertThat(scrollResponse.getFollowers().getContent().size()).isEqualTo(0);
+    }
+
+    @Transactional
+    @Test
+    public void check_맞팔로우_체크(){
+        memberDataSet001.init();
+        List<Member> members = memberRepository.findAll();
+
+        Member member = members.get(0);
+
+        followService.follow(members.get(1).getId(), member.getId()); // member1 이 member 를 follow
+        followService.follow(members.get(2).getId(), member.getId()); // member2 가 member 를 follow
+        followService.follow(members.get(3).getId(), member.getId()); // member3 가 member 를 follow
+
+        /// case 1
+        // member 가 member(1) 을 following 중인지 체크
+        Optional<Follow> memberCheck1_1 = followRepository.findMemberFollowingSomeone(member.getId(), members.get(1).getId());
+        Assertions.assertThat(memberCheck1_1).isEmpty();
+        // member(1) 이 member 를 following 중인지 체크
+        Optional<Follow> memberCheck1_2 = followRepository.findMemberFollowingSomeone(members.get(1).getId(), member.getId());
+        Assertions.assertThat(memberCheck1_2).isPresent();
+
+        /// case 2
+        // member 가 member(2) 을 following 중인지 체크
+        Optional<Follow> memberCheck2_1 = followRepository.findMemberFollowingSomeone(member.getId(), members.get(2).getId());
+        Assertions.assertThat(memberCheck2_1).isEmpty();
+        // member(2) 이 member 를 following 중인지 체크
+        Optional<Follow> memberCheck2_2 = followRepository.findMemberFollowingSomeone(members.get(2).getId(), member.getId());
+        Assertions.assertThat(memberCheck2_2).isPresent();
+
+        /// case 3
+        // member 가 member(3) 을 following 중인지 체크
+        Optional<Follow> memberCheck3_1 = followRepository.findMemberFollowingSomeone(member.getId(), members.get(3).getId());
+        Assertions.assertThat(memberCheck3_1).isEmpty();
+        // member(3) 이 member 를 following 중인지 체크
+        Optional<Follow> memberCheck3_2 = followRepository.findMemberFollowingSomeone(members.get(3).getId(), member.getId());
+        Assertions.assertThat(memberCheck3_2).isPresent();
     }
 
 }

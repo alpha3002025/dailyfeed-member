@@ -2,6 +2,7 @@ package click.dailyfeed.member.domain.follow.service;
 
 import click.dailyfeed.code.domain.member.follow.exception.FollowRelationshipAlreadyExistsException;
 import click.dailyfeed.code.domain.member.follow.exception.FollowRelationshipNotFoundException;
+import click.dailyfeed.code.domain.member.follow.predicate.FollowingPredicate;
 import click.dailyfeed.code.domain.member.member.dto.MemberDto;
 import click.dailyfeed.code.domain.member.member.dto.MemberProfileDto;
 import click.dailyfeed.code.domain.member.member.exception.MemberNotFoundException;
@@ -22,6 +23,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -44,7 +46,10 @@ public class FollowService {
         Member memberToFollow = getMemberOrThrow(memberToFollowId);
         Member follower = getMemberOrThrow(followerId);
 
-        getFollowRelationshipOrThrowIfAlreadyExists(memberToFollow, follower);
+        FollowingPredicate followingPredicate = checkMemberFollowingSomeone(follower, memberToFollow);
+        if(followingPredicate == FollowingPredicate.FOLLOWING) {
+            throw new FollowRelationshipAlreadyExistsException();
+        }
 
         Follow follow = Follow.builder()
                 .follower(follower)
@@ -86,11 +91,12 @@ public class FollowService {
                 .orElseThrow(FollowRelationshipNotFoundException::new);
     }
 
-    public void getFollowRelationshipOrThrowIfAlreadyExists(Member follower, Member following) {
-        boolean exists = followRepository.existsByFollowerAndFollowing(follower, following);
-        if(exists) {
-            throw new FollowRelationshipAlreadyExistsException();
+    public FollowingPredicate checkMemberFollowingSomeone(Member member, Member someone){
+        Optional<Follow> check = followRepository.findMemberFollowingSomeone(member.getId(), someone.getId());
+        if(check.isPresent()){
+            return FollowingPredicate.FOLLOWING;
         }
+        return FollowingPredicate.NOT_FOLLOWING;
     }
 
     @Transactional(readOnly = true)
