@@ -5,7 +5,7 @@ import click.dailyfeed.code.domain.member.member.dto.MemberProfileDto;
 import click.dailyfeed.code.domain.member.member.exception.MemberNotFoundException;
 import click.dailyfeed.code.domain.member.member.predicate.HandleExistsPredicate;
 import click.dailyfeed.code.global.cache.RedisKeyConstant;
-import click.dailyfeed.member.domain.follow.repository.jpa.FollowRepository;
+import click.dailyfeed.member.domain.follow.repository.mongo.FollowingMongoRepository;
 import click.dailyfeed.member.domain.member.entity.Member;
 import click.dailyfeed.member.domain.member.entity.MemberProfile;
 import click.dailyfeed.member.domain.member.mapper.MemberMapper;
@@ -25,8 +25,8 @@ import java.util.Optional;
 @Service
 public class MemberRedisService {
     private final MemberRepository memberRepository;
-    private final FollowRepository followRepository;
     private final MemberProfileRepository memberProfileRepository;
+    private final FollowingMongoRepository followingMongoRepository;
     private final MemberMapper memberMapper;
     private final MemberProfileMapper memberProfileMapper;
 
@@ -52,8 +52,9 @@ public class MemberRedisService {
                 .findById(memberId)
                 .orElseThrow(MemberNotFoundException::new);
 
-        Long followersCount = followRepository.countFollowersByMemberId(memberId);
-        Long followingsCount = followRepository.countFollowingByMemberId(memberId);
+        /// followers, following 카운트
+        Long followingsCount = followingMongoRepository.countByFromId(memberId);
+        Long followersCount = followingMongoRepository.countByToId(memberId);
 
         return memberProfileMapper.fromEntity(memberProfile, followersCount, followingsCount);
     }
@@ -66,8 +67,9 @@ public class MemberRedisService {
 
         Long memberId = memberProfile.getMember().getId();
 
-        Long followersCount = followRepository.countFollowersByMemberId(memberId);
-        Long followingsCount = followRepository.countFollowingByMemberId(memberId);
+        /// followers, following 카운트
+        Long followingsCount = followingMongoRepository.countByFromId(memberId);
+        Long followersCount = followingMongoRepository.countByToId(memberId);
 
         return memberProfileMapper.fromEntity(memberProfile, followersCount, followingsCount);
     }

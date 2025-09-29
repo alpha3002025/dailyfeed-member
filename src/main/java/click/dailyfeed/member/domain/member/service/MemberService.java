@@ -6,6 +6,7 @@ import click.dailyfeed.code.domain.member.member.exception.MemberHandleAlreadyEx
 import click.dailyfeed.code.domain.member.member.exception.MemberNotFoundException;
 import click.dailyfeed.feign.domain.image.ImageFeignHelper;
 import click.dailyfeed.member.domain.follow.repository.jpa.FollowRepository;
+import click.dailyfeed.member.domain.follow.repository.mongo.FollowingMongoRepository;
 import click.dailyfeed.member.domain.member.entity.MemberProfile;
 import click.dailyfeed.member.domain.member.mapper.MemberProfileMapper;
 import click.dailyfeed.member.domain.member.repository.jpa.MemberProfileRepository;
@@ -26,6 +27,7 @@ public class MemberService {
     private final MemberProfileRepository memberProfileRepository;
     private final MemberProfileMapper memberProfileMapper;
     private final FollowRepository followRepository;
+    private final FollowingMongoRepository followingMongoRepository;
     private final ImageFeignHelper imageFeignHelper;
 
     public MemberProfileDto.MemberProfile updateMemberProfile(
@@ -39,8 +41,8 @@ public class MemberService {
         MemberProfile updatedMemberProfile = memberProfileMapper.updateMember(memberProfile, updateRequest);
 
         /// followers, following 카운트
-        Long followersCount = followRepository.countFollowersByMemberId(requestedMember.getId());
-        Long followingsCount = followRepository.countFollowingByMemberId(requestedMember.getId());
+        Long followingsCount = followingMongoRepository.countByFromId(requestedMember.getId());
+        Long followersCount = followingMongoRepository.countByToId(requestedMember.getId());
 
         /// 회원의 기존 이미지 삭제 요청 → image-svc
         // TODO SEASON 2 근데... 이거 카프카로 분리하는게 맞긴해보인다. 트랜잭션 내에 존재할 필요가 없다.
