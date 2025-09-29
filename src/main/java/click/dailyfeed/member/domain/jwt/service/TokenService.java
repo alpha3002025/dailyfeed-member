@@ -1,5 +1,6 @@
 package click.dailyfeed.member.domain.jwt.service;
 
+import click.dailyfeed.code.domain.member.member.exception.MemberNotFoundException;
 import click.dailyfeed.code.global.jwt.exception.InvalidTokenException;
 import click.dailyfeed.member.domain.jwt.dto.JwtDto;
 import click.dailyfeed.member.domain.jwt.entity.RefreshToken;
@@ -21,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 
 @Slf4j
@@ -96,13 +98,16 @@ public class TokenService {
         refreshTokenRepository.save(refreshToken);
 
         // 사용자 정보 조회
-        Member member = memberRepository.findById(refreshToken.getMemberId())
-                .orElseThrow(() -> new InvalidTokenException("Member not found"));
+        List<Member> result = memberRepository.findByIdFetchJoin(refreshToken.getMemberId());
+        if (result.isEmpty()) {
+            throw new MemberNotFoundException();
+        }
+
+        Member member = result.get(0);
 
         // UserDetails 생성 (만료 시간은 JwtKeyHelper에서 처리)
         JwtDto.UserDetails userDetails = JwtMapper.ofUserDetails(
                 member.getId(),
-                member.getEmail(),
                 member.getPassword(),
                 jwtKeyHelper.generateAccessTokenExpiration()
         );

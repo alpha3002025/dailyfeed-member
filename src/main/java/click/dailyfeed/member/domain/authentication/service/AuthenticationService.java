@@ -61,7 +61,6 @@ public class AuthenticationService {
         Date expirationDate = jwtKeyHelper.generateAccessTokenExpiration();
         JwtDto.UserDetails userDetails = JwtMapper.ofUserDetails(
                 member.getId(),
-                member.getEmail(),
                 member.getPassword(),
                 expirationDate
         );
@@ -88,6 +87,11 @@ public class AuthenticationService {
                 .result(ResponseSuccessCode.SUCCESS)
                 .data(Boolean.TRUE)
                 .build();
+    }
+
+    public Boolean deactivate(Long id) {
+        memberRepository.deleteById(id);
+        return false;
     }
 
     public DailyfeedServerResponse<MemberDto.Member> signup(AuthenticationDto.SignupRequest signupRequest) {
@@ -224,11 +228,9 @@ public class AuthenticationService {
 
     @Transactional(readOnly = true)
     public Member getMemberOrThrow(AuthenticationDto.LoginRequest loginRequest) {
-        Member member = memberRepository.findByEmail(loginRequest.getEmail());
-        if (member == null) {
-            throw new MemberNotFoundException();
-        }
-        return member;
+        return memberRepository
+                .findFirstByEmailFetchJoin(loginRequest.getEmail())
+                .orElseThrow(() -> new MemberNotFoundException());
     }
 
     public void checkIfPasswordMatchesOrThrow(String requestPassword, String encryptedPassword) {
@@ -239,9 +241,9 @@ public class AuthenticationService {
 
     @Transactional(readOnly = true)
     public MemberExistsPredicate checkIfMemberAlreadyExists(AuthenticationDto.SignupRequest signupRequest) {
-        if (memberRepository.findByEmail(signupRequest.getEmail()) == null) {
-            return MemberExistsPredicate.NOT_EXISTS;
+        if (memberRepository.findFirstByEmailFetchJoin(signupRequest.getEmail()).isPresent()) {
+            return MemberExistsPredicate.EXISTS;
         }
-        return MemberExistsPredicate.EXISTS;
+        return MemberExistsPredicate.NOT_EXISTS;
     }
 }

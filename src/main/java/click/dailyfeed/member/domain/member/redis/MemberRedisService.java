@@ -31,7 +31,7 @@ public class MemberRedisService {
     private final MemberProfileMapper memberProfileMapper;
 
     @Transactional(readOnly = true)
-//    @Cacheable(value = RedisKeyConstant.MemberRedisService.WEB_GET_MEMBER_BY_ID, key="#memberId")
+    @Cacheable(value = RedisKeyConstant.MemberRedisService.WEB_GET_MEMBER_BY_ID, key="#memberId")
     public MemberDto.Member getMemberOrThrow(Long memberId) {
         MemberDto.Member member = memberRepository
                 .findById(memberId)

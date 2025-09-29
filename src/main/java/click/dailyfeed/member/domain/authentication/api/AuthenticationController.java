@@ -5,6 +5,7 @@ import click.dailyfeed.code.domain.authentication.exception.AuthenticationExcept
 import click.dailyfeed.code.domain.member.member.dto.MemberDto;
 import click.dailyfeed.code.global.web.code.ResponseSuccessCode;
 import click.dailyfeed.code.global.web.response.DailyfeedServerResponse;
+import click.dailyfeed.member.config.web.annotation.InternalAuthenticatedMember;
 import click.dailyfeed.member.domain.authentication.dto.AuthenticationDto;
 import click.dailyfeed.member.domain.authentication.service.AuthenticationService;
 import click.dailyfeed.member.domain.jwt.service.JwtKeyHelper;
@@ -15,10 +16,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @Slf4j
 @RequestMapping("/api/authentication")
@@ -45,6 +43,20 @@ public class AuthenticationController {
             HttpServletResponse httpServletResponse
     ) {
         return authenticationService.login(loginRequest, httpServletRequest, httpServletResponse);
+    }
+
+    @DeleteMapping("/deactivate")
+    public DailyfeedServerResponse<Boolean> deactivate(
+            @InternalAuthenticatedMember MemberDto.Member member,
+            HttpServletRequest httpServletRequest,
+            HttpServletResponse httpServletResponse
+    ){
+        Boolean result = authenticationService.deactivate(member.getId());
+        return DailyfeedServerResponse.<Boolean>builder()
+                .data(result)
+                .status(HttpStatus.NO_CONTENT.value())
+                .result(ResponseSuccessCode.SUCCESS)
+                .build();
     }
 
     @PostMapping("/logout")

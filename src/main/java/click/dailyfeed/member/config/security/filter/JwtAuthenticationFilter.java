@@ -67,7 +67,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
             // 만료 확인
             if (JwtExpiredPredicate.EXPIRED.equals(JwtProcessor.checkIfExpired(userDetails.getExpiration()))) {
-                log.debug("Token expired for user: {}", userDetails.getEmail());
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                 response.getWriter().write("Token expired");
                 return;
@@ -75,7 +74,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
             // Spring Security 인증 설정
             UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(
-                    userDetails.getEmail(),
+                    String.valueOf(userDetails.getId()),
                     null,
                     Collections.singletonList(new SimpleGrantedAuthority("ROLE_MEMBER"))
             );

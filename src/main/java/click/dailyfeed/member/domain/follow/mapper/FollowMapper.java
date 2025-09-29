@@ -12,12 +12,8 @@ public interface FollowMapper {
     FollowMapper INSTANCE = Mappers.getMapper(FollowMapper.class);
 
     @Mapping(target = "memberId", source = "member.id")
-    @Mapping(target = "name", source = "member.name")
-    @Mapping(target = "email", source = "member.email")
     FollowDto.Follower toFollower(Member member);
 
     @Mapping(target = "memberId", source = "member.id")
-    @Mapping(target = "name", source = "member.name")
-    @Mapping(target = "email", source = "member.email")
     FollowDto.Following toFollowing(Member member);
 }

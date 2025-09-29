@@ -16,21 +16,8 @@ public class JwtProcessor {
     public static String generateToken(Key key, String keyId, JwtDto.UserDetails userDetails){
         return Jwts.builder()
                 .setHeaderParam("kid", keyId)
-                .setSubject(userDetails.getEmail())
                 .setExpiration(userDetails.getExpiration())
                 .claim("id", userDetails.getId())
-                .claim("email", userDetails.getEmail())
-                .claim("password", userDetails.getPassword())
-                .signWith(key, SignatureAlgorithm.HS256)
-                .compact();
-    }
-
-    public static String generateToken(Key key, JwtDto.UserDetails userDetails){
-        return Jwts.builder()
-                .setSubject(userDetails.getEmail())
-                .setExpiration(new Date(System.currentTimeMillis() + 864000000))
-                .claim("id", userDetails.getId())
-                .claim("email", userDetails.getEmail())
                 .claim("password", userDetails.getPassword())
                 .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
@@ -93,14 +80,12 @@ public class JwtProcessor {
 
         // id
         Long id = getIdOrThrow(jws);
-        // email
-        String email = getEmailOrThrow(jws);
         // password
         String password = getPasswordOrThrow(jws);
         // expiration
         Date expiration = getExpirationDateOrThrow(jws);
 
-        return JwtMapper.ofUserDetails(id, email, password, expiration);
+        return JwtMapper.ofUserDetails(id, password, expiration);
     }
 
     public static Jws<Claims> getJwsOrThrow(JwtParser jwtParser, String token){
@@ -124,17 +109,6 @@ public class JwtProcessor {
             throw new TokenMissingClaimsException();
         }
         return id;
-    }
-
-    public static String getEmailOrThrow(Jws<Claims> jws){
-        if(jws.getBody().get("email") == null) {
-            throw new TokenMissingClaimsException();
-        }
-        String email = String.valueOf(jws.getBody().get("email")).isBlank() ? null : String.valueOf(jws.getBody().get("email"));
-        if(email == null) {
-            throw new TokenMissingClaimsException();
-        }
-        return email;
     }
 
     public static String getPasswordOrThrow(Jws<Claims> jws){

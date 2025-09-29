@@ -21,12 +21,6 @@ public class Member extends BaseTimeEntity {
     @EqualsAndHashCode.Include
     private Long id;
 
-    @Column(unique = true, nullable = false)
-    private String email;
-
-    @Column(nullable = false)
-    private String name;
-
     @Column(nullable = false, length = 100)
     private String password; // encrypted password
 
@@ -39,10 +33,11 @@ public class Member extends BaseTimeEntity {
     @OneToMany(mappedBy = "follower", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Follow> followings = new ArrayList<>();
 
+    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<MemberEmail> memberEmails = new ArrayList<>();
+
     @Builder(builderMethodName = "newMember")
-    public Member(String email, String name, String password, String roles) {
-        this.email = email;
-        this.name = name;
+    public Member(String password, String roles) {
         this.password = password;
         this.roles = roles;
     }
@@ -58,11 +53,9 @@ public class Member extends BaseTimeEntity {
         }
     }
 
-//    public void addFollowee(Follow followed, Follow followee) {
-//        followee.getFollowing().addFollowing(followee);
-//        this.addFollower(followee);
-////        followers.add(following);
-//    }
+    public void addEmail(MemberEmail email) {
+        this.memberEmails.add(email);
+    }
 
     public void addFollowing(Follow follow) {
         this.followings.add(follow);

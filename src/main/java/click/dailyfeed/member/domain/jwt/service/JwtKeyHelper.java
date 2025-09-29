@@ -51,10 +51,9 @@ public class JwtKeyHelper {
         return Jwts.builder()
                 .setHeaderParam("kid", primaryKeyId)
                 .setId(jti)  // JTI 설정
-                .setSubject(userDetails.getEmail())
+                .setSubject(String.valueOf(userDetails.getId()))
                 .setExpiration(expirationDate)
                 .claim("id", userDetails.getId())
-                .claim("email", userDetails.getEmail())
                 .claim("password", userDetails.getPassword())
                 .signWith(primaryKey, SignatureAlgorithm.HS256)
                 .compact();

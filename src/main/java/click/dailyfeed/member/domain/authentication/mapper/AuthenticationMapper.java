@@ -3,6 +3,7 @@ package click.dailyfeed.member.domain.authentication.mapper;
 import click.dailyfeed.code.domain.member.member.dto.MemberDto;
 import click.dailyfeed.member.domain.authentication.dto.AuthenticationDto;
 import click.dailyfeed.member.domain.member.entity.Member;
+import click.dailyfeed.member.domain.member.entity.MemberEmail;
 import click.dailyfeed.member.domain.member.entity.MemberProfile;
 import click.dailyfeed.member.domain.member.entity.MemberProfileImage;
 import click.dailyfeed.code.domain.member.member.type.data.ImageType;
@@ -15,11 +16,16 @@ import org.springframework.stereotype.Component;
 public class AuthenticationMapper {
     public Member newMember(AuthenticationDto.SignupRequest signupRequest, PasswordEncoder passwordEncoder, String roles){
         Member member = Member.newMember()
-                .name(signupRequest.getMemberName())
-                .email(signupRequest.getEmail())
                 .password(passwordEncoder.encode(signupRequest.getPassword()))
                 .roles(roles)
                 .build();
+
+        MemberEmail memberEmail = MemberEmail.newMember()
+                .email(signupRequest.getEmail())
+                .member(member)
+                .build();
+
+        member.addEmail(memberEmail);
 
         MemberProfile memberProfile = MemberProfile.builder()
                 .member(member)
@@ -81,7 +87,6 @@ public class AuthenticationMapper {
     public MemberDto.Member fromMemberEntityToMemberDto(Member member){
         return MemberDto.Member.builder()
                 .id(member.getId())
-                .name(member.getName())
                 .build();
     }
 }

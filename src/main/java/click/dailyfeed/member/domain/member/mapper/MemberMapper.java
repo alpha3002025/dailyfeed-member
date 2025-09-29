@@ -13,6 +13,5 @@ public interface MemberMapper {
     MemberMapper INSTANCE = Mappers.getMapper(MemberMapper.class);
 
     @Mapping(target = "id", source = "member.id")
-    @Mapping(target = "name", source = "member.name")
     MemberDto.Member ofMember(Member member);
 }
