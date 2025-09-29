@@ -1,4 +1,4 @@
-package click.dailyfeed.member.domain.jwt.repository;
+package click.dailyfeed.member.domain.jwt.repository.jpa;
 
 import click.dailyfeed.member.domain.jwt.entity.RefreshToken;
 import org.springframework.data.jpa.repository.JpaRepository;

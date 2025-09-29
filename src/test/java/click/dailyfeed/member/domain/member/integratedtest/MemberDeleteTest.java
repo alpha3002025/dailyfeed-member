@@ -6,7 +6,7 @@ import click.dailyfeed.code.domain.member.member.type.data.GenderType;
 import click.dailyfeed.member.domain.authentication.dto.AuthenticationDto;
 import click.dailyfeed.member.domain.authentication.service.AuthenticationService;
 import click.dailyfeed.member.domain.member.entity.Member;
-import click.dailyfeed.member.domain.member.repository.MemberRepository;
+import click.dailyfeed.member.domain.member.repository.jpa.MemberRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvFileSource;

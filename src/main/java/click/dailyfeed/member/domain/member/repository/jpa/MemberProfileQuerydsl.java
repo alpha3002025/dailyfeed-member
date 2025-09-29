@@ -1,14 +1,8 @@
-package click.dailyfeed.member.domain.member.repository;
+package click.dailyfeed.member.domain.member.repository.jpa;
 
-import click.dailyfeed.member.domain.member.entity.MemberProfile;
-import click.dailyfeed.member.domain.member.entity.QMemberProfile;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
-
-import java.util.Optional;
-
-import static click.dailyfeed.member.domain.member.entity.QMemberProfile.memberProfile;
 
 
 // 쓸지 말지 고민... 아이고...

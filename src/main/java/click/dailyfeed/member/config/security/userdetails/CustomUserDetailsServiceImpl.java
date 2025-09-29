@@ -2,8 +2,8 @@ package click.dailyfeed.member.config.security.userdetails;
 
 import click.dailyfeed.code.domain.member.member.exception.MemberNotFoundException;
 import click.dailyfeed.member.domain.member.entity.Member;
-import click.dailyfeed.member.domain.member.repository.MemberProfileRepository;
-import click.dailyfeed.member.domain.member.repository.MemberRepository;
+import click.dailyfeed.member.domain.member.repository.jpa.MemberProfileRepository;
+import click.dailyfeed.member.domain.member.repository.jpa.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;

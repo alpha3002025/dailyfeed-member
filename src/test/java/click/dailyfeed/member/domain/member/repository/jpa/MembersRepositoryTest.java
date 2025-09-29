@@ -3,7 +3,6 @@ package click.dailyfeed.member.domain.member.repository.jpa;
 
 import click.dailyfeed.code.domain.member.member.exception.MemberNotFoundException;
 import click.dailyfeed.member.domain.member.entity.Member;
-import click.dailyfeed.member.domain.member.repository.MemberRepository;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

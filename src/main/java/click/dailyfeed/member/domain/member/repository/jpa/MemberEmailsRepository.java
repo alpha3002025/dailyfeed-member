@@ -1,4 +1,4 @@
-package click.dailyfeed.member.domain.member.repository;
+package click.dailyfeed.member.domain.member.repository.jpa;
 
 import click.dailyfeed.member.domain.member.entity.MemberEmail;
 import org.springframework.data.jpa.repository.JpaRepository;

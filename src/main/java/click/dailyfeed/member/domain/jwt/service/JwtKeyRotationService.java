@@ -5,7 +5,7 @@ import click.dailyfeed.code.domain.member.key.exception.PrimaryKeyMissingExcepti
 import click.dailyfeed.code.domain.member.key.exception.PrimaryKeyNotExistException;
 import click.dailyfeed.member.domain.jwt.entity.JwtKey;
 import click.dailyfeed.member.domain.jwt.mapper.JwtKeyPlainMapper;
-import click.dailyfeed.member.domain.jwt.repository.JwtKeyRepository;
+import click.dailyfeed.member.domain.jwt.repository.jpa.JwtKeyRepository;
 import io.jsonwebtoken.security.Keys;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

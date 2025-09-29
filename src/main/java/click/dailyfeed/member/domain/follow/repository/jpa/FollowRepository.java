@@ -1,4 +1,4 @@
-package click.dailyfeed.member.domain.follow.repository;
+package click.dailyfeed.member.domain.follow.repository.jpa;
 
 import click.dailyfeed.member.domain.follow.entity.Follow;
 import click.dailyfeed.member.domain.member.entity.Member;

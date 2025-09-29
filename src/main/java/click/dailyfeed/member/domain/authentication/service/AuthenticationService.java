@@ -18,7 +18,7 @@ import click.dailyfeed.member.domain.jwt.service.JwtKeyHelper;
 import click.dailyfeed.member.domain.jwt.service.TokenService;
 import click.dailyfeed.member.domain.jwt.util.JwtProcessor;
 import click.dailyfeed.member.domain.member.entity.Member;
-import click.dailyfeed.member.domain.member.repository.MemberRepository;
+import click.dailyfeed.member.domain.member.repository.jpa.MemberRepository;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;

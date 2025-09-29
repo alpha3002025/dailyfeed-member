@@ -6,12 +6,12 @@ import click.dailyfeed.code.domain.member.member.exception.MemberNotFoundExcepti
 import click.dailyfeed.code.global.cache.RedisKeyConstant;
 import click.dailyfeed.code.global.web.page.DailyfeedPageable;
 import click.dailyfeed.code.global.web.page.DailyfeedScrollPage;
-import click.dailyfeed.member.domain.follow.repository.FollowRepository;
+import click.dailyfeed.member.domain.follow.repository.jpa.FollowRepository;
 import click.dailyfeed.member.domain.member.entity.Member;
 import click.dailyfeed.member.domain.member.entity.MemberProfile;
 import click.dailyfeed.member.domain.member.mapper.MemberProfileMapper;
-import click.dailyfeed.member.domain.member.repository.MemberProfileRepository;
-import click.dailyfeed.member.domain.member.repository.MemberRepository;
+import click.dailyfeed.member.domain.member.repository.jpa.MemberProfileRepository;
+import click.dailyfeed.member.domain.member.repository.jpa.MemberRepository;
 import click.dailyfeed.pagination.converter.DailyfeedPageableConverter;
 import click.dailyfeed.pagination.mapper.PageMapper;
 import lombok.RequiredArgsConstructor;

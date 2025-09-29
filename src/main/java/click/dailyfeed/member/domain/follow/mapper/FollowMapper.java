@@ -1,9 +1,7 @@
 package click.dailyfeed.member.domain.follow.mapper;
 
-import click.dailyfeed.code.domain.member.follow.dto.FollowDto;
-import click.dailyfeed.member.domain.member.entity.Member;
+import click.dailyfeed.member.domain.follow.document.FollowingDocument;
 import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
 import org.mapstruct.ReportingPolicy;
 import org.mapstruct.factory.Mappers;
 
@@ -11,9 +9,10 @@ import org.mapstruct.factory.Mappers;
 public interface FollowMapper {
     FollowMapper INSTANCE = Mappers.getMapper(FollowMapper.class);
 
-    @Mapping(target = "memberId", source = "member.id")
-    FollowDto.Follower toFollower(Member member);
-
-    @Mapping(target = "memberId", source = "member.id")
-    FollowDto.Following toFollowing(Member member);
+    default FollowingDocument newFollowDocument(Long fromId, Long toId){
+        return FollowingDocument.newFollowingBuilder()
+                .fromId(fromId)
+                .toId(toId)
+                .build();
+    }
 }

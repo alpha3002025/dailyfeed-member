@@ -7,13 +7,16 @@ import click.dailyfeed.code.domain.member.member.dto.MemberDto;
 import click.dailyfeed.code.domain.member.member.dto.MemberProfileDto;
 import click.dailyfeed.code.domain.member.member.exception.MemberNotFoundException;
 import click.dailyfeed.code.global.web.page.DailyfeedPage;
+import click.dailyfeed.member.domain.follow.document.FollowingDocument;
 import click.dailyfeed.member.domain.follow.entity.Follow;
-import click.dailyfeed.member.domain.follow.repository.FollowRepository;
+import click.dailyfeed.member.domain.follow.mapper.FollowMapper;
+import click.dailyfeed.member.domain.follow.repository.jpa.FollowRepository;
+import click.dailyfeed.member.domain.follow.repository.mongo.FollowingMongoRepository;
 import click.dailyfeed.member.domain.member.entity.Member;
 import click.dailyfeed.member.domain.member.entity.MemberProfile;
 import click.dailyfeed.member.domain.member.mapper.MemberProfileMapper;
-import click.dailyfeed.member.domain.member.repository.MemberProfileRepository;
-import click.dailyfeed.member.domain.member.repository.MemberRepository;
+import click.dailyfeed.member.domain.member.repository.jpa.MemberProfileRepository;
+import click.dailyfeed.member.domain.member.repository.jpa.MemberRepository;
 import click.dailyfeed.pagination.mapper.PageMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -31,10 +34,12 @@ import java.util.Optional;
 @Service
 public class FollowService {
     private final FollowRepository followRepository;
+    private final FollowingMongoRepository followingMongoRepository;
     private final MemberRepository memberRepository;
     private final MemberProfileRepository memberProfileRepository;
     private final MemberProfileMapper memberProfileMapper;
     private final PageMapper pageMapper;
+    private final FollowMapper followMapper;
 
     /**
      * "followerId 가 memberToFollowId 를 follow 한다"
@@ -59,6 +64,7 @@ public class FollowService {
         follower.follow(memberToFollow, follow);
 
         followRepository.save(follow);
+        followingMongoRepository.save(followMapper.newFollowDocument(followerId, memberToFollowId));
         return true;
     }
 
@@ -76,7 +82,16 @@ public class FollowService {
         follower.unfollow(memberToUnfollow, follow);
 
         followRepository.deleteById(follow.getId());
+        deleteFollowingDocument(followerId, memberToUnfollowId);
+
         return Boolean.TRUE;
+    }
+
+    public void deleteFollowingDocument(Long followerId, Long memberToUnfollowId) {
+        Optional<FollowingDocument> documentResult = followingMongoRepository.findByFromIdAndToId(followerId, memberToUnfollowId);
+        if(documentResult.isPresent()) {
+            followingMongoRepository.delete(documentResult.get());
+        }
     }
 
     public Member getMemberOrThrow(Long memberId) {
