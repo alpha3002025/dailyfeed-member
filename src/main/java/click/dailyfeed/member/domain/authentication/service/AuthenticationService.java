@@ -3,6 +3,7 @@ package click.dailyfeed.member.domain.authentication.service;
 import click.dailyfeed.code.domain.authentication.code.AuthenticationExceptionCode;
 import click.dailyfeed.code.domain.authentication.exception.AuthenticationException;
 import click.dailyfeed.code.domain.member.member.dto.MemberDto;
+import click.dailyfeed.code.domain.member.member.dto.MemberProfileDto;
 import click.dailyfeed.code.domain.member.member.exception.MemberAlreadyExistsException;
 import click.dailyfeed.code.domain.member.member.exception.MemberNotFoundException;
 import click.dailyfeed.code.domain.member.member.exception.MemberPasswordInvalidException;
@@ -18,6 +19,9 @@ import click.dailyfeed.member.domain.jwt.service.JwtKeyHelper;
 import click.dailyfeed.member.domain.jwt.service.TokenService;
 import click.dailyfeed.member.domain.jwt.util.JwtProcessor;
 import click.dailyfeed.member.domain.member.entity.Member;
+import click.dailyfeed.member.domain.member.entity.MemberProfile;
+import click.dailyfeed.member.domain.member.mapper.MemberProfileMapper;
+import click.dailyfeed.member.domain.member.repository.jpa.MemberProfileRepository;
 import click.dailyfeed.member.domain.member.repository.jpa.MemberRepository;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
@@ -43,12 +47,14 @@ import java.util.Date;
 public class AuthenticationService {
     private final PasswordEncoder passwordEncoder;
     private final MemberRepository memberRepository;
-    private final AuthenticationMapper authenticationMapper;
+    private final MemberProfileRepository memberProfileRepository;
     private final JwtKeyHelper jwtKeyHelper;
     private final TokenService tokenService;
+    private final AuthenticationMapper authenticationMapper;
+    private final MemberProfileMapper memberProfileMapper;
 
     @Transactional
-    public DailyfeedServerResponse<Boolean> login(
+    public DailyfeedServerResponse<MemberProfileDto.Summary> login(
             AuthenticationDto.LoginRequest loginRequest,
             HttpServletRequest request,
             HttpServletResponse response) {
@@ -82,10 +88,14 @@ public class AuthenticationService {
         // 리프레시 토큰은 HttpOnly 쿠키로 설정
         setRefreshTokenCookie(response, tokenPair.getRefreshToken());
 
-        return DailyfeedServerResponse.<Boolean>builder()
+        MemberProfile memberProfile = memberProfileRepository
+                .findMemberProfileByMemberId(member.getId())
+                .orElseThrow(MemberNotFoundException::new);
+
+        return DailyfeedServerResponse.<MemberProfileDto.Summary>builder()
                 .status(HttpStatus.OK.value())
                 .result(ResponseSuccessCode.SUCCESS)
-                .data(Boolean.TRUE)
+                .data(memberProfileMapper.fromEntityToSummary(memberProfile))
                 .build();
     }
 

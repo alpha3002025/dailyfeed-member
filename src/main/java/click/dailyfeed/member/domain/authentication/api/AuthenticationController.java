@@ -3,6 +3,7 @@ package click.dailyfeed.member.domain.authentication.api;
 import click.dailyfeed.code.domain.authentication.code.AuthenticationExceptionCode;
 import click.dailyfeed.code.domain.authentication.exception.AuthenticationException;
 import click.dailyfeed.code.domain.member.member.dto.MemberDto;
+import click.dailyfeed.code.domain.member.member.dto.MemberProfileDto;
 import click.dailyfeed.code.global.web.code.ResponseSuccessCode;
 import click.dailyfeed.code.global.web.response.DailyfeedServerResponse;
 import click.dailyfeed.member.config.web.annotation.InternalAuthenticatedMember;
@@ -37,7 +38,7 @@ public class AuthenticationController {
     }
 
     @PostMapping("/login")
-    public DailyfeedServerResponse<Boolean> login(
+    public DailyfeedServerResponse<MemberProfileDto.Summary> login(
             @Valid @RequestBody AuthenticationDto.LoginRequest loginRequest,
             HttpServletRequest httpServletRequest,
             HttpServletResponse httpServletResponse
