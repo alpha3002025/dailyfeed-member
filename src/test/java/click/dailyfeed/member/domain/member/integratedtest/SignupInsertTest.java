@@ -60,6 +60,35 @@ public class SignupInsertTest {
         authenticationService.signup(signupRequest);
     }
 
+    @Rollback(value = false)
+    @Transactional
+    @ParameterizedTest
+    @CsvFileSource(resources = {"/csv/authentication/signup_request_ai.csv"}, numLinesToSkip = 1)
+    @DisplayName("회원가입_샘플데이터_insert_ai_이미지프로필(로컬테스트용 샘플데이터)")
+    public void fixture__insert_sample_data_with_ai_generated_image(
+            String email,
+            String password,
+            String memberName,
+            String handle,
+            String displayName,
+            String bio,
+            String location,
+            String websiteUrl,
+            String birthDate,
+            String gender,
+            String avatarUrl
+    ){
+        // When - CSV 파라미터를 SignupRequest로 변환
+        AuthenticationDto.SignupRequest signupRequest = toRequest(
+                email, password, memberName, handle, displayName,
+                bio, location, websiteUrl, birthDate, gender,
+                avatarUrl);
+
+        System.out.println("handle = " + signupRequest.getHandle());
+
+        authenticationService.signup(signupRequest);
+    }
+
 
     private AuthenticationDto.SignupRequest toRequest(
             String email,
