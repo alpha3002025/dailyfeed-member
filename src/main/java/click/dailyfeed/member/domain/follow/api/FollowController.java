@@ -5,7 +5,10 @@ import click.dailyfeed.code.domain.member.member.dto.MemberDto;
 import click.dailyfeed.code.domain.member.member.dto.MemberProfileDto;
 import click.dailyfeed.code.global.web.code.ResponseSuccessCode;
 import click.dailyfeed.code.global.web.page.DailyfeedPage;
+import click.dailyfeed.code.global.web.page.DailyfeedPageable;
+import click.dailyfeed.code.global.web.page.DailyfeedScrollPage;
 import click.dailyfeed.code.global.web.response.DailyfeedPageResponse;
+import click.dailyfeed.code.global.web.response.DailyfeedScrollResponse;
 import click.dailyfeed.code.global.web.response.DailyfeedServerResponse;
 import click.dailyfeed.member.config.web.annotation.InternalAuthenticatedMember;
 import click.dailyfeed.member.domain.follow.service.FollowService;
@@ -57,9 +60,23 @@ public class FollowController {
                     direction = Sort.Direction.DESC
             ) Pageable pageable
     ){
-        DailyfeedPage<MemberProfileDto.Summary> content = followService.getRecommendNewbie(pageable, member);
+        DailyfeedPage<MemberProfileDto.Summary> content = followService.getRecommendNewbie(member, pageable);
         return DailyfeedPageResponse.<MemberProfileDto.Summary>builder()
                 .data(content)
+                .status(HttpStatus.OK.value())
+                .result(ResponseSuccessCode.SUCCESS)
+                .build();
+    }
+
+    /// 사용자 추천 scroll
+    @GetMapping("/recommend/newbie/more")
+    public DailyfeedScrollResponse<DailyfeedScrollPage<MemberProfileDto.Summary>> getRecommendNewbieMore(
+            @InternalAuthenticatedMember MemberDto.Member requestedMember,
+            DailyfeedPageable dailyfeedPageable
+    ){
+        DailyfeedScrollPage<MemberProfileDto.Summary> result = followService.getRecommendNewbieMore(requestedMember, dailyfeedPageable);
+        return DailyfeedScrollResponse.<DailyfeedScrollPage<MemberProfileDto.Summary>>builder()
+                .data(result)
                 .status(HttpStatus.OK.value())
                 .result(ResponseSuccessCode.SUCCESS)
                 .build();

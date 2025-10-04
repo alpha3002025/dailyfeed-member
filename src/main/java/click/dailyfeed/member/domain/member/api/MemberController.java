@@ -157,7 +157,7 @@ public class MemberController {
             @InternalAuthenticatedMember MemberDto.Member requestedMember,
             DailyfeedPageable dailyfeedPageable
     ){
-        DailyfeedScrollPage<MemberProfileDto.Summary> result = followRedisService.getMemberFollowingsMore(requestedMember.getId(), dailyfeedPageable.getPage(), dailyfeedPageable.getSize(), dailyfeedPageable);
+        DailyfeedScrollPage<MemberProfileDto.Summary> result = followRedisService.getMemberFollowingsMore(requestedMember.getId(), dailyfeedPageable);
         return DailyfeedScrollResponse.<DailyfeedScrollPage<MemberProfileDto.Summary>>builder()
                 .data(result)
                 .status(HttpStatus.OK.value())
@@ -279,7 +279,7 @@ public class MemberController {
             @InternalAuthenticatedMember MemberDto.Member requestedMember,
             DailyfeedPageable dailyfeedPageable,
             @PathVariable Long memberId){
-        DailyfeedScrollPage<MemberProfileDto.Summary> result = followRedisService.getMemberFollowingsMore(memberId, dailyfeedPageable.getPage(), dailyfeedPageable.getSize(), dailyfeedPageable);
+        DailyfeedScrollPage<MemberProfileDto.Summary> result = followRedisService.getMemberFollowingsMore(memberId, dailyfeedPageable);
         return DailyfeedScrollResponse.<DailyfeedScrollPage<MemberProfileDto.Summary>>builder()
                 .data(result)
                 .status(HttpStatus.OK.value())
