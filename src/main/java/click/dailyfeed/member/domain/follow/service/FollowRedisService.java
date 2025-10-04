@@ -72,8 +72,8 @@ public class FollowRedisService {
     }
 
     @Transactional(readOnly = true)
-    @Cacheable(value = RedisKeyConstant.FollowRedisService.WEB_PAGE_FOLLOWINGS_MORE_BY_MEMBER_ID, key = "#memberId + '_from_' + #page + '_size_' + #size")
-    public DailyfeedScrollPage<MemberProfileDto.Summary> getMemberFollowingsMore(Long memberId, int page, int size, DailyfeedPageable dailyfeedPageable) {
+    @Cacheable(value = RedisKeyConstant.FollowRedisService.WEB_PAGE_FOLLOWINGS_MORE_BY_MEMBER_ID, key = "#memberId + '_from_' + #dailyfeedPageable.getPage() + '_size_' + #dailyfeedPageable.getSize()")
+    public DailyfeedScrollPage<MemberProfileDto.Summary> getMemberFollowingsMore(Long memberId, DailyfeedPageable dailyfeedPageable) {
         ///  pageable
         Pageable pageable = dailyfeedPageableConverter.convert(dailyfeedPageable);
 
