@@ -63,6 +63,14 @@ public interface FollowRepository extends JpaRepository<Follow, Long> {
     List<Long> findFollowingsIdByMemberId(@Param("memberId") Long memberId);
 
     // memberId 가 someone 을 following 중인지
+    @Query("SELECT COUNT(f.following.id) " +
+            "FROM Follow f " +
+            "INNER JOIN f.following following " +
+            "INNER JOIN Member m ON m.id = following.id " + // member 테이블에 존재하는지 체크
+            "WHERE f.follower.id = :memberId ")
+    Long countMemberFollowing(@Param("memberId") Long memberId);
+
+    // memberId 가 someone 을 following 중인지
     @Query("SELECT f.following.id " +
             "FROM Follow f " +
             "INNER JOIN f.following following " +
@@ -105,12 +113,6 @@ public interface FollowRepository extends JpaRepository<Follow, Long> {
     // 특정 사용자가 팔로우 하는 목록 조회 (페이징)
     @Query("SELECT mf FROM Follow mf WHERE mf.follower = :member")
     List<Follow> findFollowingByMemberPaging(@Param("member") Member member, Pageable pageable);
-
-    // 팔로우 관계 존재 여부 확인
-    boolean existsByFollowerAndFollowing(Member follower, Member following);
-
-    // 팔로우 관계 삭제
-    void deleteByFollowerAndFollowing(Member follower, Member following);
 
     // 팔로워 수 카운트
     @Query("SELECT COUNT(mf) FROM Follow mf WHERE mf.following.id = :memberId")

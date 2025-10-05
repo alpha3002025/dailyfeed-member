@@ -25,11 +25,11 @@ import org.springframework.web.bind.annotation.*;
 public class FollowController {
     private final FollowService followService;
 
-    @PostMapping("")
+    @PostMapping("/{memberIdToFollow}")
     public DailyfeedServerResponse<Boolean> follow(@InternalAuthenticatedMember MemberDto.Member member,
-                                                   @RequestBody FollowDto.FollowRequest followRequest) {
+                                                   @PathVariable("memberIdToFollow") Long memberIdToFollow) {
         Long myId = member.getId();
-        followService.follow(myId, followRequest.getMemberIdToFollow());
+        followService.follow(myId, memberIdToFollow);
         return DailyfeedServerResponse.<Boolean>builder()
                 .status(HttpStatus.CREATED.value())
                 .result(ResponseSuccessCode.SUCCESS)
@@ -37,11 +37,11 @@ public class FollowController {
                 .build();
     }
 
-    @DeleteMapping("")
+    @DeleteMapping("/{memberIdToFollow}")
     public DailyfeedServerResponse<Boolean> unfollow(@InternalAuthenticatedMember MemberDto.Member member,
-                                                     @RequestBody FollowDto.UnfollowRequest unfollowRequest) {
+                                                     @PathVariable("memberIdToFollow") Long memberIdToFollow) {
         Long myId = member.getId();
-        followService.unfollow(myId, unfollowRequest.getMemberIdToUnfollow());
+        followService.unfollow(myId, memberIdToFollow);
         return DailyfeedServerResponse.<Boolean>builder()
                 .status(HttpStatus.NO_CONTENT.value())
                 .result(ResponseSuccessCode.SUCCESS)

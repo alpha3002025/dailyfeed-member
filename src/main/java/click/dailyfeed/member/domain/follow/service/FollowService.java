@@ -1,8 +1,10 @@
 package click.dailyfeed.member.domain.follow.service;
 
+import click.dailyfeed.code.domain.member.follow.exception.FollowLimitExceedsException;
 import click.dailyfeed.code.domain.member.follow.exception.FollowRelationshipAlreadyExistsException;
 import click.dailyfeed.code.domain.member.follow.exception.FollowRelationshipNotFoundException;
 import click.dailyfeed.code.domain.member.follow.predicate.FollowingPredicate;
+import click.dailyfeed.code.domain.member.follow.properties.FollowProperties;
 import click.dailyfeed.code.domain.member.member.dto.MemberDto;
 import click.dailyfeed.code.domain.member.member.dto.MemberProfileDto;
 import click.dailyfeed.code.domain.member.member.exception.MemberNotFoundException;
@@ -56,6 +58,8 @@ public class FollowService {
         Member memberToFollow = getMemberOrThrow(memberToFollowId);
         Member follower = getMemberOrThrow(followerId);
 
+        checkFollowingCountExceedsOrThrow(follower);
+
         FollowingPredicate followingPredicate = checkMemberFollowingSomeone(follower, memberToFollow);
         if(followingPredicate == FollowingPredicate.FOLLOWING) {
             throw new FollowRelationshipAlreadyExistsException();
@@ -68,7 +72,6 @@ public class FollowService {
 
         follower.follow(memberToFollow, follow);
 
-        followRepository.save(follow);
         followingMongoRepository.save(followMapper.newFollowDocument(followerId, memberToFollowId));
         return true;
     }
@@ -85,8 +88,6 @@ public class FollowService {
         Follow follow = getFollowRelationshipOrThrowIfNotFound(memberToUnfollow, follower);
 
         follower.unfollow(memberToUnfollow, follow);
-
-        followRepository.deleteById(follow.getId());
         deleteFollowingDocument(followerId, memberToUnfollowId);
 
         return Boolean.TRUE;
@@ -109,6 +110,13 @@ public class FollowService {
         return followRepository
                 .findByFollowerAndFollowing(follower, following)
                 .orElseThrow(FollowRelationshipNotFoundException::new);
+    }
+
+    public void checkFollowingCountExceedsOrThrow(Member member) {
+        Long currentCnt = followRepository.countMemberFollowing(member.getId());
+        if(currentCnt >= FollowProperties.FOLLOWING_MAX_LIMIT){
+            throw new FollowLimitExceedsException();
+        }
     }
 
     public FollowingPredicate checkMemberFollowingSomeone(Member member, Member someone){
