@@ -1,6 +1,6 @@
 spring:
   application:
-    name: dailyfeed-content
+    name: dailyfeed-member
   ## database connection
   datasource:
     driver-class-name: com.mysql.jdbc.Driver
@@ -35,6 +35,9 @@ spring:
     mongodb:
       protocol: mongodb+srv # mongodb+srv or mongodb (atlas 에서만 mongodb+srv)
       uri: ${MONGODB_CONNECTION_URI:mongodb+srv://dailyfeed-search:hitEnter###@alpha300.sz30zco.mongodb.net/dailyfeed?retryWrites=true&w=majority&appName=alpha300&connectTimeoutMS=30000&socketTimeoutMS=30000&serverSelectionTimeoutMS=30000}
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
   ## kafka
   kafka:
     bootstrap-servers: ${KAFKA_HOST:localhost}:29092,${KAFKA_HOST:localhost}:29093,${KAFKA_HOST:localhost}:29094

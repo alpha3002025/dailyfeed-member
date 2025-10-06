@@ -35,6 +35,9 @@ spring:
     mongodb:
       protocol: mongodb # mongodb+srv or mongodb (atlas 에서만 mongodb+srv)
       uri: ${MONGODB_CONNECTION_URI:mongodb://localhost:27017/dailyfeed?directConnection=true}
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
   ## kafka
   kafka:
     bootstrap-servers: ${KAFKA_HOST:localhost}:29092,${KAFKA_HOST:localhost}:29093,${KAFKA_HOST:localhost}:29094
