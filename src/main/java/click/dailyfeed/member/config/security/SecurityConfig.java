@@ -86,7 +86,7 @@ public class SecurityConfig {
                                             "/api/authentication/login",
                                             "/api/authentication/signup",
                                             "/api/authentication/refresh",
-//                                            "/api/healthcheck/**",      // istio 및 kubernetes 에서 Rule 적용
+                                            "/healthcheck/**",
                                             "/swagger-ui/**",       // istio 및 kubernetes 에서 Rule 적용
                                             "/swagger-example/**",  // istio 및 kubernetes 에서 Rule 적용
                                             "/swagger-ui.html",     // istio 및 kubernetes 에서 Rule 적용
