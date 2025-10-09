@@ -44,6 +44,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
 
         String token = request.getHeader(HttpHeaders.AUTHORIZATION);
+        log.debug("JWT Filter - Path: {}, Has Auth Header: {}", path, token != null);
+
         if(token != null && !token.isBlank() && token.contains("Bearer ")) {
             token = JwtProcessor.getJwtFromHeaderOrThrow(token); // 로그인 이후에는 여기를 들러...헐
         }
@@ -84,7 +86,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             jwtKeyHelper.checkAndRefreshHeader(token, response);
         } catch (Exception e) {
             // 예외가 발생해도 필터 체인을 계속 진행 (인증 실패로 처리)
-            log.error("JWT authentication failed: {}", e.getMessage());
+            log.error("JWT authentication failed for path: {} - Error type: {} - Message: {}",
+                    path, e.getClass().getSimpleName(), e.getMessage(), e);
             // 인증 실패 시 SecurityContext를 비움
             SecurityContextHolder.clearContext();
 
@@ -113,6 +116,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                path.startsWith("/swagger-example/") ||
                path.equals("/swagger-ui.html") ||
                path.startsWith("/api-docs") ||
-               path.startsWith("/v3/api-docs/");
+               path.startsWith("/v3/api-docs/") ||
+               path.startsWith("/app-health/") ||  // Istio rewritten health checks (port 15020)
+               path.startsWith("/healthz") ||       // Kubernetes/Istio health checks
+               path.startsWith("/healthcheck/") ||  // Application health checks
+               path.equals("/healthcheck/ready") ||
+               path.equals("/healthcheck/live") ||
+               path.equals("/healthcheck/startup") ||
+               path.startsWith("/actuator/health"); // Spring Boot Actuator health
     }
 }
