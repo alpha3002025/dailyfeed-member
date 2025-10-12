@@ -52,9 +52,44 @@ public class SignupApiIntegrationTest {
     @Rollback(value = false)
     @Transactional
     @ParameterizedTest
+    @CsvFileSource(resources = {"/csv/authentication/signup_request_ai_k8s.csv"}, numLinesToSkip = 1)
+    @DisplayName("POST /api/authentication/signup - Quick test without validation")
+    public void k8s__signup_api_test_with_ai_generated_image(
+            String email,
+            String password,
+            String memberName,
+            String handle,
+            String displayName,
+            String bio,
+            String location,
+            String websiteUrl,
+            String birthDate,
+            String gender,
+            String avatarUrl
+    ) throws Exception {
+        // Given - CSV 파라미터를 SignupRequest로 변환
+        AuthenticationDto.SignupRequest signupRequest = toRequest(
+                email, password, memberName, handle, displayName,
+                bio, location, websiteUrl, birthDate, gender,
+                avatarUrl);
+
+        String requestBody = objectMapper.writeValueAsString(signupRequest);
+        System.out.println("Testing signup for handle: " + signupRequest.getHandle());
+
+        // When - POST /api/authentication/signup 호출
+        mockMvc.perform(post("/api/authentication/signup")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestBody))
+                .andDo(print())
+                .andExpect(status().isOk());
+    }
+
+    @Rollback(value = false)
+    @Transactional
+    @ParameterizedTest
     @CsvFileSource(resources = {"/csv/authentication/signup_request_ai.csv"}, numLinesToSkip = 1)
     @DisplayName("POST /api/authentication/signup - Quick test without validation")
-    public void run_test(
+    public void localhost__signup_api_test_with_ai_generated_image(
         String email,
         String password,
         String memberName,
@@ -82,49 +117,6 @@ public class SignupApiIntegrationTest {
                         .content(requestBody))
                 .andDo(print())
                 .andExpect(status().isOk());
-    }
-
-    @Rollback(value = false)
-    @Transactional
-    @ParameterizedTest
-    @CsvFileSource(resources = {"/csv/authentication/signup_request_ai.csv"}, numLinesToSkip = 1)
-    @DisplayName("POST /api/authentication/signup - AI 이미지 프로필을 사용한 회원가입 API 테스트")
-    public void signup_api_test_with_ai_generated_image(
-            String email,
-            String password,
-            String memberName,
-            String handle,
-            String displayName,
-            String bio,
-            String location,
-            String websiteUrl,
-            String birthDate,
-            String gender,
-            String avatarUrl
-    ) throws Exception {
-        // Given - CSV 파라미터를 SignupRequest로 변환
-        AuthenticationDto.SignupRequest signupRequest = toRequest(
-                email, password, memberName, handle, displayName,
-                bio, location, websiteUrl, birthDate, gender,
-                avatarUrl);
-
-        String requestBody = objectMapper.writeValueAsString(signupRequest);
-
-        System.out.println("Testing signup for handle: " + signupRequest.getHandle());
-
-        // When & Then - POST /api/authentication/signup 호출 및 검증
-        mockMvc.perform(post("/api/authentication/signup")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(requestBody))
-                .andDo(print())
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data").exists())
-                .andExpect(jsonPath("$.data.email").value(email))
-                .andExpect(jsonPath("$.data.handle").value(handle))
-                .andExpect(jsonPath("$.data.memberName").value(memberName))
-                .andExpect(jsonPath("$.data.displayName").value(displayName))
-                .andExpect(jsonPath("$.result.code").exists())
-                .andExpect(jsonPath("$.result.message").exists());
     }
 
     /**

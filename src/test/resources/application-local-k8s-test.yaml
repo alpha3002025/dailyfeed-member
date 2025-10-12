@@ -121,4 +121,4 @@ infrastructure:
         group-id: notification-consumer-group
         concurrency: 1
 server:
-  port: ${SERVER_PORT:8084}
+  port: ${SERVER_PORT:8888}
