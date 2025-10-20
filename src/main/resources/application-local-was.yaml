@@ -3,7 +3,7 @@ spring:
     name: dailyfeed-member
   config:
     import:
-      - classpath:feign-config-dev.yaml
+      - classpath:feign-config-local-was.yaml
   ## database connection
   datasource:
     driver-class-name: com.mysql.jdbc.Driver
@@ -34,10 +34,10 @@ spring:
         default-page-size: 20
     redis:
       port: ${REDIS_PORT:26379}
-      host: ${REDIS_HOST:redis-master.infra.svc.cluster.local}
+      host: ${REDIS_HOST:localhost}
     mongodb:
-      protocol: mongodb+srv # mongodb+srv or mongodb (atlas 에서만 mongodb+srv)
-      uri: ${MONGODB_CONNECTION_URI:mongodb+srv://dailyfeed-search:hitEnter###@alpha300.sz30zco.mongodb.net/dailyfeed?retryWrites=true&w=majority&appName=alpha300&connectTimeoutMS=30000&socketTimeoutMS=30000&serverSelectionTimeoutMS=30000}
+      protocol: mongodb # mongodb+srv or mongodb (atlas 에서만 mongodb+srv)
+      uri: ${MONGODB_CONNECTION_URI:mongodb://localhost:27017/dailyfeed?directConnection=true}
   jackson:
     serialization:
       write-dates-as-timestamps: false
@@ -85,8 +85,10 @@ spring:
       static-locations: classpath:/static/
   mvc:
     static-path-pattern: /static/**
+
+## springdoc
 springdoc:
-  packages-to-scan: click.dailyfeed.timeline.domain
+  packages-to-scan: click.dailyfeed.member.domain
   default-consumes-media-type: application/json;charset=UTF-8
   default-produces-media-type: application/json;charset=UTF-8
   cache:
@@ -101,6 +103,7 @@ springdoc:
     tags-sorter: alpha          # 알파벳 순 Tag 정렬, method: HTTP Method 순 정렬
     operations-sorter: alpha    # 알파벳 순 Tag 정렬, method: HTTP Method 순 정렬
 
+## logging
 logging:
   level:
     click.dailyfeed.member.client: DEBUG
@@ -108,6 +111,7 @@ logging:
     org.hibernate.type.descriptor.sql.BasicBinder: TRACE
     org.springframework.kafka: INFO
 
+## dailyfeed properties
 dailyfeed:
   services:
     member:
@@ -149,6 +153,7 @@ dailyfeed:
         timeout:
           connect: 5000
           read: 10000
+
 infrastructure:
   mongodb:
     timeline:
@@ -169,3 +174,12 @@ infrastructure:
         operation-timeout-seconds: 30
 server:
   port: ${SERVER_PORT:8084}
+
+# JWT 설정
+jwt:
+  access:
+    expiration:
+      hours: 24  # 24시간
+  refresh:
+    expiration:
+      days: 30   # 30일
