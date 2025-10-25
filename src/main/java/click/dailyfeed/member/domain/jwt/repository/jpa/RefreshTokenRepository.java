@@ -25,6 +25,11 @@ public interface RefreshTokenRepository extends JpaRepository<RefreshToken, Long
     Optional<RefreshToken> findByAccessTokenIdAndIsRevokedFalse(String accessTokenId);
 
     /**
+     * DB 에서 memberId 에 대한 모든 리프레시 토큰 조회
+     */
+    List<RefreshToken> findAllByMemberIdAndIsRevokedFalse(Long memberId);
+
+    /**
      * 사용자의 모든 유효한 리프레시 토큰 조회
      */
     List<RefreshToken> findByMemberIdAndIsRevokedFalse(Long memberId);
