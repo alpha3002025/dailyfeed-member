@@ -1,5 +1,6 @@
 package click.dailyfeed.member.config.security.filter;
 
+import click.dailyfeed.code.domain.member.member.predicate.BlackListedPredicate;
 import click.dailyfeed.code.global.jwt.predicate.JwtExpiredPredicate;
 import click.dailyfeed.member.domain.jwt.dto.JwtDto;
 import click.dailyfeed.member.domain.jwt.service.JwtKeyHelper;
@@ -57,7 +58,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
             // JTI 추출 및 블랙리스트 확인
             String jti = jwtKeyHelper.extractJti(claims);
-            if (tokenService.isTokenBlacklisted(jti)) {
+            if (BlackListedPredicate.BLACKLISTED.equals(tokenService.isTokenBlacklisted(jti))) {
                 log.debug("Token is blacklisted: JTI={}", jti);
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                 response.getWriter().write("Token has been revoked");

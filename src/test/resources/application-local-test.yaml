@@ -3,13 +3,13 @@ spring:
     name: dailyfeed-member
   ## database connection
   datasource:
-    driver-class-name: com.mysql.jdbc.Driver
+    driver-class-name: com.mysql.cj.jdbc.Driver
     url: ${MYSQL_JDBC_URL:jdbc:mysql://localhost:23306/dailyfeed?characterEncoding=UTF-8&serverTimezone=UTC&rewriteBatchedStatements=true}
     username: ${MYSQL_USERNAME:dailyfeed}
     password: ${MYSQL_PASSWORD:hitEnter###}
     hikari:
       jdbc-url: ${MYSQL_JDBC_URL:jdbc:mysql://localhost:23306/dailyfeed?characterEncoding=UTF-8&serverTimezone=UTC&rewriteBatchedStatements=true}
-      driver-class-name: com.mysql.jdbc.Driver
+      driver-class-name: com.mysql.cj.jdbc.Driver
       username: ${MYSQL_USERNAME:dailyfeed}
       password: ${MYSQL_PASSWORD:hitEnter###}
       schema: ${MYSQL_SCHEMA:dailyfeed}
@@ -31,7 +31,7 @@ spring:
         default-page-size: 20
     redis:
       port: ${REDIS_PORT:26379}
-      host: ${REDIS_HOST:redis-master.infra.svc.cluster.local}
+      host: ${REDIS_HOST:localhost}
 
 springdoc:
   packages-to-scan: click.dailyfeed.member.domain

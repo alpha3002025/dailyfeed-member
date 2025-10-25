@@ -27,7 +27,7 @@ import java.time.LocalDate;
                 pattern = "click.dailyfeed.feign..*"
         )
 )
-public class SignupInsertTest {
+public class SignupInsertLocalWASTest {
     @Autowired
     private AuthenticationService authenticationService;
 
