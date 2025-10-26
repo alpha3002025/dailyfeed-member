@@ -1,4 +1,4 @@
-package click.dailyfeed.member.domain.member.integratedtest;
+package click.dailyfeed.member.domain.member.integratedtest.draft;
 
 import click.dailyfeed.code.domain.member.member.type.data.CountryCode;
 import click.dailyfeed.code.domain.member.member.type.data.GenderType;

@@ -1,4 +1,6 @@
 spring:
+  config:
+    import: optional:classpath:feign-config-local.yaml
   application:
     name: dailyfeed-member
   ## database connection
@@ -91,6 +93,12 @@ dailyfeed:
         timeout:
           connect: 5000
           read: 10000
+    activity:
+      feign:
+        url: ${ACTIVITY_SERVICE_URL:http://localhost:8086}
+        timeout:
+          connect: 5000
+          read: 10000
 infrastructure:
   mongodb:
     timeline:
@@ -100,6 +108,10 @@ infrastructure:
       post-activity-event:
         list-key: POST_ACTIVITY_EVENT_HISTORY
         dead-letter-list-key: POST_ACTIVITY_EVENT_HISTORY_DEAD
+        batch-size: 1000
+      member-activity-event:
+        list-key: MEMBER_ACTIVITY_EVENT_HISTORY
+        dead-letter-list-key: MEMBER_ACTIVITY_EVENT_HISTORY_DEAD
         batch-size: 1000
   kafka:
     topic:
