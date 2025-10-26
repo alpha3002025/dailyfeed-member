@@ -1,4 +1,4 @@
-package click.dailyfeed.member.domain.member.integratedtest;
+package click.dailyfeed.member.domain.member.integratedtest.k8s;
 
 import click.dailyfeed.code.domain.member.member.type.data.CountryCode;
 import click.dailyfeed.code.domain.member.member.type.data.GenderType;
@@ -51,7 +51,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
                 pattern = "click.dailyfeed.feign..*"
         )
 )
-public class ImageInsertAndSignupInsertTest {
+public class ImageInsertAndSignupInsertLocalk8sTest {
 
     private static final String IMAGE_SERVICE_BASE_URL = "http://localhost:8889";
     private static final String IMAGE_UPLOAD_ENDPOINT = "/api/images/upload/profile";
