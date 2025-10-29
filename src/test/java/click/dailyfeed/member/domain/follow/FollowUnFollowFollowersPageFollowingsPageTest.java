@@ -18,8 +18,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.cache.CacheManager;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Slice;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -120,7 +120,7 @@ public class FollowUnFollowFollowersPageFollowingsPageTest {
         List<MemberProfileDto.Summary> a_followingMembers = followRedisService.getFollowingMembers(member.getId());
         Assertions.assertThat(a_followingMembers).hasSize(0);
         // (팔로워) 멤버 'A' 를 팔로우하는 멤버 수 = 3
-        Page<Long> memberA_followMembers = followRepository.findFollowersIdByMemberId(member.getId(), PageRequest.of(0, 10));
+        Slice<Long> memberA_followMembers = followRepository.findFollowersIdByMemberId(member.getId(), PageRequest.of(0, 10));
         Assertions.assertThat(memberA_followMembers.getContent()).hasSize(3);
 
         // (팔로잉/팔로우) 멤버 'B' 가 팔로잉하는 멤버 수 = 1
@@ -128,7 +128,7 @@ public class FollowUnFollowFollowersPageFollowingsPageTest {
         List<MemberProfileDto.Summary> b_followingMembers = followRedisService.getFollowingMembers(memberBId);
         Assertions.assertThat(b_followingMembers).hasSize(1);
         // (팔로워) 멤버 'B' 를 팔로우하는 멤버 수 = 0
-        Page<Long> memberB_followingMembers = followRepository.findFollowersIdByMemberId(memberBId, PageRequest.of(0, 10));
+        Slice<Long> memberB_followingMembers = followRepository.findFollowersIdByMemberId(memberBId, PageRequest.of(0, 10));
         Assertions.assertThat(memberB_followingMembers.getContent()).hasSize(0);
 
         // (팔로잉/팔로우) 멤버 'C' 가 팔로잉하는 멤버 수 = 1
@@ -136,7 +136,7 @@ public class FollowUnFollowFollowersPageFollowingsPageTest {
         List<MemberProfileDto.Summary> c_followingMembers = followRedisService.getFollowingMembers(memberCId);
         Assertions.assertThat(c_followingMembers).hasSize(1);
         // (팔로워) 멤버 'C' 를 팔로우하는 멤버 수 = 0
-        Page<Long> memberC_followingMembers = followRepository.findFollowersIdByMemberId(memberCId, PageRequest.of(0, 10));
+        Slice<Long> memberC_followingMembers = followRepository.findFollowersIdByMemberId(memberCId, PageRequest.of(0, 10));
         Assertions.assertThat(memberC_followingMembers.getContent()).hasSize(0);
     }
 
@@ -156,7 +156,7 @@ public class FollowUnFollowFollowersPageFollowingsPageTest {
         List<MemberProfileDto.Summary> a_followingMembers = followRedisService.getFollowingMembers(member.getId());
         Assertions.assertThat(a_followingMembers).hasSize(0);
         // (팔로워) 멤버 'A' 를 팔로우하는 멤버 수 = 3
-        Page<Long> memberA_followMembers = followRepository.findFollowersIdByMemberId(member.getId(), PageRequest.of(0, 10));
+        Slice<Long> memberA_followMembers = followRepository.findFollowersIdByMemberId(member.getId(), PageRequest.of(0, 10));
         Assertions.assertThat(memberA_followMembers.getContent()).hasSize(3);
 
         // 멤버 'B' 가 멤버 'A' 를 언팔로우
@@ -165,7 +165,7 @@ public class FollowUnFollowFollowersPageFollowingsPageTest {
         List<MemberProfileDto.Summary> case1_followingMembers = followRedisService.getFollowingMembers(member.getId());
         Assertions.assertThat(case1_followingMembers).hasSize(0);
         // (팔로워) 멤버 'A' 를 팔로우하는 멤버 수 = 2
-        Page<Long> case1_followMembers = followRepository.findFollowersIdByMemberId(member.getId(), PageRequest.of(0, 10));
+        Slice<Long> case1_followMembers = followRepository.findFollowersIdByMemberId(member.getId(), PageRequest.of(0, 10));
         Assertions.assertThat(case1_followMembers.getContent()).hasSize(2);
 
         // 멤버 'C' 가 멤버 'A' 를 언팔로우
@@ -174,7 +174,7 @@ public class FollowUnFollowFollowersPageFollowingsPageTest {
         List<MemberProfileDto.Summary> case2_followingMembers = followRedisService.getFollowingMembers(member.getId());
         Assertions.assertThat(case2_followingMembers).hasSize(0);
         // (팔로워) 멤버 'A' 를 팔로우하는 멤버 수 = 1
-        Page<Long> case2_followMembers = followRepository.findFollowersIdByMemberId(member.getId(), PageRequest.of(0, 10));
+        Slice<Long> case2_followMembers = followRepository.findFollowersIdByMemberId(member.getId(), PageRequest.of(0, 10));
         Assertions.assertThat(case2_followMembers.getContent()).hasSize(1);
 
         // 멤버 'D' 가 멤버 'A' 를 언팔로우
@@ -183,7 +183,7 @@ public class FollowUnFollowFollowersPageFollowingsPageTest {
         List<MemberProfileDto.Summary> case3_followingMembers = followRedisService.getFollowingMembers(member.getId());
         Assertions.assertThat(case3_followingMembers).hasSize(0);
         // (팔로워) 멤버 'A' 를 팔로우하는 멤버 수 = 0
-        Page<Long> case3_followMembers = followRepository.findFollowersIdByMemberId(member.getId(), PageRequest.of(0, 10));
+        Slice<Long> case3_followMembers = followRepository.findFollowersIdByMemberId(member.getId(), PageRequest.of(0, 10));
         Assertions.assertThat(case3_followMembers.getContent()).hasSize(0);
 
         // 멤버 'A' 의 팔로잉,팔로워
