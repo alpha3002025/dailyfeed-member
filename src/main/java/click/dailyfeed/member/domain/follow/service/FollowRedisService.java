@@ -3,7 +3,7 @@ package click.dailyfeed.member.domain.follow.service;
 import click.dailyfeed.code.domain.member.follow.dto.FollowDto;
 import click.dailyfeed.code.domain.member.member.dto.MemberProfileDto;
 import click.dailyfeed.code.domain.member.member.exception.MemberNotFoundException;
-import click.dailyfeed.code.global.cache.RedisKeyConstant;
+import click.dailyfeed.code.global.cache.RedisCacheableConstant;
 import click.dailyfeed.code.global.web.page.DailyfeedPageable;
 import click.dailyfeed.code.global.web.page.DailyfeedScrollPage;
 import click.dailyfeed.member.domain.follow.repository.jpa.FollowRepository;
@@ -17,8 +17,8 @@ import click.dailyfeed.pagination.mapper.PageMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -37,7 +37,7 @@ public class FollowRedisService {
     private final MemberProfileMapper memberProfileMapper;
 
     @Transactional(readOnly = true)
-    @Cacheable(value = RedisKeyConstant.FollowRedisService.INTERNAL_LIST_FOLLOWING_MEMBERS_BY_MEMBER_ID , key = "#memberId")
+    @Cacheable(value = RedisCacheableConstant.FollowPrefix.API_INTERNAL_LIST_FOLLOWING_MEMBERS_BY_MEMBER_ID , key = "#memberId")
     public List<MemberProfileDto.Summary> getFollowingMembers(Long memberId) {
         Member member = memberRepository
                 .findById(memberId)
@@ -53,45 +53,42 @@ public class FollowRedisService {
     }
 
     @Transactional(readOnly = true)
-    @Cacheable(value = RedisKeyConstant.FollowRedisService.WEB_PAGE_FOLLOWERS_MORE_BY_MEMBER_ID, key = "#memberId + '_from_' + #page + '_size_' + #size")
     public DailyfeedScrollPage<MemberProfileDto.Summary> getMemberFollowersMore(Long memberId, int page, int size, DailyfeedPageable dailyfeedPageable) {
         ///  pageable
         Pageable pageable = dailyfeedPageableConverter.convert(dailyfeedPageable);
 
         ///  followers
-        Page<Long> followerIds = followRepository.findFollowersIdByMemberId(memberId, pageable);
+        Slice<Long> followerIds = followRepository.findFollowersIdByMemberId(memberId, pageable);
 
-        Page<MemberProfile> profiles = memberProfileRepository.findWithImagesByMemberIdsIn(followerIds.getContent(), pageable);
+        Slice<MemberProfile> profiles = memberProfileRepository.findWithImagesByMemberIdsIn(followerIds.getContent(), pageable);
 
         List<MemberProfileDto.Summary> result = profiles.getContent()
                 .stream()
                 .map(memberProfileMapper::fromEntityToSummary)
                 .toList();
 
-        return pageMapper.fromJpaPageToDailyfeedScrollPage(followerIds, result);
+        return pageMapper.fromJpaSliceToDailyfeedScrollPage(followerIds, result);
     }
 
     @Transactional(readOnly = true)
-    @Cacheable(value = RedisKeyConstant.FollowRedisService.WEB_PAGE_FOLLOWINGS_MORE_BY_MEMBER_ID, key = "#memberId + '_from_' + #dailyfeedPageable.getPage() + '_size_' + #dailyfeedPageable.getSize()")
     public DailyfeedScrollPage<MemberProfileDto.Summary> getMemberFollowingsMore(Long memberId, DailyfeedPageable dailyfeedPageable) {
         ///  pageable
         Pageable pageable = dailyfeedPageableConverter.convert(dailyfeedPageable);
 
         ///  followings
-        Page<Long> followingIds = followRepository.findFollowingsIdByMemberId(memberId, pageable);
+        Slice<Long> followingIds = followRepository.findFollowingsIdByMemberId(memberId, pageable);
 
-        Page<MemberProfile> profiles = memberProfileRepository.findWithImagesByMemberIdsIn(followingIds.getContent(), pageable);
+        Slice<MemberProfile> profiles = memberProfileRepository.findWithImagesByMemberIdsIn(followingIds.getContent(), pageable);
 
         List<MemberProfileDto.Summary> result = profiles.getContent()
                 .stream()
                 .map(memberProfileMapper::fromEntityToSummary)
                 .toList();
 
-        return pageMapper.fromJpaPageToDailyfeedScrollPage(followingIds, result);
+        return pageMapper.fromJpaSliceToDailyfeedScrollPage(followingIds, result);
     }
 
     @Transactional(readOnly = true)
-    @Cacheable(value = RedisKeyConstant.FollowRedisService.WEB_GET_FOLLOW_BY_MEMBER_ID, key = "#memberId")
     public FollowDto.FollowScrollPage getMemberFollow(Long memberId, DailyfeedPageable dailyfeedPageable) {
         Member member = memberRepository
                 .findById(memberId)
@@ -101,16 +98,16 @@ public class FollowRedisService {
         Pageable pageable = dailyfeedPageableConverter.convert(dailyfeedPageable);
 
         ///  follower
-        Page<Long> followersId = followRepository.findFollowersIdByMember(member, pageable);
-        Page<MemberProfile> followersProfiles = memberProfileRepository.findWithImagesByMemberIdsIn(followersId.getContent(), pageable);
+        Slice<Long> followersId = followRepository.findFollowersIdByMember(member, pageable);
+        Slice<MemberProfile> followersProfiles = memberProfileRepository.findWithImagesByMemberIdsIn(followersId.getContent(), pageable);
         List<MemberProfileDto.Summary> followers = followersProfiles.getContent().stream().map(memberProfileMapper::fromEntityToSummary).toList();
-        DailyfeedScrollPage<MemberProfileDto.Summary> followersPage = pageMapper.fromJpaPageToDailyfeedScrollPage(followersProfiles, followers);
+        DailyfeedScrollPage<MemberProfileDto.Summary> followersPage = pageMapper.fromJpaSliceToDailyfeedScrollPage(followersProfiles, followers);
 
         ///  following
-        Page<Long> followingsId = followRepository.findFollowingsIdByMember(member, pageable);
-        Page<MemberProfile> followingsProfiles = memberProfileRepository.findWithImagesByMemberIdsIn(followingsId.getContent(), pageable);
+        Slice<Long> followingsId = followRepository.findFollowingsIdByMember(member, pageable);
+        Slice<MemberProfile> followingsProfiles = memberProfileRepository.findWithImagesByMemberIdsIn(followingsId.getContent(), pageable);
         List<MemberProfileDto.Summary> followings = followingsProfiles.getContent().stream().map(memberProfileMapper::fromEntityToSummary).toList();
-        DailyfeedScrollPage<MemberProfileDto.Summary> followingsPage = pageMapper.fromJpaPageToDailyfeedScrollPage(followingsProfiles, followings);
+        DailyfeedScrollPage<MemberProfileDto.Summary> followingsPage = pageMapper.fromJpaSliceToDailyfeedScrollPage(followingsProfiles, followings);
 
         return FollowDto.FollowScrollPage.builder()
                 .followers(followersPage)

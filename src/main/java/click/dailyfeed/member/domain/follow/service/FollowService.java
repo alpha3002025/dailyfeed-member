@@ -25,8 +25,8 @@ import click.dailyfeed.pagination.converter.DailyfeedPageableConverter;
 import click.dailyfeed.pagination.mapper.PageMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -127,14 +127,28 @@ public class FollowService {
         return FollowingPredicate.NOT_FOLLOWING;
     }
 
+    @Deprecated
     @Transactional(readOnly = true)
     public DailyfeedPage<MemberProfileDto.Summary> getRecommendNewbie(MemberDto.Member requestedMember, Pageable pageable) {
-        Page<MemberProfile> memberProfiles = memberProfileRepository.findWithImagesOrderByCreatedAtWithPaging(requestedMember.getId(), pageable);
+        // Deprecated: Use getRecommendNewbieMore instead for better performance with Slice-based pagination
+        Slice<MemberProfile> memberProfiles = memberProfileRepository.findWithImagesOrderByCreatedAtWithPaging(requestedMember.getId(), pageable);
         List<MemberProfileDto.Summary> content = memberProfiles.stream()
                 .map(memberProfileMapper::fromEntityToSummary)
                 .toList();
 
-        return pageMapper.fromJpaPageToDailyfeedPage(memberProfiles, content);
+        // Note: Converting Slice to Page loses COUNT query optimization
+        // This method should be removed in future versions
+        return DailyfeedPage.<MemberProfileDto.Summary>builder()
+                .content(content)
+                .page(memberProfiles.getNumber())
+                .size(memberProfiles.getSize())
+                .totalElements(0L)  // Not available with Slice
+                .totalPages(0)      // Not available with Slice
+                .isFirst(memberProfiles.isFirst())
+                .isLast(memberProfiles.isLast())
+                .hasNext(memberProfiles.hasNext())
+                .hasPrevious(memberProfiles.hasPrevious())
+                .build();
     }
 
     @Transactional(readOnly = true)
@@ -143,13 +157,13 @@ public class FollowService {
         Pageable pageable = dailyfeedPageableConverter.convert(dailyfeedPageable);
 
         /// follwoing
-        Page<MemberProfile> memberProfiles = memberProfileRepository.findWithImagesOrderByCreatedAtWithPaging(requestedMember.getId(), pageable);
+        Slice<MemberProfile> memberProfiles = memberProfileRepository.findWithImagesOrderByCreatedAtWithPaging(requestedMember.getId(), pageable);
 
         /// 변환
         List<MemberProfileDto.Summary> content = memberProfiles.stream()
                 .map(memberProfileMapper::fromEntityToSummary)
                 .toList();
 
-        return pageMapper.fromJpaPageToDailyfeedScrollPage(memberProfiles, content);
+        return pageMapper.fromJpaSliceToDailyfeedScrollPage(memberProfiles, content);
     }
 }
