@@ -127,7 +127,6 @@ public class FollowService {
         return FollowingPredicate.NOT_FOLLOWING;
     }
 
-    @Deprecated
     @Transactional(readOnly = true)
     public DailyfeedPage<MemberProfileDto.Summary> getRecommendNewbie(MemberDto.Member requestedMember, Pageable pageable) {
         // Deprecated: Use getRecommendNewbieMore instead for better performance with Slice-based pagination

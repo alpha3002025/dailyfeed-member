@@ -49,7 +49,6 @@ public class FollowController {
     }
 
     /// 사용자 추천
-    @Deprecated
     @GetMapping("/recommend/newbie")
     public DailyfeedPageResponse<MemberProfileDto.Summary> getRecommendNewbie(
             @InternalAuthenticatedMember MemberDto.Member member,
