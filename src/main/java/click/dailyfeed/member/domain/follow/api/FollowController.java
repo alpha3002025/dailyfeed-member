@@ -1,6 +1,5 @@
 package click.dailyfeed.member.domain.follow.api;
 
-import click.dailyfeed.code.domain.member.follow.dto.FollowDto;
 import click.dailyfeed.code.domain.member.member.dto.MemberDto;
 import click.dailyfeed.code.domain.member.member.dto.MemberProfileDto;
 import click.dailyfeed.code.global.web.code.ResponseSuccessCode;
@@ -50,6 +49,7 @@ public class FollowController {
     }
 
     /// 사용자 추천
+    @Deprecated
     @GetMapping("/recommend/newbie")
     public DailyfeedPageResponse<MemberProfileDto.Summary> getRecommendNewbie(
             @InternalAuthenticatedMember MemberDto.Member member,

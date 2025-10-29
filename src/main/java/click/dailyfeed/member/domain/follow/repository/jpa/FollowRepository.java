@@ -4,6 +4,7 @@ import click.dailyfeed.member.domain.follow.entity.Follow;
 import click.dailyfeed.member.domain.member.entity.Member;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -36,7 +37,7 @@ public interface FollowRepository extends JpaRepository<Follow, Long> {
             "INNER JOIN f.following following " +
             "INNER JOIN Member followingMember ON followingMember.id = following.id " +
             "WHERE f.follower = :member")
-    Page<Long> findFollowingsIdByMember(@Param("member") Member member, Pageable pageable);
+    Slice<Long> findFollowingsIdByMember(@Param("member") Member member, Pageable pageable);
 
     // id 기반 조회 (아직 결정을 못함)
     @Query("SELECT f.following.id " +
@@ -44,7 +45,7 @@ public interface FollowRepository extends JpaRepository<Follow, Long> {
             "INNER JOIN f.following following " +
             "INNER JOIN Member followingMember ON followingMember.id = following.id " +
             "WHERE f.follower.id = :memberId")
-    Page<Long> findFollowingsIdByMemberId(@Param("memberId") Long memberId, Pageable pageable);
+    Slice<Long> findFollowingsIdByMemberId(@Param("memberId") Long memberId, Pageable pageable);
 
     // 팔로잉 조회 (내가 팔로우하는 사람들) - 피드 조회 용도
     @Query("SELECT f.following.id " +
@@ -91,7 +92,7 @@ public interface FollowRepository extends JpaRepository<Follow, Long> {
             "FROM Follow f " +
             "INNER JOIN f.follower follower " +
             "WHERE f.following = :member")
-    Page<Long> findFollowersIdByMember(@Param("member") Member member, Pageable pageable);
+    Slice<Long> findFollowersIdByMember(@Param("member") Member member, Pageable pageable);
 
     // id 기반 조회
     // 팔로워 조회 (나를 팔로우하는 사람들)
@@ -99,7 +100,7 @@ public interface FollowRepository extends JpaRepository<Follow, Long> {
             "FROM Follow f " +
             "INNER JOIN f.follower follower " +
             "WHERE f.following.id = :memberId")
-    Page<Long> findFollowersIdByMemberId(@Param("memberId") Long memberId, Pageable pageable);
+    Slice<Long> findFollowersIdByMemberId(@Param("memberId") Long memberId, Pageable pageable);
 
 
     // 팔로워 리스트 조회 금지!!!

@@ -4,7 +4,7 @@ import click.dailyfeed.code.domain.member.member.dto.MemberDto;
 import click.dailyfeed.code.domain.member.member.dto.MemberProfileDto;
 import click.dailyfeed.code.domain.member.member.exception.MemberNotFoundException;
 import click.dailyfeed.code.domain.member.member.predicate.HandleExistsPredicate;
-import click.dailyfeed.code.global.cache.RedisKeyConstant;
+import click.dailyfeed.code.global.cache.RedisCacheableConstant;
 import click.dailyfeed.member.domain.follow.repository.mongo.FollowingMongoRepository;
 import click.dailyfeed.member.domain.member.entity.Member;
 import click.dailyfeed.member.domain.member.entity.MemberProfile;
@@ -31,7 +31,7 @@ public class MemberRedisService {
     private final MemberProfileMapper memberProfileMapper;
 
     @Transactional(readOnly = true)
-    @Cacheable(value = RedisKeyConstant.MemberRedisService.WEB_GET_MEMBER_BY_ID, key="#memberId")
+    @Cacheable(value = RedisCacheableConstant.MemberPrefix.API_GET_MEMBER_BY_ID, key = "#memberId")
     public MemberDto.Member getMemberOrThrow(Long memberId) {
         MemberDto.Member member = memberRepository
                 .findById(memberId)
@@ -42,7 +42,7 @@ public class MemberRedisService {
     }
 
     @Transactional(readOnly = true)
-    @Cacheable(value = RedisKeyConstant.MemberRedisService.WEB_GET_MEMBER_PROFILE_BY_ID, key = "#memberId")
+    @Cacheable(value = RedisCacheableConstant.MemberPrefix.API_GET_MEMBER_PROFILE_BY_ID, key = "#memberId")
     public MemberProfileDto.MemberProfile findMemberProfileById(Long memberId) {
         MemberProfile memberProfile = memberProfileRepository
                 .findMemberProfileByMemberId(memberId)
@@ -75,7 +75,7 @@ public class MemberRedisService {
     }
 
     @Transactional(readOnly = true)
-    @Cacheable(value = RedisKeyConstant.MemberRedisService.WEB_GET_MEMBER_PROFILE_SUMMARY_BY_ID, key = "#memberId")
+    @Cacheable(value = RedisCacheableConstant.MemberPrefix.API_GET_MEMBER_PROFILE_SUMMARY_BY_ID, key = "#memberId")
     public MemberProfileDto.Summary findMemberSummaryById(Long memberId) {
         MemberProfile memberProfile = memberProfileRepository
                 .findMemberProfileByMemberId(memberId)
@@ -85,7 +85,7 @@ public class MemberRedisService {
     }
 
     @Transactional(readOnly = true)
-    @Cacheable(value = RedisKeyConstant.MemberRedisService.INTERNAL_LIST_MEMBERS_BY_IDS_IN, key = "#ids")
+    @Cacheable(value = RedisCacheableConstant.MemberPrefix.API_INTERNAL_LIST_MEMBERS_BY_IDS_IN, key = "#ids")
     public List<MemberProfileDto.Summary> findMembersByIdsIn(List<Long> ids) {
         List<MemberProfile> memberProfiles = memberProfileRepository.findWithImagesByMemberIdsIn(ids);
 
@@ -95,7 +95,7 @@ public class MemberRedisService {
     }
 
     @Transactional(readOnly = true)
-    @Cacheable(value = RedisKeyConstant.MemberRedisService.INTERNAL_GET_MEMBER_PROFILE_BY_HANDLE_IS_EXISTS, key = "#handle")
+    @Cacheable(value = RedisCacheableConstant.MemberPrefix.API_GET_MEMBER_HANDLE_EXISTS, key = "#handle")
     public HandleExistsPredicate isHandleExists(String handle) {
         Optional<MemberProfile> memberProfile = memberProfileRepository
                 .findByHandle(handle);
