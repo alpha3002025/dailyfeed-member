@@ -4,7 +4,6 @@ import click.dailyfeed.code.domain.member.follow.dto.FollowDto;
 import click.dailyfeed.code.domain.member.member.dto.MemberDto;
 import click.dailyfeed.code.domain.member.member.dto.MemberProfileDto;
 import click.dailyfeed.code.global.web.code.ResponseSuccessCode;
-import click.dailyfeed.code.global.web.page.DailyfeedPageable;
 import click.dailyfeed.code.global.web.page.DailyfeedScrollPage;
 import click.dailyfeed.code.global.web.response.DailyfeedScrollResponse;
 import click.dailyfeed.code.global.web.response.DailyfeedServerResponse;
@@ -16,6 +15,9 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
@@ -135,9 +137,14 @@ public class MemberController {
     @GetMapping("/followers-followings")
     public DailyfeedScrollResponse<FollowDto.FollowScrollPage> getMyFollow(
             @InternalAuthenticatedMember MemberDto.Member requestMember,
-            DailyfeedPageable dailyfeedPageable
+            @PageableDefault(
+                    size = 10,
+                    page = 0,
+                    sort = "createdAt",
+                    direction = Sort.Direction.DESC
+            ) Pageable pageable
     ){
-        FollowDto.FollowScrollPage result = followRedisService.getMemberFollow(requestMember.getId(), dailyfeedPageable);
+        FollowDto.FollowScrollPage result = followRedisService.getMemberFollow(requestMember.getId(), pageable);
         return DailyfeedScrollResponse.<FollowDto.FollowScrollPage>builder()
                 .data(result)
                 .status(HttpStatus.OK.value())
@@ -155,9 +162,14 @@ public class MemberController {
     @GetMapping("/followings/more")
     public DailyfeedScrollResponse<DailyfeedScrollPage<MemberProfileDto.Summary>> getMemberFollowingsMore(
             @InternalAuthenticatedMember MemberDto.Member requestedMember,
-            DailyfeedPageable dailyfeedPageable
+            @PageableDefault(
+                    size = 10,
+                    page = 0,
+                    sort = "createdAt",
+                    direction = Sort.Direction.DESC
+            ) Pageable pageable
     ){
-        DailyfeedScrollPage<MemberProfileDto.Summary> result = followRedisService.getMemberFollowingsMore(requestedMember.getId(), dailyfeedPageable);
+        DailyfeedScrollPage<MemberProfileDto.Summary> result = followRedisService.getMemberFollowingsMore(requestedMember.getId(), pageable);
         return DailyfeedScrollResponse.<DailyfeedScrollPage<MemberProfileDto.Summary>>builder()
                 .data(result)
                 .status(HttpStatus.OK.value())
@@ -168,9 +180,14 @@ public class MemberController {
     @GetMapping("/followers/more")
     public DailyfeedScrollResponse<DailyfeedScrollPage<MemberProfileDto.Summary>> getMemberFollowersMore(
             @InternalAuthenticatedMember MemberDto.Member requestedMember,
-            DailyfeedPageable dailyfeedPageable
+            @PageableDefault(
+                    size = 10,
+                    page = 0,
+                    sort = "createdAt",
+                    direction = Sort.Direction.DESC
+            ) Pageable pageable
     ){
-        DailyfeedScrollPage<MemberProfileDto.Summary> result = followRedisService.getMemberFollowersMore(requestedMember.getId(), dailyfeedPageable.getPage(), dailyfeedPageable.getSize(), dailyfeedPageable);
+        DailyfeedScrollPage<MemberProfileDto.Summary> result = followRedisService.getMemberFollowersMore(requestedMember.getId(), pageable);
         return DailyfeedScrollResponse.<DailyfeedScrollPage<MemberProfileDto.Summary>>builder()
                 .data(result)
                 .status(HttpStatus.OK.value())
@@ -251,9 +268,14 @@ public class MemberController {
     @GetMapping("/{memberId}/followers-followings")
     public DailyfeedScrollResponse<FollowDto.FollowScrollPage> getMemberFollow(
             @InternalAuthenticatedMember MemberDto.Member requestedMember,
-            DailyfeedPageable dailyfeedPageable,
-            @PathVariable Long memberId){
-        FollowDto.FollowScrollPage result = followRedisService.getMemberFollow(memberId, dailyfeedPageable);
+            @PathVariable Long memberId,
+            @PageableDefault(
+                    size = 10,
+                    page = 0,
+                    sort = "createdAt",
+                    direction = Sort.Direction.DESC
+            ) Pageable pageable){
+        FollowDto.FollowScrollPage result = followRedisService.getMemberFollow(memberId, pageable);
         return DailyfeedScrollResponse.<FollowDto.FollowScrollPage>builder()
                 .data(result)
                 .status(HttpStatus.OK.value())
@@ -264,9 +286,14 @@ public class MemberController {
     @GetMapping("/{memberId}/followers/more")
     public DailyfeedScrollResponse<DailyfeedScrollPage<MemberProfileDto.Summary>> getMemberFollowMore(
             @InternalAuthenticatedMember MemberDto.Member requestedMember,
-            DailyfeedPageable dailyfeedPageable,
-            @PathVariable Long memberId){
-        DailyfeedScrollPage<MemberProfileDto.Summary> result = followRedisService.getMemberFollowersMore(memberId, dailyfeedPageable.getPage(), dailyfeedPageable.getSize(), dailyfeedPageable);
+            @PathVariable Long memberId,
+            @PageableDefault(
+                    size = 10,
+                    page = 0,
+                    sort = "createdAt",
+                    direction = Sort.Direction.DESC
+            ) Pageable pageable){
+        DailyfeedScrollPage<MemberProfileDto.Summary> result = followRedisService.getMemberFollowersMore(memberId, pageable);
         return DailyfeedScrollResponse.<DailyfeedScrollPage<MemberProfileDto.Summary>>builder()
                 .data(result)
                 .status(HttpStatus.OK.value())
@@ -277,9 +304,14 @@ public class MemberController {
     @GetMapping("/{memberId}/followings/more")
     public DailyfeedScrollResponse<DailyfeedScrollPage<MemberProfileDto.Summary>> getMemberFollowingMore(
             @InternalAuthenticatedMember MemberDto.Member requestedMember,
-            DailyfeedPageable dailyfeedPageable,
-            @PathVariable Long memberId){
-        DailyfeedScrollPage<MemberProfileDto.Summary> result = followRedisService.getMemberFollowingsMore(memberId, dailyfeedPageable);
+            @PathVariable Long memberId,
+            @PageableDefault(
+                    size = 10,
+                    page = 0,
+                    sort = "createdAt",
+                    direction = Sort.Direction.DESC
+            ) Pageable pageable){
+        DailyfeedScrollPage<MemberProfileDto.Summary> result = followRedisService.getMemberFollowingsMore(memberId, pageable);
         return DailyfeedScrollResponse.<DailyfeedScrollPage<MemberProfileDto.Summary>>builder()
                 .data(result)
                 .status(HttpStatus.OK.value())

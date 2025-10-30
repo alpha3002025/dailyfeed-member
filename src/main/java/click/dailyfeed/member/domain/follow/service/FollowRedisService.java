@@ -4,7 +4,6 @@ import click.dailyfeed.code.domain.member.follow.dto.FollowDto;
 import click.dailyfeed.code.domain.member.member.dto.MemberProfileDto;
 import click.dailyfeed.code.domain.member.member.exception.MemberNotFoundException;
 import click.dailyfeed.code.global.cache.RedisCacheableConstant;
-import click.dailyfeed.code.global.web.page.DailyfeedPageable;
 import click.dailyfeed.code.global.web.page.DailyfeedScrollPage;
 import click.dailyfeed.member.domain.follow.repository.jpa.FollowRepository;
 import click.dailyfeed.member.domain.member.entity.Member;
@@ -12,7 +11,6 @@ import click.dailyfeed.member.domain.member.entity.MemberProfile;
 import click.dailyfeed.member.domain.member.mapper.MemberProfileMapper;
 import click.dailyfeed.member.domain.member.repository.jpa.MemberProfileRepository;
 import click.dailyfeed.member.domain.member.repository.jpa.MemberRepository;
-import click.dailyfeed.pagination.converter.DailyfeedPageableConverter;
 import click.dailyfeed.pagination.mapper.PageMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -32,7 +30,6 @@ public class FollowRedisService {
     private final MemberRepository memberRepository;
     private final MemberProfileRepository memberProfileRepository;
     private final FollowRepository followRepository;
-    private final DailyfeedPageableConverter dailyfeedPageableConverter;
     private final PageMapper pageMapper;
     private final MemberProfileMapper memberProfileMapper;
 
@@ -53,10 +50,7 @@ public class FollowRedisService {
     }
 
     @Transactional(readOnly = true)
-    public DailyfeedScrollPage<MemberProfileDto.Summary> getMemberFollowersMore(Long memberId, int page, int size, DailyfeedPageable dailyfeedPageable) {
-        ///  pageable
-        Pageable pageable = dailyfeedPageableConverter.convert(dailyfeedPageable);
-
+    public DailyfeedScrollPage<MemberProfileDto.Summary> getMemberFollowersMore(Long memberId, Pageable pageable) {
         ///  followers
         Slice<Long> followerIds = followRepository.findFollowersIdByMemberId(memberId, pageable);
 
@@ -71,10 +65,7 @@ public class FollowRedisService {
     }
 
     @Transactional(readOnly = true)
-    public DailyfeedScrollPage<MemberProfileDto.Summary> getMemberFollowingsMore(Long memberId, DailyfeedPageable dailyfeedPageable) {
-        ///  pageable
-        Pageable pageable = dailyfeedPageableConverter.convert(dailyfeedPageable);
-
+    public DailyfeedScrollPage<MemberProfileDto.Summary> getMemberFollowingsMore(Long memberId, Pageable pageable) {
         ///  followings
         Slice<Long> followingIds = followRepository.findFollowingsIdByMemberId(memberId, pageable);
 
@@ -89,13 +80,10 @@ public class FollowRedisService {
     }
 
     @Transactional(readOnly = true)
-    public FollowDto.FollowScrollPage getMemberFollow(Long memberId, DailyfeedPageable dailyfeedPageable) {
+    public FollowDto.FollowScrollPage getMemberFollow(Long memberId, Pageable pageable) {
         Member member = memberRepository
                 .findById(memberId)
                 .orElseThrow(MemberNotFoundException::new);
-
-        ///  pageable
-        Pageable pageable = dailyfeedPageableConverter.convert(dailyfeedPageable);
 
         ///  follower
         Slice<Long> followersId = followRepository.findFollowersIdByMember(member, pageable);

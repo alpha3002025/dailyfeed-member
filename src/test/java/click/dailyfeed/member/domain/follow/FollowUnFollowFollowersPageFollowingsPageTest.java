@@ -2,7 +2,6 @@ package click.dailyfeed.member.domain.follow;
 
 import click.dailyfeed.code.domain.member.follow.dto.FollowDto;
 import click.dailyfeed.code.domain.member.member.dto.MemberProfileDto;
-import click.dailyfeed.code.global.web.page.DailyfeedPageable;
 import click.dailyfeed.member.domain.follow.entity.Follow;
 import click.dailyfeed.member.domain.follow.repository.jpa.FollowRepository;
 import click.dailyfeed.member.domain.follow.service.FollowRedisService;
@@ -187,7 +186,7 @@ public class FollowUnFollowFollowersPageFollowingsPageTest {
         Assertions.assertThat(case3_followMembers.getContent()).hasSize(0);
 
         // 멤버 'A' 의 팔로잉,팔로워
-        FollowDto.FollowScrollPage scrollResponse = followRedisService.getMemberFollow(member.getId(), DailyfeedPageable.of(0, 10));
+        FollowDto.FollowScrollPage scrollResponse = followRedisService.getMemberFollow(member.getId(), PageRequest.of(0, 10));
         Assertions.assertThat(scrollResponse.getFollowings().getContent().size()).isEqualTo(0);
         Assertions.assertThat(scrollResponse.getFollowers().getContent().size()).isEqualTo(0);
     }

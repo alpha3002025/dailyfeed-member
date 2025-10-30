@@ -9,7 +9,6 @@ import click.dailyfeed.code.domain.member.member.dto.MemberDto;
 import click.dailyfeed.code.domain.member.member.dto.MemberProfileDto;
 import click.dailyfeed.code.domain.member.member.exception.MemberNotFoundException;
 import click.dailyfeed.code.global.web.page.DailyfeedPage;
-import click.dailyfeed.code.global.web.page.DailyfeedPageable;
 import click.dailyfeed.code.global.web.page.DailyfeedScrollPage;
 import click.dailyfeed.member.domain.follow.document.FollowingDocument;
 import click.dailyfeed.member.domain.follow.entity.Follow;
@@ -21,7 +20,6 @@ import click.dailyfeed.member.domain.member.entity.MemberProfile;
 import click.dailyfeed.member.domain.member.mapper.MemberProfileMapper;
 import click.dailyfeed.member.domain.member.repository.jpa.MemberProfileRepository;
 import click.dailyfeed.member.domain.member.repository.jpa.MemberRepository;
-import click.dailyfeed.pagination.converter.DailyfeedPageableConverter;
 import click.dailyfeed.pagination.mapper.PageMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -44,7 +42,6 @@ public class FollowService {
     private final MemberProfileRepository memberProfileRepository;
     private final MemberProfileMapper memberProfileMapper;
 
-    private final DailyfeedPageableConverter dailyfeedPageableConverter;
     private final PageMapper pageMapper;
     private final FollowMapper followMapper;
 
@@ -151,11 +148,8 @@ public class FollowService {
     }
 
     @Transactional(readOnly = true)
-    public DailyfeedScrollPage<MemberProfileDto.Summary> getRecommendNewbieMore(MemberDto.Member requestedMember, DailyfeedPageable dailyfeedPageable) {
-        /// pageable
-        Pageable pageable = dailyfeedPageableConverter.convert(dailyfeedPageable);
-
-        /// follwoing
+    public DailyfeedScrollPage<MemberProfileDto.Summary> getRecommendNewbieMore(MemberDto.Member requestedMember, Pageable pageable) {
+        /// following
         Slice<MemberProfile> memberProfiles = memberProfileRepository.findWithImagesOrderByCreatedAtWithPaging(requestedMember.getId(), pageable);
 
         /// 변환

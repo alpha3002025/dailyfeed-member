@@ -4,7 +4,6 @@ import click.dailyfeed.code.domain.member.member.dto.MemberDto;
 import click.dailyfeed.code.domain.member.member.dto.MemberProfileDto;
 import click.dailyfeed.code.global.web.code.ResponseSuccessCode;
 import click.dailyfeed.code.global.web.page.DailyfeedPage;
-import click.dailyfeed.code.global.web.page.DailyfeedPageable;
 import click.dailyfeed.code.global.web.page.DailyfeedScrollPage;
 import click.dailyfeed.code.global.web.response.DailyfeedPageResponse;
 import click.dailyfeed.code.global.web.response.DailyfeedScrollResponse;
@@ -71,9 +70,14 @@ public class FollowController {
     @GetMapping("/recommend/newbie/more")
     public DailyfeedScrollResponse<DailyfeedScrollPage<MemberProfileDto.Summary>> getRecommendNewbieMore(
             @InternalAuthenticatedMember MemberDto.Member requestedMember,
-            DailyfeedPageable dailyfeedPageable
+            @PageableDefault(
+                    size = 10,
+                    page = 0,
+                    sort = "createdAt",
+                    direction = Sort.Direction.DESC
+            ) Pageable pageable
     ){
-        DailyfeedScrollPage<MemberProfileDto.Summary> result = followService.getRecommendNewbieMore(requestedMember, dailyfeedPageable);
+        DailyfeedScrollPage<MemberProfileDto.Summary> result = followService.getRecommendNewbieMore(requestedMember, pageable);
         return DailyfeedScrollResponse.<DailyfeedScrollPage<MemberProfileDto.Summary>>builder()
                 .data(result)
                 .status(HttpStatus.OK.value())
