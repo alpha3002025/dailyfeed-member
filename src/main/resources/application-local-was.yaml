@@ -113,6 +113,9 @@ logging:
 
 ## dailyfeed properties
 dailyfeed:
+  scheduling:
+    health-check:
+      enabled: true  # Health Check 스케줄러 활성화
   services:
     member:
       feign:
