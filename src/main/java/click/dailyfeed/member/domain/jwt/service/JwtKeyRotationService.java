@@ -53,7 +53,36 @@ public class JwtKeyRotationService {
 
     @EventListener(ApplicationReadyEvent.class)
     public void init(){
+        // 먼저 중복된 Primary Key 정리
+        fixDuplicatePrimaryKeys();
+        // 그 다음 초기화
         initializeKeyIfNeeded();
+    }
+
+    /**
+     * 중복된 Primary Key 정리
+     * 데이터 정합성 문제로 isPrimary=true인 키가 여러 개 존재할 경우,
+     * 가장 최신 키만 Primary로 유지하고 나머지는 일반 키로 변경
+     */
+    public void fixDuplicatePrimaryKeys() {
+        List<JwtKey> primaryKeys = jwtKeyRepository.findAllPrimaryKeys();
+
+        if (primaryKeys.size() > 1) {
+            log.warn("Found {} primary keys, fixing duplicate primary keys...", primaryKeys.size());
+
+            // 가장 최신 키(createdAt 기준 내림차순 정렬 후 첫 번째)를 제외하고 나머지 disablePrimaryKey
+            primaryKeys.stream()
+                    .sorted((k1, k2) -> k2.getCreatedAt().compareTo(k1.getCreatedAt())) // 최신순 정렬
+                    .skip(1) // 첫 번째(최신) 제외
+                    .forEach(key -> {
+                        log.warn("Demoting duplicate primary key: {} (created at: {})",
+                                key.getKeyId(), key.getCreatedAt());
+                        key.disablePrimaryKey();
+                        jwtKeyRepository.save(key);
+                    });
+
+            log.info("Fixed duplicate primary keys, kept the latest key as primary");
+        }
     }
 
     /**
@@ -137,14 +166,16 @@ public class JwtKeyRotationService {
      * 4. 기존 토큰들은 여전히 이전 키들로 검증 가능 (Grace Period 동안)
      */
     public void generateNewPrimaryKey() {
-        // 1. 기존 Primary Key를 일반 키로 변경 (isPrimary: true -> false)
-        Optional<JwtKey> existingPrimary = jwtKeyRepository.findPrimaryKey();
-        if (existingPrimary.isPresent()) {
-            JwtKey existing = existingPrimary.get();
-            existing.disablePrimaryKey(); // 더 이상 새 토큰 생성에 사용되지 않음
-            // 하지만 isActive=true 인 기존 만료 토큰 검증은 가능
-            jwtKeyRepository.save(existing);
-            log.info("Demoted existing primary key: {}", existing.getKeyId());
+        // 1. 모든 기존 Primary Key들을 일반 키로 변경 (isPrimary: true -> false)
+        // 중복 방지를 위해 findAllPrimaryKeys() 사용
+        List<JwtKey> existingPrimaryKeys = jwtKeyRepository.findAllPrimaryKeys();
+        if (!existingPrimaryKeys.isEmpty()) {
+            for (JwtKey existing : existingPrimaryKeys) {
+                existing.disablePrimaryKey(); // 더 이상 새 토큰 생성에 사용되지 않음
+                // 하지만 isActive=true인 경우 기존 토큰 검증은 가능
+                jwtKeyRepository.save(existing);
+                log.info("Demoted existing primary key: {}", existing.getKeyId());
+            }
         }
 
         // 랜덤 Key 생성

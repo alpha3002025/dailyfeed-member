@@ -11,8 +11,13 @@ import java.util.Optional;
 public interface JwtKeyRepository extends JpaRepository<JwtKey, Long> {
 
     // 새로운 JWT 생성용 키 조회 (isPrimary=true AND isActive=true)
-    @Query("SELECT k FROM JwtKey k WHERE k.isPrimary = true AND k.isActive = true")
+    // LIMIT 1 추가로 중복된 Primary Key가 있어도 하나만 반환 (최신순)
+    @Query("SELECT k FROM JwtKey k WHERE k.isPrimary = true AND k.isActive = true ORDER BY k.createdAt DESC LIMIT 1")
     Optional<JwtKey> findPrimaryKey();
+
+    // 중복된 Primary Key들을 모두 조회 (데이터 정합성 체크 및 수정용)
+    @Query("SELECT k FROM JwtKey k WHERE k.isPrimary = true AND k.isActive = true")
+    List<JwtKey> findAllPrimaryKeys();
 
     // 기존 JWT 검증용 키 조회 (isActive=true, isPrimary 무관)
     @Query("SELECT k FROM JwtKey k WHERE k.keyId = :keyId AND k.isActive = true")
