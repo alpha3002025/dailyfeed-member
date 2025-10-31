@@ -23,7 +23,8 @@ public interface MemberProfileRepository extends JpaRepository<MemberProfile, Lo
             "LEFT JOIN FETCH mp.profileImages img " +
             "WHERE m.id IN :memberIds " +
             "AND mp.isActive = true " +
-            "AND (img.isPrimary = true OR img IS NULL)")
+            "AND (img.isPrimary = true OR img IS NULL) " +
+            "ORDER BY mp.createdAt DESC")
     Slice<MemberProfile> findWithImagesByMemberIdsIn(@Param("memberIds") List<Long> memberIds, Pageable pageable);
 
     @Query(value = "SELECT DISTINCT mp FROM MemberProfile mp " +
@@ -33,7 +34,7 @@ public interface MemberProfileRepository extends JpaRepository<MemberProfile, Lo
             "AND m.id != :myId " +
             "AND NOT EXISTS (SELECT 1 FROM Follow f WHERE f.follower.id = :myId AND f.following.id = m.id) " +
             "AND (img.isPrimary = true OR img IS NULL) " +
-            "ORDER BY m.createdAt DESC")
+            "ORDER BY mp.createdAt DESC")
     Slice<MemberProfile> findWithImagesOrderByCreatedAtWithPaging(Long myId, Pageable pageable);
 
 

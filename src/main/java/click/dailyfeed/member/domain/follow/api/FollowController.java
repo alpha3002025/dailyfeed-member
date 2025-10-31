@@ -11,9 +11,7 @@ import click.dailyfeed.code.global.web.response.DailyfeedServerResponse;
 import click.dailyfeed.member.config.web.annotation.InternalAuthenticatedMember;
 import click.dailyfeed.member.domain.follow.service.FollowService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.web.PageableDefault;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
@@ -51,14 +49,10 @@ public class FollowController {
     @GetMapping("/recommend/newbie")
     public DailyfeedPageResponse<MemberProfileDto.Summary> getRecommendNewbie(
             @InternalAuthenticatedMember MemberDto.Member member,
-            @PageableDefault(
-                    size = 10,
-                    page = 0,
-                    sort = "createdAt",
-                    direction = Sort.Direction.DESC
-            ) Pageable pageable
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
     ){
-        DailyfeedPage<MemberProfileDto.Summary> content = followService.getRecommendNewbie(member, pageable);
+        DailyfeedPage<MemberProfileDto.Summary> content = followService.getRecommendNewbie(member, PageRequest.of(page, size));
         return DailyfeedPageResponse.<MemberProfileDto.Summary>builder()
                 .data(content)
                 .status(HttpStatus.OK.value())
@@ -70,14 +64,10 @@ public class FollowController {
     @GetMapping("/recommend/newbie/more")
     public DailyfeedScrollResponse<DailyfeedScrollPage<MemberProfileDto.Summary>> getRecommendNewbieMore(
             @InternalAuthenticatedMember MemberDto.Member requestedMember,
-            @PageableDefault(
-                    size = 10,
-                    page = 0,
-                    sort = "createdAt",
-                    direction = Sort.Direction.DESC
-            ) Pageable pageable
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int size
     ){
-        DailyfeedScrollPage<MemberProfileDto.Summary> result = followService.getRecommendNewbieMore(requestedMember, pageable);
+        DailyfeedScrollPage<MemberProfileDto.Summary> result = followService.getRecommendNewbieMore(requestedMember, PageRequest.of(page, size));
         return DailyfeedScrollResponse.<DailyfeedScrollPage<MemberProfileDto.Summary>>builder()
                 .data(result)
                 .status(HttpStatus.OK.value())

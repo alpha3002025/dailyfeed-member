@@ -15,6 +15,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
@@ -137,14 +138,10 @@ public class MemberController {
     @GetMapping("/followers-followings")
     public DailyfeedScrollResponse<FollowDto.FollowScrollPage> getMyFollow(
             @InternalAuthenticatedMember MemberDto.Member requestMember,
-            @PageableDefault(
-                    size = 10,
-                    page = 0,
-                    sort = "createdAt",
-                    direction = Sort.Direction.DESC
-            ) Pageable pageable
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
     ){
-        FollowDto.FollowScrollPage result = followRedisService.getMemberFollow(requestMember.getId(), pageable);
+        FollowDto.FollowScrollPage result = followRedisService.getMemberFollow(requestMember.getId(), PageRequest.of(page, size));
         return DailyfeedScrollResponse.<FollowDto.FollowScrollPage>builder()
                 .data(result)
                 .status(HttpStatus.OK.value())
@@ -162,14 +159,10 @@ public class MemberController {
     @GetMapping("/followings/more")
     public DailyfeedScrollResponse<DailyfeedScrollPage<MemberProfileDto.Summary>> getMemberFollowingsMore(
             @InternalAuthenticatedMember MemberDto.Member requestedMember,
-            @PageableDefault(
-                    size = 10,
-                    page = 0,
-                    sort = "createdAt",
-                    direction = Sort.Direction.DESC
-            ) Pageable pageable
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int size
     ){
-        DailyfeedScrollPage<MemberProfileDto.Summary> result = followRedisService.getMemberFollowingsMore(requestedMember.getId(), pageable);
+        DailyfeedScrollPage<MemberProfileDto.Summary> result = followRedisService.getMemberFollowingsMore(requestedMember.getId(), PageRequest.of(page, size));
         return DailyfeedScrollResponse.<DailyfeedScrollPage<MemberProfileDto.Summary>>builder()
                 .data(result)
                 .status(HttpStatus.OK.value())
