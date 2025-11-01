@@ -151,7 +151,7 @@ public class JwtKeyHelper {
             Optional<RefreshToken> refreshTokenOpt = refreshTokenRepository
                     .findByTokenValueAndIsRevokedFalse(refreshTokenValue);
 
-            if (refreshTokenOpt.isEmpty()) {
+            if (refreshTokenOpt.isEmpty()) { // 악의적인 접근(무효화된 토큰으로 접근)시 EXPIRED 처리 후 상위 호출에서 처리
                 log.debug("Refresh token not found in DB or already revoked");
                 return JwtExpiredPredicate.EXPIRED;
             }
