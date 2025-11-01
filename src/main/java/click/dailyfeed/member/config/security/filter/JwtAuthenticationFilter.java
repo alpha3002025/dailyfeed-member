@@ -171,6 +171,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                path.equals("/api/authentication/login") ||
                path.equals("/api/authentication/signup") ||
                path.equals("/api/authentication/refresh") ||
+               path.equals("/api/token/refresh") ||  // Token refresh endpoint
                path.startsWith("/swagger-ui/") ||
                path.startsWith("/swagger-example/") ||
                path.equals("/swagger-ui.html") ||

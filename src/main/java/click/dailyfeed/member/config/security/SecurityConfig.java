@@ -92,6 +92,7 @@ public class SecurityConfig {
                                             "/api/authentication/login",
                                             "/api/authentication/signup",
                                             "/api/authentication/refresh",
+                                            "/api/token/refresh",  // Token refresh endpoint (Access Token 만료 시 호출되므로 인증 불필요)
                                             "/healthcheck/**",
                                             "/swagger-ui/**",       // istio 및 kubernetes 에서 Rule 적용
                                             "/swagger-example/**",  // istio 및 kubernetes 에서 Rule 적용
@@ -102,8 +103,7 @@ public class SecurityConfig {
                                             "/api/authentication/logout",
                                             "/api/authentication/logout-all",
                                             "/api/members/**",
-                                            "/api/members/follow/**",
-                                            "/api/token/**"
+                                            "/api/members/follow/**"
                                     )
                                     .hasAnyRole("MEMBER", "MANAGER", "ADMIN")
                                     .anyRequest().authenticated()
