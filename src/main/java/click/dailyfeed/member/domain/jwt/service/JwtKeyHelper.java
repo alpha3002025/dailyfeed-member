@@ -1,11 +1,16 @@
 package click.dailyfeed.member.domain.jwt.service;
 
 import click.dailyfeed.code.domain.member.member.code.MemberHeaderCode;
+import click.dailyfeed.code.global.jwt.predicate.JwtExpiredPredicate;
 import click.dailyfeed.member.domain.jwt.dto.JwtDto;
+import click.dailyfeed.member.domain.jwt.entity.RefreshToken;
+import click.dailyfeed.member.domain.jwt.repository.jpa.RefreshTokenRepository;
 import click.dailyfeed.member.domain.jwt.util.JwtProcessor;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -14,7 +19,10 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.security.Key;
+import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.Date;
+import java.util.Optional;
 
 @Slf4j
 @Transactional
@@ -22,6 +30,7 @@ import java.util.Date;
 @Component
 public class JwtKeyHelper {
     private final JwtKeyRotationService jwtKeyRotationService;
+    private final RefreshTokenRepository refreshTokenRepository;
 
     @Value("${jwt.access.expiration.hours:1}")
     private Integer accessTokenExpirationHours;
@@ -108,10 +117,10 @@ public class JwtKeyHelper {
      * JWT 토큰 검증 및 사용자 정보 추출
      */
     public JwtDto.UserDetails readUserDetailsFromToken(String keyId, String token) {
-        // 2. Key ID로 해당 Key 조회
+        // Key ID로 해당 Key 조회
         Key key = jwtKeyRotationService.getKeyByKeyId(keyId);
 
-        // 3. 토큰 검증 및 파싱
+        // 토큰 검증 및 파싱
         return JwtProcessor.degenerateToken(key, token);
     }
 
@@ -127,5 +136,53 @@ public class JwtKeyHelper {
             response.addHeader(headerKey, "true");
             log.info("Token refresh needed - Current: {}, Primary: {}", currentKeyId, primaryKeyId);
         }
+    }
+
+    public JwtExpiredPredicate checkRefreshTokenExpiration(HttpServletRequest request) {
+        try {
+            // 1. 쿠키에서 Refresh Token 추출
+            String refreshTokenValue = extractRefreshTokenFromCookie(request);
+            if (refreshTokenValue == null) {
+                log.debug("No refresh token found in cookie");
+                return JwtExpiredPredicate.EXPIRED;
+            }
+
+            // 2. DB에서 Refresh Token 조회
+            Optional<RefreshToken> refreshTokenOpt = refreshTokenRepository
+                    .findByTokenValueAndIsRevokedFalse(refreshTokenValue);
+
+            if (refreshTokenOpt.isEmpty()) {
+                log.debug("Refresh token not found in DB or already revoked");
+                return JwtExpiredPredicate.EXPIRED;
+            }
+
+            RefreshToken refreshToken = refreshTokenOpt.get();
+
+            // 3. 만료 여부 확인
+            LocalDateTime now = LocalDateTime.now();
+            boolean isExpired = refreshToken.isExpiredAt(now) || !refreshToken.isValidAt(now);
+
+            if (isExpired) {
+                log.debug("Refresh token expired at: {}", refreshToken.getExpiresAt());
+                return JwtExpiredPredicate.EXPIRED;
+            }
+
+            return JwtExpiredPredicate.NOT_EXPIRED;
+
+        } catch (Exception e) {
+            log.error("Error checking refresh token expiration: {}", e.getMessage());
+            return JwtExpiredPredicate.EXPIRED; // 에러 발생 시 만료로 간주
+        }
+    }
+
+    public String extractRefreshTokenFromCookie(HttpServletRequest request) {
+        if (request.getCookies() != null) {
+            return Arrays.stream(request.getCookies())
+                    .filter(cookie -> "refresh_token".equals(cookie.getName()))
+                    .map(Cookie::getValue)
+                    .findFirst()
+                    .orElse(null);
+        }
+        return null;
     }
 }

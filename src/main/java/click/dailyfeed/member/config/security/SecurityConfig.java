@@ -50,7 +50,13 @@ public class SecurityConfig {
 //        configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowedHeaders(List.of("Authorization", "Cache-Control", "Content-Type"));
         configuration.setAllowCredentials(true);
-        configuration.setExposedHeaders(List.of("Authorization", "Cache-Control", "Content-Type"));
+        configuration.setExposedHeaders(List.of(
+                "Authorization",
+                "Cache-Control",
+                "Content-Type",
+                "X-Token-Refresh-Needed",
+                "X-Relogin-Required"
+        ));
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/api/**", configuration);
