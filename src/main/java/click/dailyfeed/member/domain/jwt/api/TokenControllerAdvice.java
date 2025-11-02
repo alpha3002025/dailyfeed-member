@@ -35,8 +35,6 @@ public class TokenControllerAdvice {
     @ExceptionHandler(KeyRefreshErrorException.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public DailyfeedErrorResponse handleKeyRefreshErrorException(KeyRefreshErrorException e, HttpServletRequest request, HttpServletResponse response) {
-        log.error("Key refresh error: {}", e.getMessage());
-        response.setHeader(MemberHeaderCode.X_RELOGIN_REQUIRED.getHeaderKey(), "true");
         return DailyfeedErrorResponse.of(
                 HttpStatus.INTERNAL_SERVER_ERROR.value(),
                 ResponseSuccessCode.FAIL,

@@ -1,10 +1,15 @@
 package click.dailyfeed.member.domain.authentication.api;
 
+import click.dailyfeed.code.domain.member.key.exception.JwtKeyException;
+import click.dailyfeed.code.domain.member.member.code.MemberHeaderCode;
 import click.dailyfeed.code.domain.member.member.exception.MemberException;
+import click.dailyfeed.code.domain.member.token.exception.KeyRefreshErrorException;
 import click.dailyfeed.code.domain.member.token.exception.TokenRefreshNeededException;
+import click.dailyfeed.code.global.jwt.exception.InvalidTokenException;
 import click.dailyfeed.code.global.web.code.ResponseSuccessCode;
 import click.dailyfeed.code.global.web.response.DailyfeedErrorResponse;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -42,9 +47,44 @@ public class AuthenticationControllerAdvice {
         );
     }
 
+    @ExceptionHandler(KeyRefreshErrorException.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public DailyfeedErrorResponse handleKeyRefreshErrorException(KeyRefreshErrorException e, HttpServletRequest request, HttpServletResponse response) {
+        return DailyfeedErrorResponse.of(
+                HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                ResponseSuccessCode.FAIL,
+                e.getMessage(),
+                request.getRequestURI()
+        );
+    }
+
+    @ExceptionHandler(JwtKeyException.class)
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    public DailyfeedErrorResponse handleJwtKeyException(JwtKeyException e, HttpServletRequest request, HttpServletResponse response) {
+        response.setHeader(MemberHeaderCode.X_RELOGIN_REQUIRED.getHeaderKey(), "true");
+        return DailyfeedErrorResponse.of(
+                HttpStatus.UNAUTHORIZED.value(),
+                ResponseSuccessCode.FAIL,
+                e.getMessage(),
+                request.getRequestURI()
+        );
+    }
+
+    @ExceptionHandler(InvalidTokenException.class)
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    public DailyfeedErrorResponse handleInvalidTokenException(InvalidTokenException e, HttpServletRequest request, HttpServletResponse response) {
+        log.error("Invalid token error: {}", e.getMessage());
+        response.setHeader(MemberHeaderCode.X_RELOGIN_REQUIRED.getHeaderKey(), "true");
+        return DailyfeedErrorResponse.of(
+                HttpStatus.UNAUTHORIZED.value(),
+                ResponseSuccessCode.FAIL,
+                e.getMessage(),
+                request.getRequestURI()
+        );
+    }
+
     // validation
     @ExceptionHandler(value = MethodArgumentNotValidException.class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
     public DailyfeedErrorResponse handleMethodArgumentNotValidException(
             MethodArgumentNotValidException e,
             HttpServletRequest request
@@ -66,7 +106,6 @@ public class AuthenticationControllerAdvice {
     }
 
     @ExceptionHandler(value = ConstraintViolationException.class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
     public DailyfeedErrorResponse handleConstraintViolationException(
             ConstraintViolationException e,
             HttpServletRequest request

@@ -1,11 +1,16 @@
 package click.dailyfeed.member.domain.follow.api;
 
 import click.dailyfeed.code.domain.member.follow.exception.FollowException;
+import click.dailyfeed.code.domain.member.key.exception.JwtKeyException;
+import click.dailyfeed.code.domain.member.member.code.MemberHeaderCode;
 import click.dailyfeed.code.domain.member.member.exception.MemberException;
+import click.dailyfeed.code.domain.member.token.exception.KeyRefreshErrorException;
 import click.dailyfeed.code.domain.member.token.exception.TokenRefreshNeededException;
+import click.dailyfeed.code.global.jwt.exception.InvalidTokenException;
 import click.dailyfeed.code.global.web.code.ResponseSuccessCode;
 import click.dailyfeed.code.global.web.response.DailyfeedErrorResponse;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -27,17 +32,6 @@ public class FollowControllerAdvice {
                 e.getMemberExceptionCode().getCode(),
                 ResponseSuccessCode.FAIL,
                 e.getMemberExceptionCode().getMessage(),
-                request.getRequestURI()
-        );
-    }
-
-    @ExceptionHandler(TokenRefreshNeededException.class)
-    @ResponseStatus(HttpStatus.UNAUTHORIZED)
-    public DailyfeedErrorResponse handleTokenRefreshNeededException(TokenRefreshNeededException e, HttpServletRequest request) {
-        return DailyfeedErrorResponse.of(
-                HttpStatus.UNAUTHORIZED.value(),
-                ResponseSuccessCode.FAIL,
-                e.getTokenExceptionCode().getMessage(),
                 request.getRequestURI()
         );
     }
