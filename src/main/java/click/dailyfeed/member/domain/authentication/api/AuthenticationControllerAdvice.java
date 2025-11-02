@@ -1,13 +1,16 @@
 package click.dailyfeed.member.domain.authentication.api;
 
 import click.dailyfeed.code.domain.member.member.exception.MemberException;
+import click.dailyfeed.code.domain.member.token.exception.TokenRefreshNeededException;
 import click.dailyfeed.code.global.web.code.ResponseSuccessCode;
 import click.dailyfeed.code.global.web.response.DailyfeedErrorResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 @Slf4j
@@ -15,6 +18,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 public class AuthenticationControllerAdvice {
 
     @ExceptionHandler(value = MemberException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
     public DailyfeedErrorResponse handleMemberException(
             MemberException e,
             HttpServletRequest request) {
@@ -27,8 +31,20 @@ public class AuthenticationControllerAdvice {
         );
     }
 
+    @ExceptionHandler(TokenRefreshNeededException.class)
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    public DailyfeedErrorResponse handleTokenRefreshNeededException(TokenRefreshNeededException e, HttpServletRequest request) {
+        return DailyfeedErrorResponse.of(
+                HttpStatus.UNAUTHORIZED.value(),
+                ResponseSuccessCode.FAIL,
+                e.getTokenExceptionCode().getMessage(),
+                request.getRequestURI()
+        );
+    }
+
     // validation
     @ExceptionHandler(value = MethodArgumentNotValidException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
     public DailyfeedErrorResponse handleMethodArgumentNotValidException(
             MethodArgumentNotValidException e,
             HttpServletRequest request
@@ -50,6 +66,7 @@ public class AuthenticationControllerAdvice {
     }
 
     @ExceptionHandler(value = ConstraintViolationException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
     public DailyfeedErrorResponse handleConstraintViolationException(
             ConstraintViolationException e,
             HttpServletRequest request
@@ -70,7 +87,19 @@ public class AuthenticationControllerAdvice {
         );
     }
 
+    @ExceptionHandler(RuntimeException.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public DailyfeedErrorResponse handleRuntimeException(RuntimeException e, HttpServletRequest request) {
+        return DailyfeedErrorResponse.of(
+                HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                ResponseSuccessCode.FAIL,
+                "서버 내부 오류가 발생했습니다.",
+                request.getRequestURI()
+        );
+    }
+
     @ExceptionHandler(value = Exception.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public DailyfeedErrorResponse handleException(
             Exception e,
             HttpServletRequest request

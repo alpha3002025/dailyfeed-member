@@ -5,7 +5,6 @@ import click.dailyfeed.code.domain.member.member.dto.MemberProfileDto;
 import click.dailyfeed.code.domain.member.member.exception.MemberHandleAlreadyExistsException;
 import click.dailyfeed.code.domain.member.member.exception.MemberNotFoundException;
 import click.dailyfeed.feign.domain.image.ImageFeignHelper;
-import click.dailyfeed.member.domain.follow.repository.jpa.FollowRepository;
 import click.dailyfeed.member.domain.follow.repository.mongo.FollowingMongoRepository;
 import click.dailyfeed.member.domain.member.entity.MemberProfile;
 import click.dailyfeed.member.domain.member.mapper.MemberProfileMapper;
@@ -26,7 +25,6 @@ import java.util.Optional;
 public class MemberService {
     private final MemberProfileRepository memberProfileRepository;
     private final MemberProfileMapper memberProfileMapper;
-    private final FollowRepository followRepository;
     private final FollowingMongoRepository followingMongoRepository;
     private final ImageFeignHelper imageFeignHelper;
 
@@ -45,7 +43,6 @@ public class MemberService {
         Long followersCount = followingMongoRepository.countByToId(requestedMember.getId());
 
         /// 회원의 기존 이미지 삭제 요청 → image-svc
-        // TODO SEASON 2 근데... 이거 카프카로 분리하는게 맞긴해보인다. 트랜잭션 내에 존재할 필요가 없다.
         if (!updateRequest.getPreviousAvatarUrl().isEmpty()) {
             deletePreviousAvatarImage(updateRequest, token, httpResponse);
         }
@@ -57,7 +54,7 @@ public class MemberService {
     private void deletePreviousAvatarImage(MemberProfileDto.UpdateRequest updateRequest, String token, HttpServletResponse response) {
         List<String> previousAvatarUrls = updateRequest.getPreviousAvatarUrl();
         MemberProfileDto.ImageDeleteBulkRequest bulkRequest = MemberProfileDto.ImageDeleteBulkRequest.builder().imageUrls(previousAvatarUrls).build();
-        imageFeignHelper.deleteImages(bulkRequest, token);
+        imageFeignHelper.deleteImages(bulkRequest, token, response);
     }
 
     public String updateMemberProfileHandle(MemberDto.Member requestedMember, MemberProfileDto.HandleChangeRequest handleChangeRequest) {
