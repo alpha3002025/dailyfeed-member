@@ -1,6 +1,7 @@
 package click.dailyfeed.member.domain.member.api;
 
 import click.dailyfeed.code.domain.member.member.exception.MemberException;
+import click.dailyfeed.code.domain.member.token.exception.TokenRefreshNeededException;
 import click.dailyfeed.code.global.jwt.exception.JwtException;
 import click.dailyfeed.code.global.web.code.ResponseSuccessCode;
 import click.dailyfeed.code.global.web.response.DailyfeedErrorResponse;
@@ -22,6 +23,17 @@ public class MemberControllerAdvice {
                 HttpStatus.BAD_REQUEST.value(),
                 ResponseSuccessCode.FAIL,
                 e.getMemberExceptionCode().getMessage(),
+                request.getRequestURI()
+        );
+    }
+
+    @ExceptionHandler(TokenRefreshNeededException.class)
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    public DailyfeedErrorResponse handleTokenRefreshNeededException(TokenRefreshNeededException e, HttpServletRequest request) {
+        return DailyfeedErrorResponse.of(
+                HttpStatus.UNAUTHORIZED.value(),
+                ResponseSuccessCode.FAIL,
+                e.getTokenExceptionCode().getMessage(),
                 request.getRequestURI()
         );
     }

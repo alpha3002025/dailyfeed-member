@@ -3,6 +3,7 @@ package click.dailyfeed.member.domain.jwt.api;
 import click.dailyfeed.code.domain.member.key.exception.JwtKeyException;
 import click.dailyfeed.code.domain.member.member.code.MemberHeaderCode;
 import click.dailyfeed.code.domain.member.token.exception.KeyRefreshErrorException;
+import click.dailyfeed.code.domain.member.token.exception.TokenRefreshNeededException;
 import click.dailyfeed.code.global.jwt.exception.InvalidTokenException;
 import click.dailyfeed.code.global.web.code.ResponseSuccessCode;
 import click.dailyfeed.code.global.web.response.DailyfeedErrorResponse;
@@ -56,23 +57,40 @@ public class TokenControllerAdvice {
         );
     }
 
+    @ExceptionHandler(TokenRefreshNeededException.class)
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    public DailyfeedErrorResponse handleTokenRefreshNeededException(TokenRefreshNeededException e, HttpServletRequest request) {
+        return DailyfeedErrorResponse.of(
+                HttpStatus.UNAUTHORIZED.value(),
+                ResponseSuccessCode.FAIL,
+                e.getTokenExceptionCode().getMessage(),
+                request.getRequestURI()
+        );
+    }
+
     @ExceptionHandler(RuntimeException.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public DailyfeedErrorResponse handleRuntimeException(RuntimeException e, HttpServletRequest request) {
+        log.error("Runtime Exception: {}", e.getMessage());
+        e.printStackTrace();
+
         return DailyfeedErrorResponse.of(
                 HttpStatus.INTERNAL_SERVER_ERROR.value(),
                 ResponseSuccessCode.FAIL,
-                e.getMessage(),
+                "서버 내부 오류가 발생했습니다.",
                 request.getRequestURI()
         );
     }
 
     @ExceptionHandler(Exception.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public DailyfeedErrorResponse handleException(Exception e, HttpServletRequest request) {
+        log.error("Exception: {}", e.getMessage());
+        e.printStackTrace();
         return DailyfeedErrorResponse.of(
                 HttpStatus.INTERNAL_SERVER_ERROR.value(),
                 ResponseSuccessCode.FAIL,
-                e.getMessage(),
+                "서버 내부 오류가 발생했습니다.",
                 request.getRequestURI()
         );
     }
