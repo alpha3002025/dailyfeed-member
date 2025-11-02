@@ -28,6 +28,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.security.core.Authentication;
@@ -52,6 +53,9 @@ public class AuthenticationService {
     private final TokenService tokenService;
     private final AuthenticationMapper authenticationMapper;
     private final MemberProfileMapper memberProfileMapper;
+
+    @Value("${spring.profiles.active:default}")
+    private String activeProfile;
 
     @Transactional
     public DailyfeedServerResponse<MemberProfileDto.Summary> login(
@@ -192,25 +196,46 @@ public class AuthenticationService {
     protected void setRefreshTokenCookie(HttpServletResponse response, String refreshToken) {
         ResponseCookie cookie = ResponseCookie.from("refresh_token", refreshToken)
                 .httpOnly(true)
-                .secure(true)
-                .sameSite("Strict")
+                .secure(isHttpsSupported())
+                .sameSite(sameSite())
                 .path("/")
                 .maxAge(30 * 24 * 60 * 60)
                 .build();
 
-        response.addHeader("Set-Cookie", cookie.toString());
+        String cookieString = cookie.toString();
+        log.info("🍪 Setting refresh token cookie: {}", cookieString);
+        log.info("   Profile: {}, Secure: {}, SameSite: {}", activeProfile, isHttpsSupported(), sameSite());
+        response.addHeader("Set-Cookie", cookieString);
     }
 
     protected void removeRefreshTokenCookie(HttpServletResponse response) {
+        // local-was: SameSite=None (다른 포트 허용)
+        // 그 외: SameSite=Strict (같은 도메인만)
+        String sameSite = "local-was".equals(activeProfile) ? "None" : "Strict";
+
         ResponseCookie cookie = ResponseCookie.from("refresh_token", "")
                 .httpOnly(true)
-                .secure(true)
-                .sameSite("Strict")
+                .secure(isHttpsSupported())
+                .sameSite(sameSite)
                 .path("/")
                 .maxAge(0)
                 .build();
 
         response.addHeader("Set-Cookie", cookie.toString());
+    }
+
+    public String sameSite(){
+        // local-was: SameSite=Lax (Chrome의 SameSite=None + Secure=false 거부 문제 회피)
+        // 그 외: SameSite=Strict (같은 도메인만)
+        if("local-was".equals(activeProfile)) return "Lax";
+        else return "Strict";
+    }
+
+    public boolean isHttpsSupported(){
+        if("local-was".equals(activeProfile)){
+            return false;
+        }
+        return true;
     }
 
     protected String extractRefreshTokenFromCookie(HttpServletRequest request) {

@@ -69,23 +69,35 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         // 토큰 검증 및 사용자 정보 추출
         JwtDto.UserDetails userDetails = jwtKeyHelper.readUserDetailsFromToken(keyId, token);
 
-        // Refresh Token 만료 확인 (항상 체크)
-        JwtExpiredPredicate refreshTokenStatus = jwtKeyHelper.checkRefreshTokenExpiration(request);
-
-        // Refresh Token 만료 시 즉시 재로그인 요구
-        if (JwtExpiredPredicate.EXPIRED.equals(refreshTokenStatus)) {
-            log.warn("Refresh Token expired or revoked - MemberId: {}", userDetails.getId());
-            addReLoginRequiredAtResponseHeader(response);
-            return;
-        }
-
         // Access Token 만료 확인
         if (JwtExpiredPredicate.EXPIRED.equals(JwtProcessor.checkIfExpired(userDetails.getExpiration()))) {
-            // Access Token만 만료됨 -> 갱신 필요
+            // Access Token 만료됨 -> Refresh Token 확인
+            boolean hasCookie = hasRefreshTokenCookie(request);
+
+            if (!hasCookie) {
+                // 쿠키 없음 (서비스 간 통신) -> 토큰 갱신 필요
+                log.debug("Access Token expired, no cookie (service-to-service) - MemberId: {}", userDetails.getId());
+                addRefreshNeededAtResponseHeader(response);
+                return;
+            }
+
+            // 쿠키 있음 (브라우저 요청) -> Refresh Token 검증
+            JwtExpiredPredicate refreshTokenStatus = jwtKeyHelper.checkRefreshTokenExpiration(request);
+
+            if (JwtExpiredPredicate.EXPIRED.equals(refreshTokenStatus)) {
+                // Refresh Token도 만료됨 -> 재로그인 필요
+                log.warn("Both Access and Refresh Token expired - MemberId: {}", userDetails.getId());
+                addReLoginRequiredAtResponseHeader(response);
+                return;
+            }
+
+            // Refresh Token은 유효함 -> Access Token 갱신 필요
+            log.debug("Access Token expired, Refresh Token valid - MemberId: {}", userDetails.getId());
             addRefreshNeededAtResponseHeader(response);
             return;
         }
 
+        // Access Token이 유효한 경우: 정상 처리
         // Spring Security 인증 설정
         cachingAuthenticationAtSecurityContext(userDetails.getId());
 
@@ -115,53 +127,37 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         SecurityContextHolder.getContext().setAuthentication(auth);
     }
 
-//    private JwtExpiredPredicate checkRefreshTokenExpiration(HttpServletRequest request) {
-//        try {
-//            // 1. 쿠키에서 Refresh Token 추출
-//            String refreshTokenValue = extractRefreshTokenFromCookie(request);
-//            if (refreshTokenValue == null) {
-//                log.debug("No refresh token found in cookie");
-//                return JwtExpiredPredicate.EXPIRED;
-//            }
-//
-//            // 2. DB에서 Refresh Token 조회
-//            Optional<RefreshToken> refreshTokenOpt = refreshTokenRepository
-//                    .findByTokenValueAndIsRevokedFalse(refreshTokenValue);
-//
-//            if (refreshTokenOpt.isEmpty()) {
-//                log.debug("Refresh token not found in DB or already revoked");
-//                return JwtExpiredPredicate.EXPIRED;
-//            }
-//
-//            RefreshToken refreshToken = refreshTokenOpt.get();
-//
-//            // 3. 만료 여부 확인
-//            LocalDateTime now = LocalDateTime.now();
-//            boolean isExpired = refreshToken.isExpiredAt(now) || !refreshToken.isValidAt(now);
-//
-//            if (isExpired) {
-//                log.debug("Refresh token expired at: {}", refreshToken.getExpiresAt());
-//                return JwtExpiredPredicate.EXPIRED;
-//            }
-//
-//            return JwtExpiredPredicate.NOT_EXPIRED;
-//
-//        } catch (Exception e) {
-//            log.error("Error checking refresh token expiration: {}", e.getMessage());
-//            return JwtExpiredPredicate.EXPIRED; // 에러 발생 시 만료로 간주
-//        }
-//    }
-//
-//    private String extractRefreshTokenFromCookie(HttpServletRequest request) {
-//        if (request.getCookies() != null) {
-//            return Arrays.stream(request.getCookies())
-//                    .filter(cookie -> "refresh_token".equals(cookie.getName()))
-//                    .map(Cookie::getValue)
-//                    .findFirst()
-//                    .orElse(null);
-//        }
-//        return null;
-//    }
+    private boolean hasRefreshTokenCookie(HttpServletRequest request) {
+        return jwtKeyHelper.extractRefreshTokenFromCookie(request) != null;
+    }
+
+    /**
+     * 요청자가 브라우저인지 서비스인지 구분
+     * - 쿠키가 있으면 브라우저 요청으로 간주
+     * - 쿠키가 없으면 서비스 간 통신으로 간주
+     * 추가 옵션: User-Agent 또는 커스텀 헤더(X-Service-Name 등)로 구분 가능
+     */
+    private boolean isServiceToServiceRequest(HttpServletRequest request) {
+        // 쿠키 기반 판단: 쿠키가 없으면 서비스 간 통신
+        boolean hasCookie = hasRefreshTokenCookie(request);
+        if (!hasCookie) {
+            return true;
+        }
+
+        // 추가 옵션: 커스텀 헤더로 명시적 구분 (필요시 활성화)
+        // String serviceHeader = request.getHeader("X-Service-Name");
+        // if (serviceHeader != null) {
+        //     return true;
+        // }
+
+        // 추가 옵션: User-Agent로 구분 (필요시 활성화)
+        // String userAgent = request.getHeader("User-Agent");
+        // if (userAgent != null && userAgent.contains("Java")) {
+        //     return true;
+        // }
+
+        return false;
+    }
 
     private boolean shouldSkipAuthentication(String path) {
         return path.equals("/") ||
