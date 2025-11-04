@@ -51,7 +51,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
                 pattern = "click.dailyfeed.feign..*"
         )
 )
-public class ImageInsertAndSignupInserDevK8sTest {
+public class ImageInsertAndSignupInsertDevK8sTest {
 
     private static final String IMAGE_SERVICE_BASE_URL = "http://localhost:8889";
     private static final String IMAGE_UPLOAD_ENDPOINT = "/api/images/upload/profile";
