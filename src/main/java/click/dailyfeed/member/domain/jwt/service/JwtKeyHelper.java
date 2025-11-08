@@ -63,7 +63,6 @@ public class JwtKeyHelper {
                 .setSubject(String.valueOf(userDetails.getId()))
                 .setExpiration(expirationDate)
                 .claim("id", userDetails.getId())
-                .claim("password", userDetails.getPassword())
                 .signWith(primaryKey, SignatureAlgorithm.HS256)
                 .compact();
     }

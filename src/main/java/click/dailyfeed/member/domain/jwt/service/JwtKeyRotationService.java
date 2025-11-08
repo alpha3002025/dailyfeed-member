@@ -53,10 +53,88 @@ public class JwtKeyRotationService {
 
     @EventListener(ApplicationReadyEvent.class)
     public void init(){
+        log.info("🔑 Initializing JWT Key Rotation Service...");
+
         // 먼저 중복된 Primary Key 정리
         fixDuplicatePrimaryKeys();
-        // 그 다음 초기화
-        initializeKeyIfNeeded();
+
+        // 그 다음 초기화 (재시도 로직 포함)
+        initializeKeyIfNeededWithRetry();
+
+        log.info("✅ JWT Key Rotation Service initialized successfully");
+    }
+
+    /**
+     * 재시도 로직을 포함한 키 초기화
+     * DB 연결 지연 등의 이슈를 대비하여 최대 3회 재시도
+     *
+     * 개선 사항:
+     * 1. DB 연결 지연 시 재시도
+     * 2. 상세한 로깅으로 문제 진단 용이
+     * 3. 마지막 재시도 실패 시 명확한 에러 메시지
+     */
+    private void initializeKeyIfNeededWithRetry() {
+        int maxRetries = 3;
+        int retryDelayMs = 1000; // 1초
+
+        for (int attempt = 1; attempt <= maxRetries; attempt++) {
+            try {
+                log.debug("Checking for existing primary key (attempt {}/{})", attempt, maxRetries);
+
+                // DB에서 Primary Key 조회
+                Optional<JwtKey> primaryKey = jwtKeyRepository.findPrimaryKey();
+
+                if (primaryKey.isEmpty()) {
+                    log.info("⚠️ No primary key found in database, generating new one (attempt {}/{})",
+                             attempt, maxRetries);
+                    generateNewPrimaryKey();
+                    log.info("✅ New primary key generated successfully");
+                    return; // 성공 - 종료
+                } else {
+                    // 기존 키 발견
+                    JwtKey key = primaryKey.get();
+                    log.info("✅ Found existing primary key: {} (created at: {}, expires at: {}) (attempt {}/{})",
+                             key.getKeyId(),
+                             key.getCreatedAt(),
+                             key.getExpiresAt(),
+                             attempt,
+                             maxRetries);
+
+                    // 키 만료 임박 경고
+                    if (key.getExpiresAt() != null) {
+                        LocalDateTime now = LocalDateTime.now();
+                        long hoursUntilExpiry = java.time.Duration.between(now, key.getExpiresAt()).toHours();
+
+                        if (hoursUntilExpiry <= 24) {
+                            log.warn("⚠️ Primary key {} is expiring in {} hours!",
+                                     key.getKeyId(), hoursUntilExpiry);
+                        }
+                    }
+
+                    return; // 성공 - 종료
+                }
+
+            } catch (Exception e) {
+                log.warn("⚠️ Failed to initialize JWT key (attempt {}/{}): {} - {}",
+                         attempt, maxRetries, e.getClass().getSimpleName(), e.getMessage());
+
+                if (attempt >= maxRetries) {
+                    log.error("❌ Failed to initialize JWT key after {} attempts. Application may not work correctly!",
+                             maxRetries, e);
+                    throw new RuntimeException("JWT key initialization failed after " + maxRetries + " attempts", e);
+                }
+
+                // 재시도 전 대기
+                try {
+                    log.debug("Waiting {}ms before retry...", retryDelayMs);
+                    Thread.sleep(retryDelayMs);
+                } catch (InterruptedException ie) {
+                    Thread.currentThread().interrupt();
+                    log.error("❌ JWT key initialization interrupted", ie);
+                    throw new RuntimeException("JWT key initialization interrupted", ie);
+                }
+            }
+        }
     }
 
     /**
@@ -68,7 +146,7 @@ public class JwtKeyRotationService {
         List<JwtKey> primaryKeys = jwtKeyRepository.findAllPrimaryKeys();
 
         if (primaryKeys.size() > 1) {
-            log.warn("Found {} primary keys, fixing duplicate primary keys...", primaryKeys.size());
+            log.warn("⚠️ Found {} primary keys, fixing duplicate primary keys...", primaryKeys.size());
 
             // 가장 최신 키(createdAt 기준 내림차순 정렬 후 첫 번째)를 제외하고 나머지 disablePrimaryKey
             primaryKeys.stream()
@@ -81,13 +159,19 @@ public class JwtKeyRotationService {
                         jwtKeyRepository.save(key);
                     });
 
-            log.info("Fixed duplicate primary keys, kept the latest key as primary");
+            log.info("✅ Fixed duplicate primary keys, kept the latest key as primary");
+        } else if (primaryKeys.size() == 1) {
+            log.debug("✅ Primary key status is healthy (1 primary key found)");
+        } else {
+            log.debug("No primary key found yet, will generate new one");
         }
     }
 
     /**
      * 초기 키가 없는 경우 생성
+     * @deprecated Use initializeKeyIfNeededWithRetry() instead for better reliability
      */
+    @Deprecated
     public void initializeKeyIfNeeded() {
         Optional<JwtKey> primaryKey = jwtKeyRepository.findPrimaryKey();
         if (primaryKey.isEmpty()) {
@@ -101,6 +185,7 @@ public class JwtKeyRotationService {
     public Key getPrimaryKey() {
         Optional<JwtKey> primaryKey = jwtKeyRepository.findPrimaryKey();
         if (primaryKey.isEmpty()) {
+            log.error("❌ No primary key available for token generation");
             throw new PrimaryKeyMissingException();
         }
         return jwtKeyPlainMapper.convertToKey(primaryKey.get());
@@ -113,10 +198,10 @@ public class JwtKeyRotationService {
         log.debug("Looking up JWT key with keyId: {}", keyId);
         Optional<JwtKey> jwtKey = jwtKeyRepository.findActiveKeyByKeyId(keyId);
         if (jwtKey.isEmpty()) {
-            log.warn("JWT key not found or expired: keyId={}", keyId);
+            log.warn("❌ JWT key not found or expired: keyId={}", keyId);
             throw new JwtKeyExpiredException("Key not found or expired: " + keyId);
         }
-        log.debug("Found JWT key: keyId={}, isActive={}, isPrimary={}", 
+        log.debug("✅ Found JWT key: keyId={}, isActive={}, isPrimary={}",
             jwtKey.get().getKeyId(), jwtKey.get().getIsActive(), jwtKey.get().getIsPrimary());
         return jwtKeyPlainMapper.convertToKey(jwtKey.get());
     }
@@ -127,6 +212,7 @@ public class JwtKeyRotationService {
     public String getPrimaryKeyId() {
         Optional<JwtKey> primaryKey = jwtKeyRepository.findPrimaryKey();
         if (primaryKey.isEmpty()) {
+            log.error("❌ No primary key exists");
             throw new PrimaryKeyNotExistException();
         }
         return primaryKey.get().getKeyId();
@@ -137,9 +223,12 @@ public class JwtKeyRotationService {
      */
     @Scheduled(fixedRate = 3600000) // 1시간마다 실행
     public void rotateKeysIfNeeded() {
+        log.debug("🔄 Checking if key rotation is needed...");
+
         Optional<JwtKey> currentPrimary = jwtKeyRepository.findPrimaryKey();
 
         if (currentPrimary.isEmpty()) {
+            log.warn("⚠️ No primary key found during scheduled rotation, generating new one");
             generateNewPrimaryKey();
             return;
         }
@@ -149,7 +238,12 @@ public class JwtKeyRotationService {
 
         // 현재 Primary Key가 KEY_ROTATION_HOURS 이상 지난 경우 새 키 생성
         if (keyCreatedAt.plusHours(keyRotationHours).isBefore(now)) {
+            log.info("🔄 Key rotation triggered: current key is {} hours old (threshold: {} hours)",
+                     java.time.Duration.between(keyCreatedAt, now).toHours(), keyRotationHours);
             generateNewPrimaryKey();
+        } else {
+            log.debug("✅ Current key is still valid (created {} hours ago, rotation at {} hours)",
+                     java.time.Duration.between(keyCreatedAt, now).toHours(), keyRotationHours);
         }
 
         // 만료된 키들 정리
@@ -166,6 +260,8 @@ public class JwtKeyRotationService {
      * 4. 기존 토큰들은 여전히 이전 키들로 검증 가능 (Grace Period 동안)
      */
     public void generateNewPrimaryKey() {
+        log.info("🔑 Generating new primary key...");
+
         // 1. 모든 기존 Primary Key들을 일반 키로 변경 (isPrimary: true -> false)
         // 중복 방지를 위해 findAllPrimaryKeys() 사용
         List<JwtKey> existingPrimaryKeys = jwtKeyRepository.findAllPrimaryKeys();
@@ -174,7 +270,7 @@ public class JwtKeyRotationService {
                 existing.disablePrimaryKey(); // 더 이상 새 토큰 생성에 사용되지 않음
                 // 하지만 isActive=true인 경우 기존 토큰 검증은 가능
                 jwtKeyRepository.save(existing);
-                log.info("Demoted existing primary key: {}", existing.getKeyId());
+                log.info("Demoted existing primary key: {} to regular key", existing.getKeyId());
             }
         }
 
@@ -186,7 +282,8 @@ public class JwtKeyRotationService {
         JwtKey newKey = JwtKey.newKey(encodedKey, keyRotationHours, gracePeriodHours);
         jwtKeyRepository.save(newKey);
 
-        log.info("New primary key generated with ID: {}", newKey.getKeyId());
+        log.info("✅ New primary key generated with ID: {} (will expire at: {})",
+                 newKey.getKeyId(), newKey.getExpiresAt());
     }
 
     /**
@@ -196,13 +293,17 @@ public class JwtKeyRotationService {
         LocalDateTime now = LocalDateTime.now();
         List<JwtKey> expiredKeys = jwtKeyRepository.findExpiredKeys(now);
 
-        for (JwtKey expiredKey : expiredKeys) {
-            expiredKey.deactivate();
-        }
-
         if (!expiredKeys.isEmpty()) {
+            for (JwtKey expiredKey : expiredKeys) {
+                expiredKey.deactivate();
+                log.info("Deactivated expired key: {} (expired at: {})",
+                         expiredKey.getKeyId(), expiredKey.getExpiresAt());
+            }
+
             jwtKeyRepository.saveAll(expiredKeys);
-            log.info("Cleaned up {}  expired keys", expiredKeys.size());
+            log.info("✅ Cleaned up {} expired keys", expiredKeys.size());
+        } else {
+            log.debug("✅ No expired keys to clean up");
         }
     }
 
@@ -210,6 +311,8 @@ public class JwtKeyRotationService {
      * 모든 활성 키 조회 (디버깅 및 모니터링용)
      */
     public List<JwtKey> getAllActiveKeys() {
-        return jwtKeyRepository.findAllActiveKeys();
+        List<JwtKey> activeKeys = jwtKeyRepository.findAllActiveKeys();
+        log.debug("Found {} active keys", activeKeys.size());
+        return activeKeys;
     }
 }
