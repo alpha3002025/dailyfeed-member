@@ -1,6 +1,7 @@
 package click.dailyfeed.member.config.web.argumentresolver;
 
 import click.dailyfeed.code.domain.member.member.dto.MemberDto;
+import click.dailyfeed.code.global.jwt.exception.BearerTokenMissingException;
 import click.dailyfeed.member.config.web.annotation.InternalAuthenticatedMember;
 import click.dailyfeed.member.domain.jwt.dto.JwtDto;
 import click.dailyfeed.member.domain.jwt.service.JwtKeyHelper;
@@ -54,9 +55,9 @@ public class AuthenticatedMemberInternalArgumentResolver implements HandlerMetho
     }
 
     public String extractToken(String authHeader) {
-//        if (authHeader == null || authHeader.isBlank() || !authHeader.startsWith("Bearer ")) {
-//            throw new BearerTokenMissingException();
-//        }
+        if (authHeader == null || authHeader.isBlank() || !authHeader.startsWith("Bearer ")) {
+            throw new BearerTokenMissingException();
+        }
 
         return authHeader.replace("Bearer ", "");
     }
