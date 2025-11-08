@@ -71,7 +71,6 @@ public class AuthenticationService {
         Date expirationDate = jwtKeyHelper.generateAccessTokenExpiration();
         JwtDto.UserDetails userDetails = JwtMapper.ofUserDetails(
                 member.getId(),
-                member.getPassword(),
                 expirationDate
         );
 

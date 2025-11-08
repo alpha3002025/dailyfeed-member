@@ -18,7 +18,6 @@ public class JwtProcessor {
                 .setHeaderParam("kid", keyId)
                 .setExpiration(userDetails.getExpiration())
                 .claim("id", userDetails.getId())
-                .claim("password", userDetails.getPassword())
                 .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
     }
@@ -80,12 +79,11 @@ public class JwtProcessor {
 
         // id
         Long id = getIdOrThrow(jws);
-        // password
-        String password = getPasswordOrThrow(jws);
+
         // expiration
         Date expiration = getExpirationDateOrThrow(jws);
 
-        return JwtMapper.ofUserDetails(id, password, expiration);
+        return JwtMapper.ofUserDetails(id, expiration);
     }
 
     public static Jws<Claims> getJwsOrThrow(JwtParser jwtParser, String token){
