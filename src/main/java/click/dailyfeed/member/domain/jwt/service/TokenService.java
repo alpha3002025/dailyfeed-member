@@ -142,7 +142,6 @@ public class TokenService {
         // UserDetails 생성 (만료 시간은 JwtKeyHelper에서 처리)
         JwtDto.UserDetails userDetails = JwtMapper.ofUserDetails(
                 member.getId(),
-                member.getPassword(),
                 jwtKeyHelper.generateAccessTokenExpiration()
         );
 
