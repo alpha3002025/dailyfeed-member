@@ -51,7 +51,7 @@ public class JwtKeyRotationService {
     @Value("${jwt.key.grace.period.hours:48}")
     private int gracePeriodHours;
 
-    @EventListener(ApplicationReadyEvent.class)
+//    @EventListener(ApplicationReadyEvent.class)
     public void init(){
         log.info("🔑 Initializing JWT Key Rotation Service...");
 
@@ -221,7 +221,7 @@ public class JwtKeyRotationService {
     /**
      * 주기적으로 키 로테이션 수행 (매 시간마다 체크)
      */
-    @Scheduled(fixedRate = 3600000) // 1시간마다 실행
+//    @Scheduled(fixedRate = 3600000) // 1시간마다 실행
     public void rotateKeysIfNeeded() {
         log.debug("🔄 Checking if key rotation is needed...");
 
