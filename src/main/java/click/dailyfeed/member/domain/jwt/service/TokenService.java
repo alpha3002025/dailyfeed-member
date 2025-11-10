@@ -257,19 +257,6 @@ public class TokenService {
         }
     }
 
-    /**
-     * 만료된 토큰 정리 (스케줄러)
-     */
-    @Scheduled(cron = "0 0 3 * * *") // 매일 새벽 3시
-    public void cleanupExpiredTokens() {
-        LocalDateTime now = getCurrentTime();
-
-        refreshTokenRepository.deleteExpiredTokens(now);
-        tokenBlacklistRepository.deleteExpiredTokens(now);
-
-        log.info("Expired tokens cleanup completed at {}", now);
-    }
-
     /// 테스트 가능한 메서드들
     /**
      * Redis Key 생성 (RefreshToken) : member:authentication:revoked_refresh:

@@ -48,9 +48,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String token = request.getHeader(HttpHeaders.AUTHORIZATION);
         log.debug("JWT Filter - Path: {}, Has Auth Header: {}", path, token != null);
 
-        if(token != null && !token.isBlank() && token.contains("Bearer ")) { // 로그인 되었을때(token != null)
-            token = JwtProcessor.getJwtFromHeaderOrThrow(token);
-        }
+        // JWT 토큰 추출 (Bearer 제거)
+        token = JwtProcessor.getJwtFromHeaderOrThrow(token);
 
         // key id 추출
         String keyId = JwtProcessor.extractKeyIdOrThrow(token);

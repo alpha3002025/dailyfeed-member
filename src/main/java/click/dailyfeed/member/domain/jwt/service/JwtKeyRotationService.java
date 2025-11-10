@@ -10,9 +10,6 @@ import io.jsonwebtoken.security.Keys;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.context.event.ApplicationReadyEvent;
-import org.springframework.context.event.EventListener;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -50,19 +47,6 @@ public class JwtKeyRotationService {
 
     @Value("${jwt.key.grace.period.hours:48}")
     private int gracePeriodHours;
-
-    @EventListener(ApplicationReadyEvent.class)
-    public void init(){
-        log.info("🔑 Initializing JWT Key Rotation Service...");
-
-        // 먼저 중복된 Primary Key 정리
-        fixDuplicatePrimaryKeys();
-
-        // 그 다음 초기화 (재시도 로직 포함)
-        initializeKeyIfNeededWithRetry();
-
-        log.info("✅ JWT Key Rotation Service initialized successfully");
-    }
 
     /**
      * 재시도 로직을 포함한 키 초기화
@@ -219,38 +203,6 @@ public class JwtKeyRotationService {
     }
 
     /**
-     * 주기적으로 키 로테이션 수행 (매 시간마다 체크)
-     */
-    @Scheduled(fixedRate = 3600000) // 1시간마다 실행
-    public void rotateKeysIfNeeded() {
-        log.debug("🔄 Checking if key rotation is needed...");
-
-        Optional<JwtKey> currentPrimary = jwtKeyRepository.findPrimaryKey();
-
-        if (currentPrimary.isEmpty()) {
-            log.warn("⚠️ No primary key found during scheduled rotation, generating new one");
-            generateNewPrimaryKey();
-            return;
-        }
-
-        LocalDateTime now = LocalDateTime.now();
-        LocalDateTime keyCreatedAt = currentPrimary.get().getCreatedAt();
-
-        // 현재 Primary Key가 KEY_ROTATION_HOURS 이상 지난 경우 새 키 생성
-        if (keyCreatedAt.plusHours(keyRotationHours).isBefore(now)) {
-            log.info("🔄 Key rotation triggered: current key is {} hours old (threshold: {} hours)",
-                     java.time.Duration.between(keyCreatedAt, now).toHours(), keyRotationHours);
-            generateNewPrimaryKey();
-        } else {
-            log.debug("✅ Current key is still valid (created {} hours ago, rotation at {} hours)",
-                     java.time.Duration.between(keyCreatedAt, now).toHours(), keyRotationHours);
-        }
-
-        // 만료된 키들 정리
-        cleanupExpiredKeys();
-    }
-
-    /**
      * 새로운 Primary Key 생성
      *
      * Primary Key 교체 과정:
@@ -284,35 +236,5 @@ public class JwtKeyRotationService {
 
         log.info("✅ New primary key generated with ID: {} (will expire at: {})",
                  newKey.getKeyId(), newKey.getExpiresAt());
-    }
-
-    /**
-     * 만료된 키들 정리
-     */
-    public void cleanupExpiredKeys() {
-        LocalDateTime now = LocalDateTime.now();
-        List<JwtKey> expiredKeys = jwtKeyRepository.findExpiredKeys(now);
-
-        if (!expiredKeys.isEmpty()) {
-            for (JwtKey expiredKey : expiredKeys) {
-                expiredKey.deactivate();
-                log.info("Deactivated expired key: {} (expired at: {})",
-                         expiredKey.getKeyId(), expiredKey.getExpiresAt());
-            }
-
-            jwtKeyRepository.saveAll(expiredKeys);
-            log.info("✅ Cleaned up {} expired keys", expiredKeys.size());
-        } else {
-            log.debug("✅ No expired keys to clean up");
-        }
-    }
-
-    /**
-     * 모든 활성 키 조회 (디버깅 및 모니터링용)
-     */
-    public List<JwtKey> getAllActiveKeys() {
-        List<JwtKey> activeKeys = jwtKeyRepository.findAllActiveKeys();
-        log.debug("Found {} active keys", activeKeys.size());
-        return activeKeys;
     }
 }
