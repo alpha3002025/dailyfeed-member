@@ -217,4 +217,10 @@ public class MemberProfile extends BaseTimeEntity {
             image.updateImageUrl(imageUrl);
         });
     }
+
+    /////
+    ///  양방향 연관관계 편의 메서드
+    public void couplingMember(Member member){
+        this.member = member;
+    }
 }

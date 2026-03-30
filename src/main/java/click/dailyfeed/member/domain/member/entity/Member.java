@@ -55,6 +55,7 @@ public class Member extends BaseTimeEntity {
 
     public void addEmail(MemberEmail email) {
         this.memberEmails.add(email);
+        email.couplingMember(this);
     }
 
     public void addFollowing(Follow follow) {
@@ -78,6 +79,10 @@ public class Member extends BaseTimeEntity {
 //        memberToFollow.followers.add(follow);
         addFollowing(follow);
         memberToFollow.addFollower(follow);
+
+        ///  Follow 에 대한 처리 역시 수행 (위 코드 들만 사용할 경우 실제 주인데이터인 Follow 는 바뀌지 않을수 있음)
+        follow.couplingFollower(this);
+        follow.couplingFollowing(memberToFollow);
     }
 
     public void unfollow(Member memberToUnfollow, Follow follow) {
@@ -105,5 +110,9 @@ public class Member extends BaseTimeEntity {
 
     public void updateMemberProfile(MemberProfile memberProfile) {
         this.memberProfile = memberProfile;
+        /// MemberProfile 내에도 Member 설정
+        if (memberProfile != null && memberProfile.getMember() != this){
+            memberProfile.couplingMember(this);
+        }
     }
 }

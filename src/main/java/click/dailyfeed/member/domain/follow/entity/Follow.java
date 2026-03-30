@@ -56,4 +56,15 @@ public class Follow {
                 following != null ? following.getId() : 0
         );
     }
+
+    /////
+    ///  양방향 연관관계 매핑 메서드
+
+    public void couplingFollower(Member member){
+        this.follower = member;
+    }
+
+    public void couplingFollowing(Member member){
+        this.following = member;
+    }
 }
