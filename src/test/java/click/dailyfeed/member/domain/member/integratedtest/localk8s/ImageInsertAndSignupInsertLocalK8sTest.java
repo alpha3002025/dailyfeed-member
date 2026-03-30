@@ -1,4 +1,4 @@
-package click.dailyfeed.member.domain.member.integratedtest.k8s;
+package click.dailyfeed.member.domain.member.integratedtest.localk8s;
 
 import click.dailyfeed.code.domain.member.member.type.data.CountryCode;
 import click.dailyfeed.code.domain.member.member.type.data.GenderType;
