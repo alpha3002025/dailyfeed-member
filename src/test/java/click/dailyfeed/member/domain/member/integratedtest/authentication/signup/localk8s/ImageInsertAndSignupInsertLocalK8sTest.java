@@ -1,4 +1,4 @@
-package click.dailyfeed.member.domain.member.integratedtest.localk8s;
+package click.dailyfeed.member.domain.member.integratedtest.authentication.signup.localk8s;
 
 import click.dailyfeed.code.domain.member.member.type.data.CountryCode;
 import click.dailyfeed.code.domain.member.member.type.data.GenderType;
@@ -70,10 +70,9 @@ public class ImageInsertAndSignupInsertLocalK8sTest {
     private final RestTemplate restTemplate = new RestTemplate();
     private final Random random = new Random();
 
-    @Rollback(value = false)
     @Transactional
     @ParameterizedTest
-    @CsvFileSource(resources = {"/csv/authentication/signup_request_ai_k8s.csv"}, numLinesToSkip = 1)
+    @CsvFileSource(resources = {"/csv/authentication/signup/signup_request_ai_k8s.csv"}, numLinesToSkip = 1)
     @DisplayName("CSV 파일을 읽어 row마다 이미지 업로드 후 회원 가입 수행")
     public void signupWithImageUploadPerRow(
             String email,

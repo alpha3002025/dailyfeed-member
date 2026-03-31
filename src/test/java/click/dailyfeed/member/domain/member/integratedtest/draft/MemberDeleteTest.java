@@ -39,7 +39,7 @@ public class MemberDeleteTest {
     @Rollback(value = false)
     @Transactional
     @ParameterizedTest
-    @CsvFileSource(resources = {"/csv/authentication/signup_request.csv"}, numLinesToSkip = 1)
+    @CsvFileSource(resources = {"/csv/authentication/signup/signup_request.csv"}, numLinesToSkip = 1)
     @DisplayName("회원가입_샘플데이터_delete(로컬테스트용 샘플데이터)")
     public void fixture__member_delete(
             String email,

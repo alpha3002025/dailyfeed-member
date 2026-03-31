@@ -1,4 +1,4 @@
-package click.dailyfeed.member.domain.member.integratedtest.localwas;
+package click.dailyfeed.member.domain.member.integratedtest.authentication.signup.localwas;
 
 import click.dailyfeed.code.domain.member.member.type.data.CountryCode;
 import click.dailyfeed.code.domain.member.member.type.data.GenderType;
@@ -31,10 +31,10 @@ public class SignupInsertLocalWASTest {
     @Autowired
     private AuthenticationService authenticationService;
 
-    @Rollback(value = false)
+    @Rollback(false) // 샘플데이터 주입 용도이기에 Rollback False 로 지정했습니다. (Production 에서 사용하지 마세요)
     @Transactional
     @ParameterizedTest
-    @CsvFileSource(resources = {"/csv/authentication/signup_request.csv"}, numLinesToSkip = 1)
+    @CsvFileSource(resources = {"/csv/authentication/signup/signup_request.csv"}, numLinesToSkip = 1)
     @DisplayName("회원가입_샘플데이터_insert(로컬테스트용 샘플데이터)")
     public void fixture__insert_sample_data(
             String email,
@@ -60,10 +60,10 @@ public class SignupInsertLocalWASTest {
         authenticationService.signup(signupRequest);
     }
 
-    @Rollback(value = false)
+    @Rollback(false) // 샘플데이터 주입 용도이기에 Rollback False 로 지정했습니다. (Production 에서 사용하지 마세요)
     @Transactional
     @ParameterizedTest
-    @CsvFileSource(resources = {"/csv/authentication/signup_request_ai.csv"}, numLinesToSkip = 1)
+    @CsvFileSource(resources = {"/csv/authentication/signup/signup_request_ai.csv"}, numLinesToSkip = 1)
     @DisplayName("회원가입_샘플데이터_insert_ai_이미지프로필(로컬테스트용 샘플데이터)")
     public void fixture__insert_sample_data_with_ai_generated_image(
             String email,

@@ -22,7 +22,6 @@ import java.time.LocalDate;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
@@ -52,7 +51,7 @@ public class SignupApiIntegrationTest {
     @Rollback(value = false)
     @Transactional
     @ParameterizedTest
-    @CsvFileSource(resources = {"/csv/authentication/signup_request_ai_k8s.csv"}, numLinesToSkip = 1)
+    @CsvFileSource(resources = {"/csv/authentication/signup/signup_request_ai_k8s.csv"}, numLinesToSkip = 1)
     @DisplayName("POST /api/authentication/signup - Quick test without validation")
     public void k8s__signup_api_test_with_ai_generated_image(
             String email,
@@ -87,7 +86,7 @@ public class SignupApiIntegrationTest {
     @Rollback(value = false)
     @Transactional
     @ParameterizedTest
-    @CsvFileSource(resources = {"/csv/authentication/signup_request_ai.csv"}, numLinesToSkip = 1)
+    @CsvFileSource(resources = {"/csv/authentication/signup/signup_request_ai.csv"}, numLinesToSkip = 1)
     @DisplayName("POST /api/authentication/signup - Quick test without validation")
     public void localhost__signup_api_test_with_ai_generated_image(
         String email,
