@@ -1,4 +1,4 @@
-package click.dailyfeed.member.domain.member.integratedtest.localk8s;
+package click.dailyfeed.member.domain.member.integratedtest.signup.localk8s;
 
 import click.dailyfeed.code.domain.member.member.type.data.CountryCode;
 import click.dailyfeed.code.domain.member.member.type.data.GenderType;
@@ -15,7 +15,6 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.FilterType;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.http.*;
-import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
@@ -42,7 +41,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * 3. 업로드 후 받은 viewId로 http://dailyfeed.local:8889/api/images/view/{viewId}를 avatarUrl로 설정
  * 4. 해당 row로 회원 가입 요청
  */
-@ActiveProfiles({"local-k8s-test"})
+@ActiveProfiles({"dev-k8s-test"})
 @SpringBootTest
 @AutoConfigureMockMvc
 @ComponentScan(
@@ -51,7 +50,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
                 pattern = "click.dailyfeed.feign..*"
         )
 )
-public class ImageInsertAndSignupInsertLocalK8sTest {
+public class ImageInsertAndSignupInsertDevK8sTest {
 
     private static final String IMAGE_SERVICE_BASE_URL = "http://localhost:8889";
     private static final String IMAGE_UPLOAD_ENDPOINT = "/api/images/upload/profile";
@@ -70,10 +69,9 @@ public class ImageInsertAndSignupInsertLocalK8sTest {
     private final RestTemplate restTemplate = new RestTemplate();
     private final Random random = new Random();
 
-    @Rollback(value = false)
     @Transactional
     @ParameterizedTest
-    @CsvFileSource(resources = {"/csv/authentication/signup_request_ai_k8s.csv"}, numLinesToSkip = 1)
+    @CsvFileSource(resources = {"/csv/authentication/signup/signup_request_ai_k8s.csv"}, numLinesToSkip = 1)
     @DisplayName("CSV 파일을 읽어 row마다 이미지 업로드 후 회원 가입 수행")
     public void signupWithImageUploadPerRow(
             String email,

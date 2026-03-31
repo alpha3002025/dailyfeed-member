@@ -1,4 +1,4 @@
-package click.dailyfeed.member.domain.member.integratedtest.localwas;
+package click.dailyfeed.member.domain.member.integratedtest.signup.localwas;
 
 import click.dailyfeed.code.domain.member.member.type.data.CountryCode;
 import click.dailyfeed.code.domain.member.member.type.data.GenderType;
@@ -11,7 +11,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.FilterType;
-import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,10 +30,9 @@ public class SignupInsertLocalWASTest {
     @Autowired
     private AuthenticationService authenticationService;
 
-    @Rollback(value = false)
     @Transactional
     @ParameterizedTest
-    @CsvFileSource(resources = {"/csv/authentication/signup_request.csv"}, numLinesToSkip = 1)
+    @CsvFileSource(resources = {"/csv/authentication/signup/signup_request.csv"}, numLinesToSkip = 1)
     @DisplayName("회원가입_샘플데이터_insert(로컬테스트용 샘플데이터)")
     public void fixture__insert_sample_data(
             String email,
@@ -60,10 +58,9 @@ public class SignupInsertLocalWASTest {
         authenticationService.signup(signupRequest);
     }
 
-    @Rollback(value = false)
     @Transactional
     @ParameterizedTest
-    @CsvFileSource(resources = {"/csv/authentication/signup_request_ai.csv"}, numLinesToSkip = 1)
+    @CsvFileSource(resources = {"/csv/authentication/signup/signup_request_ai.csv"}, numLinesToSkip = 1)
     @DisplayName("회원가입_샘플데이터_insert_ai_이미지프로필(로컬테스트용 샘플데이터)")
     public void fixture__insert_sample_data_with_ai_generated_image(
             String email,
