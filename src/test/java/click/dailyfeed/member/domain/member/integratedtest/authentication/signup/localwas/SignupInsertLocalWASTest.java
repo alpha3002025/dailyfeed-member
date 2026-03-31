@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.FilterType;
+import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,6 +31,7 @@ public class SignupInsertLocalWASTest {
     @Autowired
     private AuthenticationService authenticationService;
 
+    @Rollback(false) // 샘플데이터 주입 용도이기에 Rollback False 로 지정했습니다. (Production 에서 사용하지 마세요)
     @Transactional
     @ParameterizedTest
     @CsvFileSource(resources = {"/csv/authentication/signup/signup_request.csv"}, numLinesToSkip = 1)
@@ -58,6 +60,7 @@ public class SignupInsertLocalWASTest {
         authenticationService.signup(signupRequest);
     }
 
+    @Rollback(false) // 샘플데이터 주입 용도이기에 Rollback False 로 지정했습니다. (Production 에서 사용하지 마세요)
     @Transactional
     @ParameterizedTest
     @CsvFileSource(resources = {"/csv/authentication/signup/signup_request_ai.csv"}, numLinesToSkip = 1)
