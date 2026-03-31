@@ -1,4 +1,4 @@
-package click.dailyfeed.member.domain.member.integratedtest.signup.localwas;
+package click.dailyfeed.member.domain.member.integratedtest.authentication.signup.localwas;
 
 import click.dailyfeed.code.domain.member.member.type.data.CountryCode;
 import click.dailyfeed.code.domain.member.member.type.data.GenderType;
