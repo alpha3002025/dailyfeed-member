@@ -19,7 +19,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -94,17 +93,8 @@ public class TokenService {
     public TokenPair refreshTokens(String refreshTokenValue, String deviceInfo, String ipAddress) {
         // Redis에서 무효화 여부 먼저 확인
         String revokedRefreshKey = revokedRefreshTokenKey(refreshTokenValue);
-        try {
-            Boolean isRevoked = stringRedisTemplate.hasKey(revokedRefreshKey);
-            if (Boolean.TRUE.equals(isRevoked)) {
-                log.debug("Refresh token found in Redis revocation list");
-                throw new InvalidTokenException("Refresh token has been revoked");
-            }
-        } catch (InvalidTokenException e) {
-            throw e;
-        } catch (Exception e) {
-            log.warn("Redis check failed, continuing with DB check: {}", e.getMessage());
-        }
+        // refreshKey 유효성 검증
+        checkIfRevokedOrThrow(revokedRefreshKey);
 
         LocalDateTime currentTime = getCurrentTime();
 
@@ -112,24 +102,11 @@ public class TokenService {
                 .findByTokenValueAndIsRevokedFalse(refreshTokenValue)
                 .orElseThrow(() -> new InvalidTokenException("Invalid refresh token"));
 
-        if (!refreshToken.isValidAt(currentTime)) {
-            throw new InvalidTokenException("Refresh token expired or revoked");
-        }
+        // 만료된 refreshToken 인지 체크
+        checkIfExpiredOrThrow(refreshToken, currentTime);
 
-        // 기존 리프레시 토큰 무효화
-        refreshToken.revoke();
-        refreshTokenRepository.save(refreshToken);
-
-        // Redis에도 무효화 마킹
-        try {
-            stringRedisTemplate.opsForValue().set(
-                    revokedRefreshKey,
-                    "true",
-                    Duration.ofDays(30)
-            );
-        } catch (Exception e) {
-            log.warn("Failed to mark refresh token as revoked in Redis: {}", e.getMessage());
-        }
+        // 기존 리프레시 토큰 무효화 (기존 토큰 철회)
+        revokeRefreshKeyOrThrow(refreshToken, revokedRefreshKey);
 
         // 사용자 정보 조회
         List<Member> result = memberRepository.findByIdFetchJoin(refreshToken.getMemberId());
@@ -257,6 +234,24 @@ public class TokenService {
         }
     }
 
+    public void revokeRefreshKeyOrThrow(RefreshToken refreshToken, String revokedRefreshKey){
+        refreshToken.revoke();
+        refreshTokenRepository.save(refreshToken);
+
+        // Redis에도 무효화 마킹
+        try {
+            stringRedisTemplate.opsForValue().set(
+                    revokedRefreshKey,
+                    "true",
+                    Duration.ofDays(30)
+            );
+        } catch (Exception e) {
+            log.warn("Failed to mark refresh token as revoked in Redis: {}", e.getMessage());
+            throw new InvalidTokenException("Failed to mark refresh token as revoked in Redis");
+        }
+    }
+
+
     /// 테스트 가능한 메서드들
     /**
      * Redis Key 생성 (RefreshToken) : member:authentication:revoked_refresh:
@@ -333,6 +328,34 @@ public class TokenService {
      */
     protected LocalDateTime convertToLocalDateTime(Date date) {
         return LocalDateTime.ofInstant(date.toInstant(), ZoneId.systemDefault());
+    }
+
+    /**
+     * revokedToken 의 key 를 Redis 내의 Revoked Key 에 대한 네임스페이스에서 조회해서 존재하는지 체크 및 유효성 검증
+     */
+    public void checkIfRevokedOrThrow(String revokedRefreshKey){
+        try {
+            Boolean isRevoked = stringRedisTemplate.hasKey(revokedRefreshKey);
+            if (Boolean.TRUE.equals(isRevoked)) {
+                log.debug("Refresh token found in Redis revocation list");
+                throw new InvalidTokenException("Refresh token has been revoked");
+            }
+        } catch (InvalidTokenException e) {
+            throw e;
+        } catch (Exception e) {
+            log.warn("Redis check failed, continuing with DB check: {}", e.getMessage());
+        }
+    }
+
+    /**
+     * 검사하려는 시간이 currentTime 일때 refreshToken 은 만료된 것인지 체크
+     * @param refreshToken refresh 토큰
+     * @param testTime 검사하려는 시각
+     */
+    public void checkIfExpiredOrThrow(RefreshToken refreshToken, LocalDateTime testTime){
+        if (!refreshToken.isValidAt(testTime)) {
+            throw new InvalidTokenException("Refresh token expired or revoked");
+        }
     }
 
     // Inner class for token pair
