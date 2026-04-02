@@ -3,7 +3,6 @@ package click.dailyfeed.member.domain.member.integratedtest.authentication.login
 import click.dailyfeed.code.domain.member.member.dto.MemberProfileDto;
 import click.dailyfeed.member.domain.authentication.dto.AuthenticationDto;
 import click.dailyfeed.member.domain.authentication.service.AuthenticationService;
-import click.dailyfeed.member.domain.jwt.dto.JwtDto;
 import click.dailyfeed.member.domain.jwt.service.JwtKeyHelper;
 import click.dailyfeed.member.domain.jwt.service.TokenService;
 import click.dailyfeed.member.domain.jwt.util.JwtProcessor;
