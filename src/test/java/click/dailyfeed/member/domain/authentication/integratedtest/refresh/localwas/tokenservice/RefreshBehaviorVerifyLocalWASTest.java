@@ -1,4 +1,4 @@
-package click.dailyfeed.member.domain.member.integratedtest.authentication.refresh.localwas.tokenservice;
+package click.dailyfeed.member.domain.authentication.integratedtest.refresh.localwas.tokenservice;
 
 import click.dailyfeed.code.domain.member.member.exception.MemberNotFoundException;
 import click.dailyfeed.code.global.jwt.exception.InvalidTokenException;

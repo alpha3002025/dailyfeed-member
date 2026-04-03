@@ -1,4 +1,4 @@
-package click.dailyfeed.member.domain.member.integratedtest.authentication.signup.localk8s;
+package click.dailyfeed.member.domain.authentication.integratedtest.signup.localk8s;
 
 import click.dailyfeed.code.domain.member.member.type.data.CountryCode;
 import click.dailyfeed.code.domain.member.member.type.data.GenderType;
@@ -15,6 +15,7 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.FilterType;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.http.*;
+import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
@@ -41,7 +42,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * 3. 업로드 후 받은 viewId로 http://dailyfeed.local:8889/api/images/view/{viewId}를 avatarUrl로 설정
  * 4. 해당 row로 회원 가입 요청
  */
-@ActiveProfiles({"dev-k8s-test"})
+@ActiveProfiles({"local-k8s-test"})
 @SpringBootTest
 @AutoConfigureMockMvc
 @ComponentScan(
@@ -50,7 +51,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
                 pattern = "click.dailyfeed.feign..*"
         )
 )
-public class ImageInsertAndSignupInsertDevK8sTest {
+public class ImageInsertAndSignupInsertLocalK8sTest {
 
     private static final String IMAGE_SERVICE_BASE_URL = "http://localhost:8889";
     private static final String IMAGE_UPLOAD_ENDPOINT = "/api/images/upload/profile";

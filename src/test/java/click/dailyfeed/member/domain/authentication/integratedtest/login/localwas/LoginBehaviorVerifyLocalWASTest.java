@@ -1,4 +1,4 @@
-package click.dailyfeed.member.domain.member.integratedtest.authentication.login.localwas;
+package click.dailyfeed.member.domain.authentication.integratedtest.login.localwas;
 
 import click.dailyfeed.code.domain.member.member.dto.MemberProfileDto;
 import click.dailyfeed.member.domain.authentication.dto.AuthenticationDto;
